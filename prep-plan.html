@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>④ 前期工作计划与验收 · 一人 AI 公司 · 方案构想</title>
+<meta name="description" content="用 AI 组成整家公司、尽量少的人来管理：研究、架构设计与前期准备清单。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23255f73'/%3E%3Ccircle cx='16' cy='11' r='4.5' fill='%23ffd28a'/%3E%3Ccircle cx='8' cy='22' r='3' fill='%23fff'/%3E%3Ccircle cx='16' cy='24' r='3' fill='%23fff'/%3E%3Ccircle cx='24' cy='22' r='3' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+</head>
+<body data-page="prep-plan">
+<a class="skip" href="#content">跳到正文</a>
+<header class="topbar">
+  <button class="menu-btn" type="button" aria-label="打开目录" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>一人 AI 公司 · 方案构想</a>
+  <span class="progress" aria-label="阅读进度">第 17 / 22 页</span>
+  <button class="theme-btn" type="button" aria-label="切换深色/浅色">◐</button>
+</header>
+<div class="shell">
+  <aside class="sidebar" id="sidebar"><div class="nav-group"><div class="nav-group-title">开始</div><ul><li><a href="index.html">首页：一页看懂</a></li></ul></div><div class="nav-group"><div class="nav-group-title">基础研究</div><ul><li><a href="feasibility.html">可行性：能做到什么程度</a></li><li><a href="platforms.html">工具与平台选型</a></li><li><a href="compliance.html">合规：得州与美国</a></li><li><a href="updates.html">研究更新（11-13 补充核实）</a></li></ul></div><div class="nav-group"><div class="nav-group-title">方案设计</div><ul><li><a href="org.html">组织架构：1 个人 + AI 人物</a></li><li><a href="architecture.html">推荐架构：AWS Bedrock 路线</a></li><li><a href="knowledge.html">专属 RAG 知识层</a></li><li><a href="review.html">审核：风险分级与授权矩阵</a></li><li><a href="governance.html">AI 治理</a></li><li><a href="security.html">安全防护</a></li><li><a href="cost-roadmap.html">成本与实施路线图</a></li></ul></div><div class="nav-group"><div class="nav-group-title">前期准备（请贵司配合）</div><ul><li><a href="prep.html">前期准备总览</a></li><li><a href="prep-questionnaire.html">① 业务信息问卷</a></li><li><a href="prep-assets.html">② 资料与账号清单</a></li><li><a href="prep-decisions.html">③ 需要拍板的决策</a></li><li><a href="prep-plan.html" aria-current="page">④ 前期工作计划与验收</a></li></ul></div><div class="nav-group"><div class="nav-group-title">附录</div><ul><li><a href="glossary.html">术语表</a></li><li><a href="sources.html">来源索引</a></li><li><a href="full-research.html">全文 · 研究汇总 v0.2</a></li><li><a href="full-architecture.html">全文 · Bedrock 架构设计</a></li><li><a href="full-artifacts.html">全文 · 参考样例</a></li></ul></div>
+    <div class="side-foot">更新于 2026-11-13</div>
+  </aside>
+  <main id="content" class="content">
+    <article>
+      
+      <h1 class="page-title">④ 前期工作计划与验收</h1>
+      <blockquote>
+<p><strong>一句话</strong>：前期准备约 <strong>3–6 周</strong>，核心是 <strong>3 场研讨会</strong>。结束时我们交回一套为贵司定制的方案包，双方按&quot;可以开工&quot;清单验收后，进入搭建阶段。</p>
+</blockquote>
+<h2 id="周计划"><a class="anchor" href="#周计划" aria-label="本节链接">#</a>周计划</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>周</th>
+<th>贵司做什么</th>
+<th>我们做什么</th>
+<th>本周产出</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>第 1 周</td>
+<td>阅读本站；填写问卷 B、C、D、G、K 组；确定 Owner；参加<strong>研讨会 1</strong></td>
+<td>预读问卷；准备研讨会；列出资料缺口</td>
+<td>研讨会 1 纪要；资料缺口清单</td>
+</tr>
+<tr>
+<td>第 2 周</td>
+<td>补完问卷；上传第一批资料（服务目录、价格、SOP、10–20 段对话）；参加<strong>研讨会 2</strong></td>
+<td>画流程图；整理知识资料；起草人物清单</td>
+<td>端到端流程图 v0；人物清单 v0</td>
+</tr>
+<tr>
+<td>第 3 周</td>
+<td>填写三张决策工作表；开通 P0 账号；委托律师和 CPA；参加<strong>研讨会 3</strong></td>
+<td>起草授权阈值和红线；评估集 v0；风险台账 v0</td>
+<td><code>thresholds.yaml</code> 初稿；红线清单；评估集 v0</td>
+</tr>
+<tr>
+<td>第 4 周</td>
+<td>审阅方案包草稿，提出修改</td>
+<td>出定稿设计、预算和报价</td>
+<td>方案包草稿</td>
+</tr>
+<tr>
+<td>第 5–6 周（视情况）</td>
+<td>律师初审；确认报价；底座签约（12 月上旬，Ignite 和 re:Invent 之后）</td>
+<td>按反馈修改；准备第 0 阶段</td>
+<td>方案包定稿；&quot;可以开工&quot;验收</td>
+</tr>
+</tbody></table>
+</div>
+<h2 id="三场研讨会"><a class="anchor" href="#三场研讨会" aria-label="本节链接">#</a>三场研讨会</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>场次</th>
+<th>时长</th>
+<th>参加</th>
+<th>议程</th>
+<th>产出</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>1 · 业务与目标</strong></td>
+<td>90 分钟</td>
+<td>Owner（必须）、业务骨干</td>
+<td>过一遍问卷答案；明确卖什么、卖给谁；定成功标准和预算区间；讲清&quot;做不到 100%&quot;和逐步放权</td>
+<td>业务画像；成功指标；第一期范围</td>
+</tr>
+<tr>
+<td><strong>2 · 走一遍客户旅程</strong></td>
+<td>2 小时</td>
+<td>Owner、业务骨干</td>
+<td>拿一个真实客户，从第一次接触走到续约：每一步谁做、做什么判断、用什么资料、哪里容易出错。我们现场标出 AI 判断点和人工审批点</td>
+<td>端到端流程图；每个判断点需要的知识清单</td>
+</tr>
+<tr>
+<td><strong>3 · 规则与红线</strong></td>
+<td>90 分钟</td>
+<td>Owner（必须）</td>
+<td>逐行填授权矩阵；定红线和必须人批的事；选岗位；过一遍决策清单里的单向门</td>
+<td>授权矩阵；红线清单；岗位清单；单向门决策记录</td>
+</tr>
+</tbody></table>
+</div>
+<p>研讨会可以线上开，全程录音（经同意）以便整理纪要。</p>
+<h2 id="我们交回的方案包"><a class="anchor" href="#我们交回的方案包" aria-label="本节链接">#</a>我们交回的方案包</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>交付物</th>
+<th>内容</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>定稿设计 v1.0</td>
+<td>按贵司业务改写的组织架构、架构图、流程图、人物清单</td>
+<td>搭建的蓝图</td>
+</tr>
+<tr>
+<td><code>thresholds.yaml</code></td>
+<td>授权阈值的唯一来源</td>
+<td>直接生成规则引擎配置</td>
+</tr>
+<tr>
+<td>人物卡初稿</td>
+<td>每个 AI 岗位的职责、KPI、工具、边界、升级规则</td>
+<td>直接进治理仓库</td>
+</tr>
+<tr>
+<td>红线与审批清单</td>
+<td>R3、R4 的完整列表</td>
+<td>写成 Cedar 策略</td>
+</tr>
+<tr>
+<td>风险与合规台账 v0</td>
+<td>每个用例的风险等级和适用法规</td>
+<td>交律师审阅；TRAIGA 调查材料的底稿</td>
+</tr>
+<tr>
+<td>评估集 v0</td>
+<td>用贵司对话和案例整理的标准题、对抗题、合规题</td>
+<td>每个 AI 上线前的考题</td>
+</tr>
+<tr>
+<td>知识资料清单</td>
+<td>已收到的、还缺的、需要改写的</td>
+<td>知识库入库计划</td>
+</tr>
+<tr>
+<td>预算与报价</td>
+<td>搭建费、每月运营费、分阶段计划、可选项</td>
+<td>签约依据</td>
+</tr>
+<tr>
+<td>实施计划</td>
+<td>第 0–4 阶段的排期、里程碑、双方分工</td>
+<td>项目管理</td>
+</tr>
+</tbody></table>
+</div>
+<h2 id="可以开工验收清单"><a class="anchor" href="#可以开工验收清单" aria-label="本节链接">#</a>&quot;可以开工&quot;验收清单</h2>
+<p>全部打勾，就可以进入第 0 阶段（地基）。</p>
+<p><strong>业务</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> 问卷所有&quot;必答&quot;题都有答案</li>
+<li><input disabled="" type="checkbox"> 服务目录、价格和折扣规则已提供</li>
+<li><input disabled="" type="checkbox"> 至少一条核心业务的端到端流程图已确认</li>
+<li><input disabled="" type="checkbox"> 验收标准已提供</li>
+</ul>
+<p><strong>规则</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> 授权矩阵已填写并经 Owner 签字确认</li>
+<li><input disabled="" type="checkbox"> 红线（R4）和必须人批（R3）清单已确认</li>
+<li><input disabled="" type="checkbox"> 第一期岗位清单已确认</li>
+</ul>
+<p><strong>单向门决策</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> 底座已确定</li>
+<li><input disabled="" type="checkbox"> AWS 账号数量已确定</li>
+<li><input disabled="" type="checkbox"> 记录保留年限已由律师给出意见</li>
+<li><input disabled="" type="checkbox"> 是否要复制给更多公司已确定</li>
+</ul>
+<p><strong>账号与合规</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> 所有 P0 账号已由 Owner 开通（公司注册、EIN、域名、AWS 管理账号、硬件密钥、密码管理器）</li>
+<li><input disabled="" type="checkbox"> 已委托得州律师和 CPA</li>
+</ul>
+<p><strong>样例</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> 至少 10–20 段客户对话已提供</li>
+</ul>
+<p><strong>商务</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> 方案包已审阅，报价已确认</li>
+</ul>
+<h2 id="前期最常见的坑"><a class="anchor" href="#前期最常见的坑" aria-label="本节链接">#</a>前期最常见的坑</h2>
+<ol>
+<li><strong>先买工具，后想流程</strong>。工具选择取决于问卷答案，设计定稿前不要签年付合同。</li>
+<li><strong>让 AI 去开账号</strong>。银行、支付、域名、云管理账号必须由 Owner 本人以公司名义开，双重验证不交给 AI。</li>
+<li><strong>用个人账号做公司的事</strong>。个人版 AI 订阅的数据条款和企业版不同；个人云账号以后很难迁移。</li>
+<li><strong>规则只放在提示词里</strong>。&quot;折扣不超过 10%&quot;必须写进规则引擎，提示词只是告诉 AI 规则是什么。</li>
+<li><strong>一上来就开放高自主度</strong>。所有岗位都从影子运行开始，用数据决定放权。</li>
+<li><strong>宣传&quot;全 AI 公司&quot;</strong>。对外说法要出自已批准的用语库；在得州，&quot;100% 由 AI 完成&quot;可能构成误导性宣传。</li>
+<li><strong>先做陌生电话外联</strong>。得州要登记和交保证金，联邦 TCPA 要书面同意，风险和成本都高。</li>
+<li><strong>没有测试样例就上线</strong>。没有考题，就没法知道 AI 改一次提示词是变好还是变坏。</li>
+</ol>
+<h2 id="下一步"><a class="anchor" href="#下一步" aria-label="本节链接">#</a>下一步</h2>
+<ol>
+<li>贵司确认是否进入前期准备，并指定 Owner 和对接人。</li>
+<li>约研讨会 1 的时间（建议在两周内）。</li>
+<li>在研讨会 1 之前，尽量先回答问卷的&quot;必答&quot;题，并上传服务目录和价格表。</li>
+</ol>
+<p>有任何问题，随时提出。前期准备阶段的所有材料都会保存在贵司自己的共享文件夹和（之后的）治理仓库里，<strong>贵司始终拥有这些资产</strong>。</p>
+
+    </article>
+    <nav class="pager" aria-label="翻页">
+    <a class="prev" href="prep-decisions.html"><span>上一页</span><strong>③ 需要拍板的决策</strong></a>
+    <a class="next" href="glossary.html"><span>下一页</span><strong>术语表</strong></a>
+  </nav>
+    <footer class="foot">本站为方案构想，供讨论用；法律与税务内容未经律师或会计审阅，不构成法律意见。状态标记：✅ 已核实 · ⚠️ 待核实 · 💡 判断 · 📌 估算 · 📚 训练知识未复核。</footer>
+  </main>
+  <nav class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><ul><li><a href="#周计划">周计划</a></li><li><a href="#三场研讨会">三场研讨会</a></li><li><a href="#我们交回的方案包">我们交回的方案包</a></li><li><a href="#可以开工验收清单">&amp;quot;可以开工&amp;quot;验收清单</a></li><li><a href="#前期最常见的坑">前期最常见的坑</a></li><li><a href="#下一步">下一步</a></li></ul></nav>
+</div>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

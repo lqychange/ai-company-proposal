@@ -1,0 +1,3468 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>全文 · Bedrock 架构设计 · 一人 AI 公司 · 方案构想</title>
+<meta name="description" content="用 AI 组成整家公司、尽量少的人来管理：研究、架构设计与前期准备清单。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23255f73'/%3E%3Ccircle cx='16' cy='11' r='4.5' fill='%23ffd28a'/%3E%3Ccircle cx='8' cy='22' r='3' fill='%23fff'/%3E%3Ccircle cx='16' cy='24' r='3' fill='%23fff'/%3E%3Ccircle cx='24' cy='22' r='3' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+</head>
+<body data-page="full-architecture">
+<a class="skip" href="#content">跳到正文</a>
+<header class="topbar">
+  <button class="menu-btn" type="button" aria-label="打开目录" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>一人 AI 公司 · 方案构想</a>
+  <span class="progress" aria-label="阅读进度">第 21 / 22 页</span>
+  <button class="theme-btn" type="button" aria-label="切换深色/浅色">◐</button>
+</header>
+<div class="shell">
+  <aside class="sidebar" id="sidebar"><div class="nav-group"><div class="nav-group-title">开始</div><ul><li><a href="index.html">首页：一页看懂</a></li></ul></div><div class="nav-group"><div class="nav-group-title">基础研究</div><ul><li><a href="feasibility.html">可行性：能做到什么程度</a></li><li><a href="platforms.html">工具与平台选型</a></li><li><a href="compliance.html">合规：得州与美国</a></li><li><a href="updates.html">研究更新（11-13 补充核实）</a></li></ul></div><div class="nav-group"><div class="nav-group-title">方案设计</div><ul><li><a href="org.html">组织架构：1 个人 + AI 人物</a></li><li><a href="architecture.html">推荐架构：AWS Bedrock 路线</a></li><li><a href="knowledge.html">专属 RAG 知识层</a></li><li><a href="review.html">审核：风险分级与授权矩阵</a></li><li><a href="governance.html">AI 治理</a></li><li><a href="security.html">安全防护</a></li><li><a href="cost-roadmap.html">成本与实施路线图</a></li></ul></div><div class="nav-group"><div class="nav-group-title">前期准备（请贵司配合）</div><ul><li><a href="prep.html">前期准备总览</a></li><li><a href="prep-questionnaire.html">① 业务信息问卷</a></li><li><a href="prep-assets.html">② 资料与账号清单</a></li><li><a href="prep-decisions.html">③ 需要拍板的决策</a></li><li><a href="prep-plan.html">④ 前期工作计划与验收</a></li></ul></div><div class="nav-group"><div class="nav-group-title">附录</div><ul><li><a href="glossary.html">术语表</a></li><li><a href="sources.html">来源索引</a></li><li><a href="full-research.html">全文 · 研究汇总 v0.2</a></li><li><a href="full-architecture.html" aria-current="page">全文 · Bedrock 架构设计</a></li><li><a href="full-artifacts.html">全文 · 参考样例</a></li></ul></div>
+    <div class="side-foot">更新于 2026-11-13</div>
+  </aside>
+  <main id="content" class="content full-doc">
+    <article>
+      <p class="doc-kicker">附录 · 完整原文（Markdown 渲染）</p>
+      <h1 class="page-title">全文 · Bedrock 架构设计</h1>
+      <blockquote>
+<p><strong>对应需求</strong>：<code>input/ai-native-company/requirement.md</code>
+<strong>前序研究</strong>：同目录 <code>ai-native-company-research-and-plan.md</code>（v0.1）。本文展开它第10节&quot;初步方案&quot;中的 Bedrock 路线，并把第6、7、8节（RAG、治理、安全）落成具体设计。
+<strong>配套样例</strong>：同目录 <code>bedrock-reference-artifacts.md</code>，包括人物卡、阈值单一来源、Cedar 策略、SCP、审批记录和状态机片段。
+<strong>日期</strong>：2026-11-12（美国中部时间）　<strong>整理</strong>：AI 助手（Copilot SDK in VS Code）
+<strong>状态标记</strong>（沿用研究文档）：</p>
+<ul>
+<li>✅ 已核实，方括号是文末来源编号，例如 ✅[A13]</li>
+<li>⚠️ 没有核实或需要复核</li>
+<li>💡 设计判断</li>
+<li>📌 估算</li>
+<li>📚 来自训练知识（2025年及以前），没有复核</li>
+</ul>
+</blockquote>
+<hr>
+<h2 id="0-一句话结论-决策速览"><a class="anchor" href="#0-一句话结论-决策速览" aria-label="本节链接">#</a>0. 一句话结论 + 决策速览</h2>
+<p><strong>一句话结论</strong>：一个人当董事会，十几个 AI 人物当员工。</p>
+<ul>
+<li><strong>骨架确定，AI 只做判断。</strong> 公司的骨架是确定性的流程和规则，AI 只在需要判断的地方干活。</li>
+<li><strong>一扇门。</strong> 每个 AI 人物在 AgentCore 上有独立的身份、会话沙箱和预算，<strong>只能通过一扇门（AgentCore Gateway + Policy）</strong> 调用工具和查询知识。</li>
+<li><strong>四道闸。</strong> 对外、花钱或改规则的动作，执行前都要依次通过：自检 → 规则 → 护栏 → 独立复核。R3 级动作还要 Owner 批准。</li>
+<li><strong>系统执行，全程留痕。</strong> 高风险动作由系统按批准时的载荷原样执行，人物自己碰不到高风险工具。事后全量留痕、抽样审计。</li>
+</ul>
+<p><strong>三条最重要的设计约束</strong></p>
+<ol>
+<li><strong>账号就是爆炸半径。</strong><ul>
+<li><strong>事实</strong>：2026年10月 Zenity 披露了 AgentCorruption 攻击链（✅[A25]）：<ol>
+<li>一条提示让带 HTTP 或 shell 工具的 Agent 访问 microVM 元数据服务，拿到执行角色的凭据。</li>
+<li>默认执行角色覆盖同账号、同区域的所有 AgentCore 资源，于是攻击者能调用其他 Agent、读所有对话、投毒记忆、取走密钥。</li>
+</ol>
+</li>
+<li><strong>AWS 的立场</strong>：这是&quot;已记录的预期行为&quot;，最小权限由客户负责（✅[A7][A25]）。</li>
+<li><strong>对策</strong>：<ul>
+<li>把接触原始外部内容的人物、掌握业务工具的人物、负责复核的人物，分放在<strong>三个不同账号</strong>。</li>
+<li>把控制面（Gateway、Policy、密钥）放进一个<strong>不跑任何 LLM 人物</strong>的账号。</li>
+<li>人物不配通用的 shell 或 HTTP 工具，每个人物一个最小权限的执行角色。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>&quot;允许做什么&quot;和&quot;决定做什么&quot;分开</strong>（NIST 2026年 Agent 身份原则，✅[N1]）。<ul>
+<li>模型只负责&quot;提议&quot;。</li>
+<li>能不能做，由 Cedar 规则和流程状态机决定。</li>
+<li>R2 及以上的动作由<strong>执行器</strong>按批准时的载荷执行。人物在 Policy 里根本没有这些高风险工具的权限。</li>
+</ul>
+</li>
+<li><strong>唯一的人是最大的单点。</strong><ul>
+<li>审批疲劳、出差生病、被钓鱼，都会直接变成公司风险。</li>
+<li>对应设计：<ul>
+<li>审批分批处理，并有防疲劳指标。</li>
+<li>放宽规则有 24 小时冷静期。</li>
+<li>Owner 缺席时自动进入安全模式。</li>
+<li>设一组<strong>连 Owner 批准也越不过</strong>的硬红线（R4）。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<p><strong>决策速览</strong></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>决策点</th>
+<th>选择</th>
+<th>主要理由</th>
+<th>门类型</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>D1</td>
+<td>底座</td>
+<td><strong>Bedrock</strong>（模型、知识库、护栏）+ <strong>AgentCore</strong>（Runtime、Gateway、Policy、Identity、Memory、Observability、Evaluations、Registry）</td>
+<td>研究文档的默认推荐。13 项 AgentCore 服务在 us-east-1、us-east-2、us-west-2 全部可用（✅[A2]）</td>
+<td>双向（换底座代价中等）</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>账号结构</td>
+<td>8 个账号：管理、日志、安全、平台（控制面）、边缘人物、核心人物、保障人物、预发</td>
+<td>账号是 AWS 里最强的隔离边界；复核者不能和被复核者在同一账号</td>
+<td><strong>单向</strong>（事后拆账号代价高）</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>业务骨架</td>
+<td>Step Functions 标准工作流（状态机 + 回调审批）</td>
+<td>托管、免运维，最适合一人公司。研究 v0.1 写的是 Temporal，这里改掉</td>
+<td>双向</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>人物框架</td>
+<td>默认 <strong>Strands Agents</strong> 跑在 AgentCore Runtime 上；简单人物以后可以改用 Harness</td>
+<td>骨架已经由状态机负责，人物内部只需要工具调用循环。Harness 本身就基于 Strands（✅[A8]），迁移成本低。研究 v0.1 写的是 LangGraph，这里改掉</td>
+<td>双向</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>人物协作</td>
+<td>工作单 + 事件（黑板模式），人物之间不自由对话</td>
+<td>对应研究原则&quot;只有一个数据源&quot;；可审计；防止错误连锁扩散</td>
+<td>双向</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>工具接入</td>
+<td>所有工具都经 Gateway（MCP）；人物没有直接外网，也拿不到密钥</td>
+<td>一扇门：统一认证、授权和留痕</td>
+<td><strong>单向</strong>（原则级）</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>授权</td>
+<td>AgentCore Policy（Cedar，默认拒绝，forbid 优先，✅[A13]）；阈值只在一个 YAML 里定义</td>
+<td>规则是确定的、可测试的，不依赖提示词</td>
+<td>双向</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>高风险执行</td>
+<td>&quot;AI 提议、系统执行&quot;：执行器校验载荷哈希后执行</td>
+<td>杜绝&quot;批的是 A、做的是 B&quot;</td>
+<td>双向</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>RAG</td>
+<td>Bedrock 知识库放在 RAG 服务之后；租户过滤由服务端注入</td>
+<td>换模型、换人物都不用重建知识；租户隔离不靠模型自觉</td>
+<td>双向</td>
+</tr>
+<tr>
+<td>D10</td>
+<td>记忆</td>
+<td>AgentCore Memory 按&quot;租户 × 人物&quot;划分命名空间；CRM 是客户事实的唯一来源</td>
+<td>防止跨客户串数据和记忆投毒</td>
+<td>双向</td>
+</tr>
+<tr>
+<td>D11</td>
+<td>模型</td>
+<td>多模型分档；复核者和制作者用不同的模型家族；锁定版本</td>
+<td>减少相关性错误；成本能算到每个人物</td>
+<td>双向</td>
+</tr>
+<tr>
+<td>D12</td>
+<td>护栏</td>
+<td>Bedrock Guardrails 三层强制：<br>- 组织级 Bedrock 策略<br>- 执行角色上的条件键<br>- 请求级岗位护栏<br>外部内容另用输入标记单独检测</td>
+<td>- 内容层防护对任何模型都适用<br>- 提示词攻击过滤<strong>只检测打了标记的内容</strong>（✅[B6]）</td>
+<td>双向</td>
+</tr>
+<tr>
+<td>D13</td>
+<td>审计</td>
+<td>自建审计账本，脱敏后写入日志账号的 S3 Object Lock（合规模式）</td>
+<td>CloudTrail 只覆盖 AgentCore 的 Gateway 和 Registry（✅[A21]），不够用</td>
+<td><strong>单向</strong>（保留期锁定后不能缩短）</td>
+</tr>
+<tr>
+<td>D14</td>
+<td>治理框架</td>
+<td>NIST AI RMF + 三道防线 + 治理即代码（Git）</td>
+<td>研究文档第9节：在得州 TRAIGA 下，按 NIST AI RMF 治理可以作为免责依据</td>
+<td>双向</td>
+</tr>
+</tbody></table>
+</div>
+<hr>
+<h2 id="1-范围-假设与设计目标"><a class="anchor" href="#1-范围-假设与设计目标" aria-label="本节链接">#</a>1. 范围、假设与设计目标</h2>
+<h3 id="1-1-一人全ai公司指什么"><a class="anchor" href="#1-1-一人全ai公司指什么" aria-label="本节链接">#</a>1.1 &quot;一人全AI公司&quot;指什么</h3>
+<ul>
+<li><strong>人：只有 1 名，叫 Owner。</strong><ul>
+<li>法律上是公司的所有者和负责人；运营上是董事会、唯一的审批人和例外处理人。</li>
+<li>研究文档 9.9 列出的&quot;必须由人办的事&quot;都由 Owner 来做：注册公司、开银行账户和 Stripe、实名认证、报税、电话推销登记、买保险。</li>
+</ul>
+</li>
+<li><strong>AI 人物（persona）：其余岗位全部由 AI 担任</strong>，按传统公司的部门和三道防线来组织，见第2节。<ul>
+<li>每个人物都是一名<strong>受治理的数字员工</strong>，不只是一段聊天提示词。</li>
+<li>它有岗位说明书、身份、权限、预算和 KPI，也有上岗、晋升、停职、退役的流程。</li>
+</ul>
+</li>
+<li><strong>外部专业人士</strong>：得州律师和 CPA 不是员工。他们按季度或年度复核合同模板、合规材料和账目，属于第三道防线。</li>
+</ul>
+<h3 id="1-2-设计假设"><a class="anchor" href="#1-2-设计假设" aria-label="本节链接">#</a>1.2 设计假设</h3>
+<p>完整内容见需求文件第3节，这里只列要点：</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>项</th>
+<th>假设</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>公司和客户</td>
+<td>得州 LLC；客户是美国企业</td>
+</tr>
+<tr>
+<td>业务</td>
+<td>标准化、线上交付的数字服务</td>
+</tr>
+<tr>
+<td>渠道</td>
+<td>第一阶段：邮件、官网聊天、电子签、在线支付。不做电话和短信</td>
+</tr>
+<tr>
+<td>区域</td>
+<td>主区域 us-east-1，备用区域 us-west-2</td>
+</tr>
+<tr>
+<td>SaaS</td>
+<td>以 HubSpot（CRM）、Stripe、电子签为例</td>
+</tr>
+<tr>
+<td>Owner 时间</td>
+<td>每天处理审批和例外不超过 1 小时</td>
+</tr>
+</tbody></table>
+</div>
+<h3 id="1-3-设计目标-非功能需求"><a class="anchor" href="#1-3-设计目标-非功能需求" aria-label="本节链接">#</a>1.3 设计目标（非功能需求）</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>目标</th>
+<th>怎么衡量</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>人的时间</td>
+<td>Owner 每天处理审批和例外不超过 1 小时</td>
+<td>控制台统计审批耗时</td>
+</tr>
+<tr>
+<td>自动化率</td>
+<td>流程成熟后，80–95% 的工作单不需要人（研究文档第2节）</td>
+<td>按流程统计&quot;零人工&quot;工作单的比例</td>
+</tr>
+<tr>
+<td>可追溯</td>
+<td>100% 的对外动作都能回答五个问题：<br>- 谁做的（人物和版本）<br>- 为什么（理由和出处）<br>- 依据哪条规则<br>- 谁批准的<br>- 花了多少钱</td>
+<td>审计账本的完整率</td>
+</tr>
+<tr>
+<td>爆炸半径</td>
+<td>任何一个人物被攻破，都不能动钱、不能改规则、读不到其他客户的数据</td>
+<td>红队测试结果</td>
+</tr>
+<tr>
+<td>可替换</td>
+<td>模型、框架、SaaS 都能换。研究文档说的四样资产（流程定义、知识与数据、规则与权限、评估与日志）都在自己的账号和 Git 里</td>
+<td>每季度演练一次：换一个模型或框架</td>
+</tr>
+<tr>
+<td>成本</td>
+<td>每个人物有日预算，超了自动熔断</td>
+<td>AWS Budgets 和成本标签</td>
+</tr>
+<tr>
+<td>合规</td>
+<td>对齐 NIST AI RMF；对外说明是 AI；不做误导性宣传（得州 DTPA）</td>
+<td>合规台账、已批准的宣传用语库</td>
+</tr>
+<tr>
+<td>可用性</td>
+<td>建议 Tier 3：RTO 24 小时，RPO 1 小时</td>
+<td>每年一次恢复演练</td>
+</tr>
+</tbody></table>
+</div>
+<h3 id="1-4-本期不做"><a class="anchor" href="#1-4-本期不做" aria-label="本节链接">#</a>1.4 本期不做</h3>
+<ul>
+<li><strong>电话、短信、语音外呼</strong>：要先办得州电话推销登记，并遵守 TCPA（研究文档 9.3）。</li>
+<li><strong>中国大陆的业务和区域。</strong></li>
+<li><strong>自训或微调模型</strong>：第一年用不上 SageMaker（研究文档 5.9）。</li>
+<li><strong>线下或实物交付。</strong></li>
+</ul>
+<hr>
+<h2 id="2-组织架构-一个人-ai-人物"><a class="anchor" href="#2-组织架构-一个人-ai-人物" aria-label="本节链接">#</a>2. 组织架构：一个人 + AI 人物</h2>
+<h3 id="2-1-组织图-三道防线"><a class="anchor" href="#2-1-组织图-三道防线" aria-label="本节链接">#</a>2.1 组织图（三道防线）</h3>
+<div class="diagram"><pre class="mermaid">flowchart TB
+    OWNER[&quot;👤 Owner（唯一的人）&lt;br/&gt;定目标 · 定红线 · 批 R3 · 处理例外&quot;]:::human
+    EXT[&quot;外部专业人士（按需）&lt;br/&gt;得州律师 · CPA&quot;]:::ext
+
+    subgraph LINE1[&quot;第一道线 · 业务 AI 人物&quot;]
+        direction TB
+        COS[&quot;幕僚长AI&lt;br/&gt;拆目标 · 派工 · 盯KPI · 日报&quot;]:::core
+        MKT[&quot;市场AI&quot;]:::edge
+        SDR[&quot;获客AI&quot;]:::edge
+        FRONT[&quot;前台AI&lt;br/&gt;官网聊天&quot;]:::edge
+        AE[&quot;销售AI&quot;]:::core
+        LEGAL[&quot;合同AI&quot;]:::core
+        PM[&quot;项目AI&quot;]:::core
+        PRD[&quot;生产AI ×N&quot;]:::core
+        QA[&quot;质检AI&quot;]:::core
+        CS[&quot;客户成功AI&quot;]:::core
+        FIN[&quot;财务AI&quot;]:::core
+    end
+
+    subgraph SUPPORT[&quot;支撑人物&quot;]
+        direction TB
+        INTAKE[&quot;隔离读信员AI&lt;br/&gt;没有任何工具&quot;]:::edge
+        CUR[&quot;知识管理员AI&quot;]:::core
+    end
+
+    subgraph LINE2[&quot;第二道线 · 独立控制（直接向 Owner 汇报）&quot;]
+        direction TB
+        REV[&quot;复核官AI&quot;]:::assure
+        CMP[&quot;合规官AI&quot;]:::assure
+        SEN[&quot;安全哨兵AI&quot;]:::assure
+    end
+
+    subgraph LINE3[&quot;第三道线 · 审计&quot;]
+        AUD[&quot;内审AI&quot;]:::assure
+    end
+
+    OWNER --&gt; COS
+    COS --&gt; MKT &amp; SDR &amp; FRONT &amp; AE &amp; LEGAL &amp; PM &amp; CS &amp; FIN &amp; CUR
+    PM --&gt; PRD &amp; QA
+    OWNER --&gt; REV &amp; CMP &amp; SEN &amp; AUD
+    REV -.-&gt;|&quot;复核 / 驳回&quot;| LINE1
+    AUD -.-&gt;|&quot;抽样审计&quot;| LINE1
+    AUD -.-&gt;|&quot;周报&quot;| OWNER
+    EXT -.-&gt;|&quot;季度复核&quot;| OWNER
+
+    classDef human fill:#fff3e0,stroke:#e65100,color:#bf360c,stroke-width:3px;
+    classDef ext fill:#eceff1,stroke:#546e7a,color:#263238,stroke-width:1px,stroke-dasharray:4 3;
+    classDef edge fill:#fce4ec,stroke:#ad1457,color:#880e4f,stroke-width:2px;
+    classDef core fill:#e3f2fd,stroke:#1565c0,color:#0d47a1,stroke-width:2px;
+    classDef assure fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20,stroke-width:2px;</pre></div>
+<p><strong>颜色和所在账号</strong></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>颜色</th>
+<th>区</th>
+<th>账号</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>粉色</td>
+<td>边缘区</td>
+<td><code>agents-edge</code></td>
+<td>直接接触原始外部内容，只有低风险工具，手里没有机密数据</td>
+</tr>
+<tr>
+<td>蓝色</td>
+<td>核心区</td>
+<td><code>agents-core</code></td>
+<td>有业务工具，但只接收结构化的工作单</td>
+</tr>
+<tr>
+<td>绿色</td>
+<td>保障区</td>
+<td><code>agents-assurance</code></td>
+<td>负责独立复核、合规、安全和审计</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>两条组织规则</strong></p>
+<ol>
+<li><strong>幕僚长AI 只管派工和盯 KPI。</strong><ul>
+<li>它不能给任何人物加权限、改规则或批准高风险动作。</li>
+<li>原因：管理者人物最容易被利用来提权，这是 OWASP Agent 十大风险里的&quot;身份和权限滥用&quot;。</li>
+</ul>
+</li>
+<li><strong>第二、三道线独立于第一道线。</strong><ul>
+<li>它们直接向 Owner 汇报，不接受幕僚长的调度。</li>
+<li>它们和被复核的人物不在同一个账号里。</li>
+</ul>
+</li>
+</ol>
+<h3 id="2-2-人物清单"><a class="anchor" href="#2-2-人物清单" aria-label="本节链接">#</a>2.2 人物清单</h3>
+<p>所有人物上线时都从 A0（影子运行）开始。下表最后一列&quot;目标&quot;是成熟后能达到的自主度，A0–A3 的含义见 8.3。</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>人物</th>
+<th>区</th>
+<th>主要职责</th>
+<th>关键工具（都经 Gateway）</th>
+<th>明确不能做</th>
+<th>目标</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>幕僚长AI</td>
+<td>核心</td>
+<td>拆目标、派工、盯 KPI、写日报和周报、整理审批包</td>
+<td>工作单读写、指标只读、内部报告</td>
+<td>授权、改规则、对外发信</td>
+<td>A2</td>
+</tr>
+<tr>
+<td>市场AI</td>
+<td>边缘</td>
+<td>写内容、做 SEO、在日预算内调广告</td>
+<td>CMS 草稿、发布提议、广告接口（有预算上限）、网页研究</td>
+<td>直接发布敏感话题；超预算</td>
+<td>A2</td>
+</tr>
+<tr>
+<td>获客AI</td>
+<td>边缘</td>
+<td>研究潜在客户、按批准模板外联、筛选线索、约会议</td>
+<td>CRM 线索、外联发信（专用子域名）、日历</td>
+<td>给 CRM 名单以外的人发信；给已退订的人发信</td>
+<td>A3（仅模板外联）</td>
+</tr>
+<tr>
+<td>前台AI</td>
+<td>边缘</td>
+<td>官网聊天、回答公开问题、转交线索</td>
+<td>公开知识检索、创建工作单</td>
+<td>报公开价以外的价格；承诺交付</td>
+<td>A2</td>
+</tr>
+<tr>
+<td>隔离读信员AI</td>
+<td>边缘</td>
+<td>把外部邮件和附件转成结构化字段</td>
+<td><strong>无</strong></td>
+<td>任何工具调用</td>
+<td>A3</td>
+</tr>
+<tr>
+<td>销售AI</td>
+<td>核心</td>
+<td>澄清需求、出方案、在价格带内报价和谈判</td>
+<td>知识检索、CRM、报价提议</td>
+<td>自己发出 R2 及以上的报价</td>
+<td>A2</td>
+</tr>
+<tr>
+<td>合同AI</td>
+<td>核心</td>
+<td>按标准模板生成合同、比对客户的改动</td>
+<td>模板库、合同提议</td>
+<td>接受任何非标条款</td>
+<td>A2（只限标准模板）</td>
+</tr>
+<tr>
+<td>项目AI</td>
+<td>核心</td>
+<td>排期、拆任务、跟进交付</td>
+<td>工作单、项目工具</td>
+<td>变更范围或价格</td>
+<td>A2</td>
+</tr>
+<tr>
+<td>生产AI ×N</td>
+<td>核心</td>
+<td>按业务线产出交付物</td>
+<td>交付工具、Code Interpreter（沙箱）、本客户知识</td>
+<td>读其他客户的资料</td>
+<td>A2</td>
+</tr>
+<tr>
+<td>质检AI</td>
+<td>核心</td>
+<td>按验收标准检查交付物，不合格就打回</td>
+<td>交付物只读、评分</td>
+<td>自己改交付物再自己放行</td>
+<td>A2</td>
+</tr>
+<tr>
+<td>客户成功AI</td>
+<td>核心</td>
+<td>支持、回访、续约提醒、增购建议</td>
+<td>CRM、知识检索、工单、退款提议</td>
+<td>直接退款；改合同</td>
+<td>A2</td>
+</tr>
+<tr>
+<td>财务AI</td>
+<td>核心</td>
+<td>开票、对账、催款、算销售税</td>
+<td>Stripe（受限密钥）、会计系统</td>
+<td>对外付款；改收款账户</td>
+<td>A2</td>
+</tr>
+<tr>
+<td>知识管理员AI</td>
+<td>核心</td>
+<td>维护知识库、找出过期和冲突的文档、提修改</td>
+<td>知识变更提议</td>
+<td>发布规则类知识（K3）</td>
+<td>A2</td>
+</tr>
+<tr>
+<td>复核官AI</td>
+<td>保障</td>
+<td>独立复核 R2 及以上动作，抽查 R1</td>
+<td>只读：出处、规则、提议</td>
+<td>修改提议；执行动作</td>
+<td>—</td>
+</tr>
+<tr>
+<td>合规官AI</td>
+<td>保障</td>
+<td>检查话术、AI 身份告知、退订和隐私请求；为放宽类变更写风险说明</td>
+<td>只读，外加合规台账写入</td>
+<td>批准自己写的说明</td>
+<td>—</td>
+</tr>
+<tr>
+<td>安全哨兵AI</td>
+<td>保障</td>
+<td>分诊告警，按剧本收紧控制</td>
+<td>熔断开关（<strong>只能收紧</strong>）</td>
+<td>放宽任何控制</td>
+<td>—</td>
+</tr>
+<tr>
+<td>内审AI</td>
+<td>保障</td>
+<td>抽样审计、写周报、提供复核官校准样本</td>
+<td>审计账本只读</td>
+<td>任何写操作</td>
+<td>—</td>
+</tr>
+</tbody></table>
+</div>
+<h3 id="2-3-一个人物-一组受治理的资源"><a class="anchor" href="#2-3-一个人物-一组受治理的资源" aria-label="本节链接">#</a>2.3 一个人物 = 一组受治理的资源</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>组成</th>
+<th>落在哪里</th>
+<th>谁能改</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>岗位说明书（人物卡，YAML）</td>
+<td>Git <code>personas/</code></td>
+<td>提 PR，由 Owner 批准</td>
+</tr>
+<tr>
+<td>运行体</td>
+<td>AgentCore Runtime 上的一个 Agent。版本不可变；<code>prod</code> 和 <code>canary</code> 两个命名端点（✅[A6]）</td>
+<td>只有发布流水线</td>
+</tr>
+<tr>
+<td>执行角色</td>
+<td>每个人物一个 IAM 角色，按资源限定权限，<strong>不用自动生成的默认角色</strong>（AgentCorruption 的根因，✅[A25]）</td>
+<td>只有发布流水线</td>
+</tr>
+<tr>
+<td>Gateway 身份</td>
+<td>平台账号 Cognito 里一个专属的应用客户端（客户端凭据模式）。它在 Cedar 里就是 <code>AgentCore::OAuthUser</code>（✅[A14]）</td>
+<td>只有发布流水线</td>
+</tr>
+<tr>
+<td>权限</td>
+<td>以这个人物为主体的 Cedar 策略</td>
+<td>PR + Owner 批准；放宽类有冷静期</td>
+</tr>
+<tr>
+<td>知识域</td>
+<td>能调用哪几个知识检索工具（一个知识域对应一个工具，见 6.3）</td>
+<td>PR + Owner 批准</td>
+</tr>
+<tr>
+<td>记忆</td>
+<td>AgentCore Memory 命名空间，用 IAM 条件键 <code>bedrock-agentcore:namespace</code> 限定每个人物能访问的前缀（✅[A18]）</td>
+<td>人物运行时写入，内审抽查</td>
+</tr>
+<tr>
+<td>模型</td>
+<td>锁定的模型 ID</td>
+<td>流水线 + 评估门禁</td>
+</tr>
+<tr>
+<td>护栏</td>
+<td>组织基线护栏 + 岗位护栏（见 9.3）</td>
+<td>流水线</td>
+</tr>
+<tr>
+<td>预算</td>
+<td>每天的 token 和金额上限；成本按 IAM 主体归到人物头上（✅[B9]）</td>
+<td>Owner</td>
+</tr>
+<tr>
+<td>考核</td>
+<td>评估集和 KPI</td>
+<td>Owner、内审AI</td>
+</tr>
+<tr>
+<td>登记</td>
+<td>AWS Agent Registry 里的一条记录。流程是草稿 → 待批准 → 已批准，关闭自动批准（✅[A19]）</td>
+<td>流水线提交，Owner 批准</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>原则：一个人物，一个身份，一份预算，从不共用凭据。</strong> 研究文档第8节记录过反例：Grok Bot 同一账号下的所有 bot 共用凭据。</p>
+<h3 id="2-4-owner-只做这些事"><a class="anchor" href="#2-4-owner-只做这些事" aria-label="本节链接">#</a>2.4 Owner 只做这些事</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>类别</th>
+<th>内容</th>
+<th>频率</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>法律和金融身份</td>
+<td>公司注册、EIN、银行、Stripe 实名、报税、保险（研究文档 9.9）</td>
+<td>一次性或每年</td>
+</tr>
+<tr>
+<td>定方向</td>
+<td>目标、预算、红线、授权矩阵阈值</td>
+<td>每季度</td>
+</tr>
+<tr>
+<td>审批</td>
+<td>R3 动作；放宽类规则变更；新增人物和工具；自主度晋升</td>
+<td>每天两个固定时段</td>
+</tr>
+<tr>
+<td>例外</td>
+<td>投诉、法律威胁、超限退款、复核两次不通过的事项</td>
+<td>按需</td>
+</tr>
+<tr>
+<td>监督</td>
+<td>读内审周报；每月给 20 条复核结论打标签，用来校准复核官</td>
+<td>每周约 30 分钟</td>
+</tr>
+<tr>
+<td>应急</td>
+<td>熔断；破窗（break-glass）操作</td>
+<td>按需</td>
+</tr>
+</tbody></table>
+</div>
+<h3 id="2-5-owner-不在时-单人连续性"><a class="anchor" href="#2-5-owner-不在时-单人连续性" aria-label="本节链接">#</a>2.5 Owner 不在时：单人连续性</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>模式</th>
+<th>触发条件</th>
+<th>系统行为</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>正常</td>
+<td>—</td>
+<td>按授权矩阵运行</td>
+</tr>
+<tr>
+<td>离开</td>
+<td>Owner 提前设置，例如出差 7 天以内</td>
+<td>R3 排队；客户收到&quot;预计某日答复&quot;；暂停新的外联活动；R0–R2 照常</td>
+</tr>
+<tr>
+<td>安全模式</td>
+<td>48 小时没有&quot;心跳&quot;（没有登录控制台，也没有回应）</td>
+<td>不签新合同；停止外联；所有对外动作都要人批；老客户的支持和交付继续；通知紧急联系人</td>
+</tr>
+<tr>
+<td>冻结</td>
+<td>Owner 或紧急联系人手动触发，或者发生严重安全事件</td>
+<td>所有对外动作暂停，只发自动答复</td>
+</tr>
+</tbody></table>
+</div>
+<ul>
+<li><strong>紧急联系人</strong>是可选的，由一位可信的人担任。<ul>
+<li>他只能看只读驾驶舱，只能按&quot;冻结&quot;。</li>
+<li><strong>他不能批准任何事。</strong></li>
+</ul>
+</li>
+<li><strong>公司运营协议</strong>里要写明 Owner 失能时谁有权处理公司事务（⚠️ 需要律师确认）。</li>
+</ul>
+<hr>
+<h2 id="3-总体架构"><a class="anchor" href="#3-总体架构" aria-label="本节链接">#</a>3. 总体架构</h2>
+<h3 id="3-1-逻辑分层"><a class="anchor" href="#3-1-逻辑分层" aria-label="本节链接">#</a>3.1 逻辑分层</h3>
+<div class="diagram"><pre class="mermaid">flowchart TB
+    subgraph CH[&quot;① 渠道&quot;]
+        direction LR
+        EM[&quot;📧 邮件&lt;br/&gt;SES 收发&quot;]:::chan
+        WEB[&quot;💬 官网聊天&lt;br/&gt;CloudFront + WAF&quot;]:::chan
+        WH[&quot;🔔 SaaS 回调&lt;br/&gt;Stripe · 电子签 · CRM&quot;]:::chan
+        OC[&quot;📱 Owner 控制台&lt;br/&gt;审批 · 驾驶舱 · 熔断&quot;]:::human
+    end
+
+    subgraph IN[&quot;② 入口与隔离区（agents-edge）&quot;]
+        direction LR
+        RAW[(&quot;原始内容 S3&lt;br/&gt;恶意软件扫描&quot;)]:::edge
+        INTAKE[&quot;隔离读信员AI&lt;br/&gt;只抽取结构化字段&quot;]:::edge
+    end
+
+    subgraph BB[&quot;③ 流程骨架（platform · 不跑 LLM）&quot;]
+        direction LR
+        SFN[&quot;Step Functions&lt;br/&gt;获客 → 成交 → 交付 → 续约&quot;]:::bb
+        WI[(&quot;工作单 · 审批记录&lt;br/&gt;DynamoDB&quot;)]:::bb
+        RISK[&quot;风险引擎&lt;br/&gt;R0–R4 分级&quot;]:::bb
+        EXE[&quot;执行器&lt;br/&gt;校验载荷哈希&quot;]:::bb
+    end
+
+    subgraph RT[&quot;④ AI 人物运行区（AgentCore Runtime · 每个会话一个 microVM）&quot;]
+        direction LR
+        EDGE[&quot;边缘区人物&lt;br/&gt;获客 · 市场 · 前台&quot;]:::edge
+        CORE[&quot;核心区人物&lt;br/&gt;幕僚长 · 销售 · 合同 · 交付 · 财务 · 客户成功&quot;]:::core
+        ASR[&quot;保障区人物&lt;br/&gt;复核 · 合规 · 哨兵 · 内审&quot;]:::assure
+    end
+
+    subgraph MD[&quot;⑤ 模型 · 护栏 · 记忆（各人物账号内）&quot;]
+        direction LR
+        FM[&quot;Bedrock 多模型&lt;br/&gt;Claude · Nova · 其他&quot;]:::model
+        GR[&quot;Guardrails&lt;br/&gt;组织基线 + 岗位护栏&quot;]:::model
+        MEM[(&quot;AgentCore Memory&lt;br/&gt;按租户 × 人物&quot;)]:::kn
+    end
+
+    subgraph CP[&quot;⑥ 唯一的门（platform）&quot;]
+        direction LR
+        GW[&quot;AgentCore Gateway&lt;br/&gt;JWT 入站 · 请求/响应拦截器&quot;]:::cp
+        POL[&quot;AgentCore Policy&lt;br/&gt;Cedar · 默认拒绝&quot;]:::cp
+        REG[&quot;Agent Registry&lt;br/&gt;人物 · 工具登记&quot;]:::cp
+    end
+
+    subgraph TL[&quot;⑦ 工具与知识（platform）&quot;]
+        direction LR
+        TOOLS[&quot;工具 Lambda&lt;br/&gt;报价 · 发信 · 退款 · 工作单&quot;]:::tool
+        SAAS[&quot;SaaS&lt;br/&gt;CRM · Stripe · 电子签&quot;]:::tool
+        KB[(&quot;Bedrock 托管知识库&lt;br/&gt;混合检索 + 重排&quot;)]:::kn
+    end
+
+    subgraph OB[&quot;⑧ 观测与审计（log-archive · security-tooling）&quot;]
+        direction LR
+        OTEL[&quot;OTEL → CloudWatch&quot;]:::obs
+        LEDGER[(&quot;审计账本&lt;br/&gt;S3 Object Lock&quot;)]:::obs
+    end
+
+    EM --&gt; RAW --&gt; INTAKE --&gt; SFN
+    WEB --&gt; EDGE
+    WH --&gt; SFN
+    SFN --- WI
+    SFN --&gt; RISK
+    SFN --&gt;|&quot;派工&quot;| RT
+    RT --&gt; FM
+    FM --- GR
+    RT ==&gt;|&quot;所有工具和知识调用&quot;| GW
+    GW --&gt; POL
+    GW --&gt; TOOLS &amp; KB
+    TOOLS --&gt; SAAS
+    EXE ==&gt;|&quot;R2 及以上由执行器调用&quot;| GW
+    OC --- SFN
+    CORE --- MEM
+    GW -.-&gt; LEDGER
+    SFN -.-&gt; LEDGER
+    RT -.-&gt; OTEL
+
+    classDef chan fill:#ede7f6,stroke:#5e35b1,color:#311b92,stroke-width:2px;
+    classDef human fill:#fff3e0,stroke:#e65100,color:#bf360c,stroke-width:3px;
+    classDef edge fill:#fce4ec,stroke:#ad1457,color:#880e4f,stroke-width:2px;
+    classDef core fill:#e3f2fd,stroke:#1565c0,color:#0d47a1,stroke-width:2px;
+    classDef assure fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20,stroke-width:2px;
+    classDef bb fill:#fffde7,stroke:#f9a825,color:#f57f17,stroke-width:2px;
+    classDef model fill:#e0f7fa,stroke:#00838f,color:#006064,stroke-width:2px;
+    classDef cp fill:#ffebee,stroke:#c62828,color:#b71c1c,stroke-width:3px;
+    classDef tool fill:#f3e5f5,stroke:#6a1b9a,color:#4a148c,stroke-width:2px;
+    classDef kn fill:#e8eaf6,stroke:#283593,color:#1a237e,stroke-width:2px;
+    classDef obs fill:#eceff1,stroke:#455a64,color:#263238,stroke-width:2px;</pre></div>
+<p><strong>&quot;一扇门&quot;原则只有一个例外：记忆。</strong> 人物读写自己的 AgentCore Memory 时直接调用 API，不经过 Gateway。它能访问的命名空间前缀由执行角色上的 IAM 条件键限定（✅[A18]）。</p>
+<h3 id="3-2-各层职责"><a class="anchor" href="#3-2-各层职责" aria-label="本节链接">#</a>3.2 各层职责</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>层</th>
+<th>组件</th>
+<th>职责</th>
+<th>将来能换成</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>① 渠道</td>
+<td>SES 收发信；CloudFront + WAF；API Gateway 接回调；Owner 控制台</td>
+<td>进出公司的所有通道</td>
+<td>其他邮件服务、聊天组件</td>
+</tr>
+<tr>
+<td>② 入口与隔离</td>
+<td>原始内容 S3；GuardDuty S3 恶意软件防护（✅[S4]）；隔离读信员AI</td>
+<td>把不可信内容变成结构化数据</td>
+<td>—</td>
+</tr>
+<tr>
+<td>③ 流程骨架</td>
+<td>Step Functions、DynamoDB、EventBridge、风险引擎、审批服务、执行器</td>
+<td>决定流程顺序、审批和执行；<strong>不跑 LLM</strong></td>
+<td>Temporal</td>
+</tr>
+<tr>
+<td>④ 人物运行</td>
+<td>AgentCore Runtime，分布在边缘、核心、保障三个账号</td>
+<td>判断、起草、提议</td>
+<td>其他容器平台，框架不变</td>
+</tr>
+<tr>
+<td>⑤ 模型、护栏、记忆</td>
+<td>Bedrock 模型；Guardrails；AgentCore Memory</td>
+<td>推理、内容安全、互动记忆</td>
+<td>其他模型（ApplyGuardrail 可用于任何模型，✅[B6]）</td>
+</tr>
+<tr>
+<td>⑥ 控制面</td>
+<td>Gateway、Policy、Identity、Agent Registry</td>
+<td>唯一的门：认证、授权、登记</td>
+<td>自建 MCP 网关 + Cedar/OPA</td>
+</tr>
+<tr>
+<td>⑦ 工具与知识</td>
+<td>工具 Lambda；SaaS（MCP/OpenAPI 目标）；托管知识库；Browser 和 Code Interpreter（沙箱）</td>
+<td>真正改变外部世界的动作；公司知识</td>
+<td>换 SaaS 只需要换 Gateway 目标</td>
+</tr>
+<tr>
+<td>⑧ 观测与审计</td>
+<td>OTEL → CloudWatch；审计账本；Security Hub</td>
+<td>回放、追责、告警</td>
+<td>Langfuse 等兼容 OTEL 的工具</td>
+</tr>
+</tbody></table>
+</div>
+<h3 id="3-3-流程为骨-ai-为肉"><a class="anchor" href="#3-3-流程为骨-ai-为肉" aria-label="本节链接">#</a>3.3 流程为骨，AI 为肉</h3>
+<p>这是研究文档 10.1 的核心原则，在 AWS 上这样落地：</p>
+<ol>
+<li><strong>主干流程写成 Step Functions 状态机。</strong><ul>
+<li>状态只能按图走，AI 跳不过任何一步。</li>
+<li>每一道&quot;闸&quot;都是状态机里的一个节点。</li>
+</ul>
+</li>
+<li><strong>AI 只在判断点干活</strong>：写邮件、判断意向、出方案、检查交付物。</li>
+<li><strong>长周期任务分段执行。</strong><ul>
+<li>一次成交、一次交付、一次续约，各是一次独立的执行，用 CRM 记录 ID 串起来。</li>
+<li>原因是标准工作流单次最长 1 年（✅[S1]）。</li>
+<li>等待审批时用 <code>.waitForTaskToken</code> 挂起；标准工作流按状态转换计费，等待期间不产生转换。</li>
+</ul>
+</li>
+</ol>
+<div class="diagram"><pre class="mermaid">flowchart LR
+    L[&quot;线索&quot;]:::auto
+    Q[&quot;合格线索&quot;]:::auto
+    M[&quot;约会议&quot;]:::auto
+    P[&quot;方案&quot;]:::ai
+    QT[&quot;报价&quot;]:::ai
+    RV{&quot;复核官AI&quot;}:::ai
+    HO{&quot;Owner 审批&quot;}:::human
+    CT[&quot;合同&quot;]:::ai
+    HO2{&quot;Owner 审批&quot;}:::human
+    SG[&quot;电子签&quot;]:::auto
+    INV[&quot;开票 · 收款&quot;]:::auto
+    DL[&quot;交付&quot;]:::ai
+    QC[&quot;质检&quot;]:::ai
+    HO3{&quot;Owner&quot;}:::human
+    AC[&quot;客户验收&quot;]:::auto
+    FU[&quot;回访 · 续约&quot;]:::ai
+
+    L --&gt; Q --&gt; M --&gt; P --&gt; QT
+    QT --&gt;|&quot;折扣不超过10%&quot;| CT
+    QT --&gt;|&quot;折扣10%–20%&quot;| RV --&gt; CT
+    QT --&gt;|&quot;折扣超过20%&quot;| HO --&gt; CT
+    CT --&gt;|&quot;标准模板 · 低于 $5k&quot;| SG
+    CT --&gt;|&quot;非标条款或超额&quot;| HO2 --&gt; SG
+    SG --&gt; INV --&gt; DL --&gt; QC --&gt; AC --&gt; FU
+    QC --&gt;|&quot;两次不通过&quot;| HO3
+
+    classDef auto fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20,stroke-width:2px;
+    classDef ai fill:#e3f2fd,stroke:#1565c0,color:#0d47a1,stroke-width:2px;
+    classDef human fill:#fff3e0,stroke:#e65100,color:#bf360c,stroke-width:3px;</pre></div>
+<p><strong>图例</strong>：绿色是确定性步骤或自动步骤；蓝色是 AI 判断；橙色是人工审批。金额和折扣阈值是示例，见 7.3。</p>
+<h3 id="3-4-一张工作单的跨账号路径"><a class="anchor" href="#3-4-一张工作单的跨账号路径" aria-label="本节链接">#</a>3.4 一张工作单的跨账号路径</h3>
+<div class="diagram"><pre class="mermaid">sequenceDiagram
+    autonumber
+    participant SF as 流程骨架&lt;br/&gt;(platform)
+    participant DSP as 派工 Lambda&lt;br/&gt;(agents-core)
+    participant P as 销售AI&lt;br/&gt;(Runtime microVM)
+    participant GW as Gateway + 拦截器&lt;br/&gt;(platform)
+    participant POL as Policy (Cedar)
+    participant T as 工具 Lambda&lt;br/&gt;(platform)
+
+    SF-&gt;&gt;SF: 保存任务令牌（不外发）· 签发工作单令牌
+    SF-&gt;&gt;DSP: EventBridge 跨账号事件（工作单 + 工作单令牌）
+    DSP-&gt;&gt;P: InvokeAgentRuntime（prod 或 canary 端点）
+    P-&gt;&gt;GW: MCP 工具调用 · 人物 JWT · 工作单令牌放在请求头
+    GW-&gt;&gt;GW: 请求拦截器验令牌 · 用令牌里的租户覆盖参数
+    GW-&gt;&gt;POL: 主体=人物 · 动作=工具 · context.input=参数
+    POL--&gt;&gt;GW: 允许
+    GW-&gt;&gt;T: 调用工具
+    T--&gt;&gt;GW: 结果
+    GW--&gt;&gt;P: 响应拦截器检测提示词攻击 · 写审计 · 标为不可信数据
+    P-&gt;&gt;GW: workitem___submit（结构化产物）
+    GW-&gt;&gt;T: 校验 JSON Schema
+    T-&gt;&gt;SF: SendTaskSuccess（由平台代发）</pre></div>
+<p><strong>每一步的要点</strong></p>
+<ol>
+<li><strong>骨架签发令牌</strong>（平台账号）。<ul>
+<li>工作单令牌是短期的，用 KMS 非对称密钥签名，里面有工作单 ID、租户 ID、人物 ID 和风险上限。</li>
+<li>Step Functions 的任务令牌只存在平台账号的 DynamoDB 里，<strong>永远不交给人物</strong>，所以人物伪造不了流程推进。</li>
+</ul>
+</li>
+<li><strong>派工和路由</strong>。<ul>
+<li>派工 Lambda 用 IAM 身份调用人物的 Runtime，并按比例在 <code>prod</code> 和 <code>canary</code> 两个端点之间分流。Runtime 本身没有原生的金丝雀发布（✅[A6]）。</li>
+<li>会话 ID 由工作单派生。AgentCore 不负责把用户和会话绑定起来（✅[A3]），这件事要自己做。</li>
+</ul>
+</li>
+<li><strong>令牌对模型不可见</strong>。<ul>
+<li>人物外壳代码把工作单令牌放进 Gateway 请求头，模型看不到它，也改不了它。Gateway 拦截器能读到请求头（需要开启 <code>passRequestHeaders</code>，✅[A12]）。</li>
+<li>人物调用 Gateway 用的 JWT，通过 AgentCore Identity 的客户端凭据获取。凭据的访问权按工作负载身份限定（✅[A17]）。</li>
+</ul>
+</li>
+<li><strong>请求拦截器</strong>（每个 Gateway 最多一个请求拦截器和一个响应拦截器，✅[A12]）负责三件事：<ul>
+<li>校验工作单令牌的签名、有效期，以及令牌里的人物是否就是 JWT 的主体。</li>
+<li><strong>用令牌里的租户 ID 覆盖参数里的租户</strong>。原则是&quot;租户上下文来自流程，不来自模型&quot;。</li>
+<li>对执行器的调用，核对审批记录。</li>
+<li>AWS 在 2026-11-12 的博客里推荐同样的做法：在拦截器里注入经过验证的身份，再叠加 Cedar 策略（✅[B4]）。</li>
+<li>拦截器和 Policy 谁先执行，⚠️ 需要实测确认。设计上两者各自独立都能拦住越权调用。</li>
+</ul>
+</li>
+<li><strong>响应拦截器</strong>处理外部来源的工具结果（网页、邮件、客户文档、知识片段）：<ul>
+<li>用 <code>InvokeGuardrailChecks</code> 给提示词攻击打分（✅[B16]），分数高就截断，并标记为可疑。</li>
+<li>原因是 Guardrails 的提示词攻击过滤<strong>不扫描工具结果</strong>，也不作用于知识库检索出的片段（✅[B6][B5]）。</li>
+</ul>
+</li>
+<li><strong>交回结果</strong>：人物调用 <code>workitem___submit</code>，平台校验 JSON Schema 后代为执行 <code>SendTaskSuccess</code>。</li>
+</ol>
+<hr>
+<h2 id="4-aws-账号-网络与预防性护栏"><a class="anchor" href="#4-aws-账号-网络与预防性护栏" aria-label="本节链接">#</a>4. AWS 账号、网络与预防性护栏</h2>
+<h3 id="4-1-账号结构"><a class="anchor" href="#4-1-账号结构" aria-label="本节链接">#</a>4.1 账号结构</h3>
+<div class="diagram"><pre class="mermaid">flowchart TB
+    subgraph ORG[&quot;AWS Organizations：SCP · RCP · Bedrock 策略（组织级护栏）&quot;]
+        MGMT[&quot;mgmt 管理账号&lt;br/&gt;Organizations · Identity Center · 账单&lt;br/&gt;组织级 Guardrail 定义（AWS 要求放在这里）&quot;]:::mgmt
+
+        subgraph SEC[&quot;Security OU&quot;]
+            direction LR
+            LOG[&quot;log-archive&lt;br/&gt;组织 CloudTrail · 审计账本 · 模型调用日志&lt;br/&gt;Object Lock 合规模式&quot;]:::sec
+            SECT[&quot;security-tooling&lt;br/&gt;GuardDuty · Security Hub · Config · Access Analyzer&quot;]:::sec
+        end
+
+        subgraph PLATOU[&quot;Platform OU · 不跑任何 LLM 人物&quot;]
+            PLAT[&quot;platform&lt;br/&gt;Gateway + Policy + Identity 凭据 + Registry&lt;br/&gt;工具 Lambda · 流程骨架 · 审批 · 执行器 · 知识库&quot;]:::plat
+        end
+
+        subgraph WL[&quot;Workloads OU · AI 人物（Runtime VPC 模式 · 没有 NAT）&quot;]
+            direction LR
+            EDGEA[&quot;agents-edge&lt;br/&gt;接触原始外部内容&lt;br/&gt;只有低风险工具&quot;]:::edge
+            COREA[&quot;agents-core&lt;br/&gt;业务人物&lt;br/&gt;只收结构化工作单&quot;]:::core
+            ASRA[&quot;agents-assurance&lt;br/&gt;复核 · 合规 · 哨兵 · 内审&quot;]:::assure
+        end
+
+        subgraph STGOU[&quot;Staging OU&quot;]
+            STG[&quot;staging&lt;br/&gt;影子运行 · 评估 · 红队 · 合成数据&quot;]:::stage
+        end
+    end
+
+    WL ==&gt;|&quot;MCP over HTTPS · 人物 JWT&quot;| PLAT
+    PLAT --&gt;|&quot;EventBridge 派工&quot;| WL
+    WL -.-&gt;|&quot;日志 · 追踪 · 审计事件&quot;| LOG
+    PLAT -.-&gt;|&quot;日志 · 审计事件&quot;| LOG
+    WL -.-&gt;|&quot;安全发现&quot;| SECT
+    PLAT -.-&gt;|&quot;安全发现&quot;| SECT
+
+    classDef mgmt fill:#eceff1,stroke:#37474f,color:#263238,stroke-width:2px;
+    classDef sec fill:#ede7f6,stroke:#4527a0,color:#311b92,stroke-width:2px;
+    classDef plat fill:#ffebee,stroke:#c62828,color:#b71c1c,stroke-width:3px;
+    classDef edge fill:#fce4ec,stroke:#ad1457,color:#880e4f,stroke-width:2px;
+    classDef core fill:#e3f2fd,stroke:#1565c0,color:#0d47a1,stroke-width:2px;
+    classDef assure fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20,stroke-width:2px;
+    classDef stage fill:#fffde7,stroke:#f9a825,color:#f57f17,stroke-width:2px;</pre></div>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>账号</th>
+<th>OU</th>
+<th>放什么</th>
+<th>刻意不放什么</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>mgmt</td>
+<td>Root</td>
+<td>Organizations、IAM Identity Center、账单、SCP/RCP/Bedrock 策略，以及<strong>组织级 Guardrail 定义</strong></td>
+<td>任何业务工作负载</td>
+<td>组织级护栏强制要求 Guardrail 放在管理账号（✅[B7]），这是唯一的例外</td>
+</tr>
+<tr>
+<td>log-archive</td>
+<td>Security</td>
+<td>组织 CloudTrail、Config 记录、审计账本、模型调用日志副本</td>
+<td>任何能删日志的角色</td>
+<td>防篡改</td>
+</tr>
+<tr>
+<td>security-tooling</td>
+<td>Security</td>
+<td>GuardDuty、Security Hub、Config 汇总、Access Analyzer（都是委派管理员）</td>
+<td>业务数据</td>
+<td>安全视图独立于业务</td>
+</tr>
+<tr>
+<td>platform</td>
+<td>Platform</td>
+<td>Gateway、Policy、Identity 凭据、Registry、工具 Lambda、密钥、流程骨架、审批服务、执行器、知识库</td>
+<td><strong>任何 LLM 人物</strong></td>
+<td>控制面不会被提示词注入直接打到</td>
+</tr>
+<tr>
+<td>agents-edge</td>
+<td>Workloads</td>
+<td>接触原始外部内容的人物；邮件入口；官网聊天后端</td>
+<td>机密数据、高风险工具</td>
+<td>最容易被注入，所以权限最小</td>
+</tr>
+<tr>
+<td>agents-core</td>
+<td>Workloads</td>
+<td>业务人物</td>
+<td>原始外部内容（只收结构化工作单）、密钥</td>
+<td>有业务工具，但高风险动作要经过执行器</td>
+</tr>
+<tr>
+<td>agents-assurance</td>
+<td>Workloads</td>
+<td>复核官、合规官、哨兵、内审</td>
+<td>任何能写业务数据的工具</td>
+<td><strong>复核者和被复核者不在同一个账号</strong></td>
+</tr>
+<tr>
+<td>staging</td>
+<td>Staging</td>
+<td>影子运行、评估、红队、合成数据</td>
+<td>真实客户数据</td>
+<td>上线前验证</td>
+</tr>
+</tbody></table>
+</div>
+<ul>
+<li><strong>可以晚点拆的</strong>：知识库第一阶段放在 platform 账号。客户资料多了，再单独拆一个 knowledge 账号。</li>
+<li><strong>不建议合并的</strong>：platform 和三个人物账号。它们是防 AgentCorruption 这类同账号横向接管的主要防线。</li>
+<li><strong>账号本身不收费</strong>。增加的是每个账号的基线服务费用，见第12节。</li>
+</ul>
+<h3 id="4-2-组织级护栏"><a class="anchor" href="#4-2-组织级护栏" aria-label="本节链接">#</a>4.2 组织级护栏</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>编号</th>
+<th>类型</th>
+<th>作用范围</th>
+<th>规则</th>
+<th>防什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>G-01</td>
+<td>SCP</td>
+<td>全部</td>
+<td>区域白名单：us-east-1、us-west-2。us-east-2 只放行经过批准的 US 推理配置文件的 Bedrock 调用（用 <code>bedrock:InferenceProfileArn</code> 豁免）。<strong>不放行 <code>unspecified</code></strong>，等于禁用全球跨区推理，数据不出美国（✅[B10]）</td>
+<td>数据出境、影子资源</td>
+</tr>
+<tr>
+<td>G-02</td>
+<td>Bedrock 策略</td>
+<td>Workloads OU</td>
+<td>- 组织基线 Guardrail 强制作用于所有模型调用（策略类型 <code>BEDROCK_POLICY</code>）。组织、账号、请求三级护栏同时生效，以最严的为准（✅[B7]）<br>- 第二层：人物执行角色加 <code>bedrock:GuardrailIdentifier</code> 条件，调用时必须带上本岗位的护栏（✅[B8]）</td>
+<td>绕过护栏</td>
+</tr>
+<tr>
+<td>G-03</td>
+<td>SCP</td>
+<td>Workloads OU</td>
+<td>只允许调用白名单里的模型和 US 推理配置文件</td>
+<td>私自换模型</td>
+</tr>
+<tr>
+<td>G-04</td>
+<td>SCP</td>
+<td>Workloads OU</td>
+<td>禁用 <code>bedrock-mantle</code> 端点，强制走 <code>bedrock-runtime</code>。原因是 mantle 端点不支持 Guardrails 和调用日志（✅[B17]；用 SCP 禁用这一做法是 💡）</td>
+<td>护栏和日志的盲区</td>
+</tr>
+<tr>
+<td>G-05</td>
+<td>SCP</td>
+<td>Workloads OU</td>
+<td>用 <code>bedrock:DataRetentionMode</code> 限定允许的数据保留模式（✅[B11]；具体作用于哪些 API ⚠️ 待确认）</td>
+<td>客户数据被保留、被人工审阅</td>
+</tr>
+<tr>
+<td>G-06</td>
+<td>SCP</td>
+<td>全部</td>
+<td>禁止关闭或删除 CloudTrail、Config、GuardDuty、Bedrock 调用日志配置和日志桶（流水线角色除外）</td>
+<td>销毁证据</td>
+</tr>
+<tr>
+<td>G-07</td>
+<td>SCP</td>
+<td>platform</td>
+<td>禁止修改或删除 Gateway、Gateway 目标、拦截器、策略引擎和策略（流水线角色除外）。原因是任何有 <code>UpdateGateway</code> 权限的人都能把 Policy 切到 LOG_ONLY，或者直接摘掉策略引擎（✅[A15]）</td>
+<td>悄悄关掉授权</td>
+</tr>
+<tr>
+<td>G-08</td>
+<td>SCP</td>
+<td>三个人物账号</td>
+<td>禁止 IAM 写操作、Organizations 操作和 AgentCore 控制面变更（流水线角色除外）；只有派工角色能调用 <code>InvokeAgentRuntime</code>。直接调用 Runtime 会绕过 Policy（✅[A7]）</td>
+<td>人物自我提权；人物之间互相调用（AgentCorruption 的攻击链）</td>
+</tr>
+<tr>
+<td>G-09</td>
+<td>SCP</td>
+<td>三个人物账号</td>
+<td>人物执行角色的凭据<strong>只能在 Runtime 内使用</strong>：请求里缺少 <code>aws:AgentCoreRuntimeSourceArn</code> 就拒绝（条件键存在 ✅[A3]；能否这样用 ⚠️ 待实测）</td>
+<td>凭据被偷出去在外面用</td>
+</tr>
+<tr>
+<td>G-10</td>
+<td>SCP</td>
+<td>全部</td>
+<td>禁止 root 操作。启用集中式 root 访问管理；新建的成员账号本来就没有 root 凭据（✅[S3]）</td>
+<td>根账号被盗</td>
+</tr>
+<tr>
+<td>G-11</td>
+<td>SCP</td>
+<td>platform、agents-core、agents-assurance</td>
+<td>禁止创建互联网网关和公开的 Lambda URL；禁止关闭 S3 公共访问阻止</td>
+<td>意外暴露</td>
+</tr>
+<tr>
+<td>G-12</td>
+<td>RCP</td>
+<td>全部</td>
+<td>S3、KMS、Secrets Manager、DynamoDB、SQS、ECR、CloudWatch Logs、STS 只接受本组织主体访问。RCP 不支持 Bedrock、AgentCore、Lambda、Step Functions 和 SES（✅[S2]），这些靠资源策略和 SCP</td>
+<td>数据流到外部账号</td>
+</tr>
+<tr>
+<td>G-13</td>
+<td>预算动作</td>
+<td>Workloads OU</td>
+<td>月预算用到 120% 时，自动挂一条拒绝模型调用和 Runtime 调用的 SCP。这是 AWS 推荐的 Bedrock 花费封顶做法（✅[B9]）</td>
+<td>成本失控（拒绝钱包攻击）</td>
+</tr>
+</tbody></table>
+</div>
+<p>样例写法见 <code>bedrock-reference-artifacts.md</code>。</p>
+<p><strong>G-01 的细节</strong></p>
+<ul>
+<li>US 地理推理配置文件从 us-east-1、us-east-2、us-west-2 发起时，会路由到这三个区域。只要有一个目标区域被 SCP 拒绝，请求就会失败（✅[B10]）。</li>
+<li>全球推理配置文件大约便宜 10%（✅[B10]），但请求可能落到美国以外的区域。本设计<strong>用成本换数据驻留</strong>，要放开需要 Owner 决定。</li>
+</ul>
+<h3 id="4-3-网络"><a class="anchor" href="#4-3-网络" aria-label="本节链接">#</a>4.3 网络</h3>
+<ul>
+<li><strong>人物没有直接外网。</strong><ul>
+<li>三个人物账号的 Runtime 都用 VPC 模式，放在私有子网，不配 NAT（✅[A5]）。</li>
+<li>它们只通过接口端点访问 AWS：<ul>
+<li>ECR（api、dkr）和 S3（网关端点）：无外网的 VPC 必须有这三个（✅[A5]）。</li>
+<li><code>bedrock-runtime</code>。</li>
+<li><code>bedrock-agentcore</code>：数据面，含 Memory 和 Identity。</li>
+<li><code>bedrock-agentcore.gateway</code>（✅[A22]）。</li>
+<li>CloudWatch Logs、STS。</li>
+</ul>
+</li>
+<li>就算人物被注入了指令，也没有通道把数据发到攻击者的服务器。</li>
+<li>注意：VPC 里的任何代码都能读到执行角色的凭据，和网络模式无关（✅[A7]）。所以凭据本身也要防，见 G-09 和 9.2。</li>
+</ul>
+</li>
+<li><strong>唯一的外部出口在平台账号的工具层。</strong><ul>
+<li>工具 Lambda 通过 NAT 出网，配 Route 53 Resolver DNS 防火墙，只放行白名单里的 SaaS 域名（CRM、Stripe、电子签等）。</li>
+<li>第二阶段可以再加 AWS Network Firewall，但每个可用区每月约 $290 起（📚），要权衡成本。</li>
+</ul>
+</li>
+<li><strong>网页研究</strong>只给边缘区人物，用 AgentCore Browser 的隔离会话（PUBLIC 网络模式，✅[A23]）。边缘区人物手里没有机密数据，被诱导访问恶意网址也带不走什么。</li>
+<li><strong>代码执行</strong>只在 Code Interpreter 的 SANDBOX 模式下进行，外部访问受限（✅[A23]）。<strong>人物不配通用的 shell 和 HTTP 工具</strong>，这是 AgentCorruption 的直接入口（✅[A25]）。</li>
+<li><strong>接口端点费用</strong>：每个端点每个可用区每小时 $0.01（✅[S6]），约合每月 $7.3。<ul>
+<li>3 个人物账号 × 约 7 个端点 × 2 个可用区，每月约 $300。</li>
+<li>想省钱有两个办法：<ul>
+<li>staging 只用 1 个可用区。</li>
+<li>用 RAM 共享 VPC 集中端点（⚠️ 待确认 AgentCore VPC 模式是否支持共享子网）。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>端点策略的限制</strong>：接口端点策略只能约束 IAM 主体，用 OAuth 认证的调用方只能写 <code>Principal: *</code>（✅[A22]）。所以 Gateway 的访问控制主要靠 JWT 和 Policy，不靠端点策略。</li>
+</ul>
+<h3 id="4-4-暴露级别"><a class="anchor" href="#4-4-暴露级别" aria-label="本节链接">#</a>4.4 暴露级别</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>组件</th>
+<th>暴露级别</th>
+<th>入口保护</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>官网聊天 API</td>
+<td>公网</td>
+<td>CloudFront + WAF（频率限制、机器人防护）+ API Gateway；会话只连到前台AI</td>
+</tr>
+<tr>
+<td>收信（MX）</td>
+<td>公网（AWS 托管）</td>
+<td>SES 收信规则 → S3（us-east-1 和 us-west-2 都支持收信，✅[S5]）；SPF、DKIM、DMARC 的校验结果随邮件保存</td>
+</tr>
+<tr>
+<td>SaaS 回调</td>
+<td>公网（只给合作方）</td>
+<td>API Gateway + WAF + <strong>校验 HMAC 签名</strong>（Stripe、电子签）</td>
+</tr>
+<tr>
+<td>Owner 控制台</td>
+<td>公网（只给一个人）</td>
+<td>CloudFront + Cognito 通行密钥（passkey）（📚）</td>
+</tr>
+<tr>
+<td>Gateway</td>
+<td>AWS 服务端点</td>
+<td>人物 JWT 入站认证 + Policy + 拦截器校验工作单令牌；人物从 VPC 内经接口端点访问</td>
+</tr>
+<tr>
+<td>其他所有组件</td>
+<td>私有</td>
+<td>没有公网入口</td>
+</tr>
+</tbody></table>
+</div>
+<hr>
+<h2 id="5-ai-人物运行设计-agentcore"><a class="anchor" href="#5-ai-人物运行设计-agentcore" aria-label="本节链接">#</a>5. AI 人物运行设计（AgentCore）</h2>
+<h3 id="5-1-运行方式选型"><a class="anchor" href="#5-1-运行方式选型" aria-label="本节链接">#</a>5.1 运行方式选型</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>方式</th>
+<th>是什么</th>
+<th>本设计怎么用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>AgentCore Runtime + 自己的代码</strong></td>
+<td>自己的 ARM64 容器（放 ECR）或直接部署代码；框架任选（✅[A3][A8]）</td>
+<td><strong>默认</strong>：所有人物共用一个用 Strands 写的&quot;人物运行时&quot;镜像，每个人物只是配置不同</td>
+</tr>
+<tr>
+<td>AgentCore Harness</td>
+<td>托管的 Agent 循环，基于 Strands。用配置定义模型、提示词、工具、技能、记忆和上限；跑在 Runtime 里，不单独收费；有生命周期钩子，可以挂一个 Lambda 来做放行或拒绝（✅[A8]）</td>
+<td>第二阶段用来把简单人物&quot;配置化&quot;，前提是两件事：<br>1. 确认它调用 Gateway 时能带上工作单令牌（⚠️）。<br>2. <strong>只允许 Bedrock 做模型提供方</strong>。它也支持 OpenAI、Gemini 和兼容接口，但那样数据会离开 AWS，护栏和日志也覆盖不到</td>
+</tr>
+<tr>
+<td>经典 Bedrock Agents</td>
+<td>—</td>
+<td>不用：可控性和可移植性都不如前两种</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>共用镜像的外壳代码</strong></p>
+<p>下面这些是每个人物都必须有的，写在外壳代码里，不交给提示词：</p>
+<ol>
+<li><strong>处理工作单令牌</strong>：<ul>
+<li>校验令牌，并且不让它进入模型上下文。</li>
+<li>把它放进每一次 Gateway 调用的请求头。</li>
+<li>用它派生会话 ID 和记忆命名空间。</li>
+</ul>
+</li>
+<li><strong>预算熔断</strong>：<ul>
+<li>每次调用的 token 上限。</li>
+<li>每次会话的工具调用次数上限，防止死循环。</li>
+<li>会话最长存活时间。Runtime 允许在 60 到 28,800 秒之间配置（✅[A4]）。</li>
+<li>每天的预算上限。</li>
+</ul>
+</li>
+<li><strong>标记不可信内容</strong>：<ul>
+<li>把外部原文放进 Converse 的 <code>guardContent</code> 块；用 InvokeModel 时套上随机后缀的标签。</li>
+<li><strong>没有标记，提示词攻击过滤就不生效</strong>（✅[B6]）。</li>
+</ul>
+</li>
+<li><strong>结构化输出</strong>：用 JSON Schema 校验，失败最多重试 2 次，然后升级。</li>
+<li><strong>可观测性</strong>：<ul>
+<li>用 OpenTelemetry 打点。</li>
+<li>通过 Bedrock 的 <code>requestMetadata</code> 带上人物 ID 和工作单 ID，让调用日志能和其他记录关联起来（✅[B12]）。</li>
+</ul>
+</li>
+<li><strong>只给 Gateway 上的工具</strong>：<ul>
+<li>不配 Strands 自带的 <code>shell</code>、<code>http_request</code> 这类通用工具。</li>
+<li>生产AI另外可以用 Code Interpreter 沙箱。</li>
+</ul>
+</li>
+</ol>
+<h3 id="5-2-提示词分层"><a class="anchor" href="#5-2-提示词分层" aria-label="本节链接">#</a>5.2 提示词分层</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>层</th>
+<th>内容</th>
+<th>来源</th>
+<th>人物能不能改</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1 公司宪章</td>
+<td>红线、诚实、AI 身份告知、不冒充真人</td>
+<td>Git，所有人物共用</td>
+<td>不能</td>
+</tr>
+<tr>
+<td>2 岗位卡</td>
+<td>使命、KPI、边界、升级规则</td>
+<td>Git <code>personas/</code></td>
+<td>不能</td>
+</tr>
+<tr>
+<td>3 手册片段</td>
+<td>话术、SOP</td>
+<td>知识库实时检索</td>
+<td>不能</td>
+</tr>
+<tr>
+<td>4 任务上下文</td>
+<td>工作单、CRM 记录</td>
+<td>骨架和工具</td>
+<td>不能</td>
+</tr>
+<tr>
+<td>5 外部原文</td>
+<td>客户邮件原文等</td>
+<td>隔离区</td>
+<td>只当数据用，不当指令执行</td>
+</tr>
+</tbody></table>
+</div>
+<ul>
+<li><strong>第1、2层对每个人物是固定的，适合做提示词缓存。</strong><ul>
+<li>以 Claude Fable 5.2 为例，缓存读取每百万 token $0.20，正常输入是 $8（✅[B22]）。</li>
+<li>缓存最少 512 个 token，有效期可以选 5 分钟或 1 小时。</li>
+</ul>
+</li>
+<li><strong>人物不能修改自己的提示词和规则。</strong> 想沉淀经验，走第8节的变更流程，不靠记忆&quot;自我进化&quot;。</li>
+</ul>
+<h3 id="5-3-协作-用工作单-不聊天"><a class="anchor" href="#5-3-协作-用工作单-不聊天" aria-label="本节链接">#</a>5.3 协作：用工作单，不聊天</h3>
+<ul>
+<li><strong>人物之间不直接对话</strong>，而是通过工作单交接。<ul>
+<li>工作单是带 JSON Schema 的结构化产物，存在骨架里。</li>
+<li>幕僚长AI创建和分派工作单。每次交接都是状态机里的一次状态转换。</li>
+</ul>
+</li>
+<li><strong>第一阶段不开 A2A</strong>，虽然 Runtime 支持它（✅[A3]）。<ul>
+<li>以后如果要开，只开只读的咨询类调用，而且同样经过 Gateway 和 Policy。</li>
+</ul>
+</li>
+<li><strong>好处</strong>：<ul>
+<li>每次交接都有记录、有格式。</li>
+<li>错误不会在人物之间口口相传。这对应 OWASP 的两项风险：&quot;错误连锁扩散&quot;和&quot;不安全的 Agent 间通信&quot;。</li>
+</ul>
+</li>
+</ul>
+<h3 id="5-4-模型策略"><a class="anchor" href="#5-4-模型策略" aria-label="本节链接">#</a>5.4 模型策略</h3>
+<p>候选模型都已在 Bedrock 上核实（✅[B17][B14]）。价格是全球推理配置文件的每百万 token 输入/输出价；本设计用 US 地理配置文件，大约贵 10%（✅[B10]）。</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>档位</th>
+<th>用在哪里</th>
+<th>候选模型和价格</th>
+<th>注意</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>旗舰档</td>
+<td>最难的判断，例如复杂方案</td>
+<td>Claude Fable 5.2：$8 / $40</td>
+<td>它<strong>强制使用 <code>aws_review</code> 数据保留模式</strong>：所有流量保留 30 天，被标记的流量可能被 AWS 人工审阅（✅[B11]）。只用于不含客户机密数据的任务</td>
+</tr>
+<tr>
+<td>推理档</td>
+<td>幕僚长、合同、复核官</td>
+<td>Claude Opus 5.5：$4 / $20</td>
+<td>—</td>
+</tr>
+<tr>
+<td>主力档</td>
+<td>起草、客服、项目管理</td>
+<td>Claude Sonnet 5.5：$2 / $10</td>
+<td>—</td>
+</tr>
+<tr>
+<td>经济档</td>
+<td>分类、抽取（隔离读信员）、路由</td>
+<td>Claude Haiku 5.5：$0.10 / $0.50<br>Amazon Nova Micro：$0.035 / $0.14<br>Nova Lite：$0.06 / $0.24</td>
+<td>—</td>
+</tr>
+<tr>
+<td>复核档</td>
+<td>复核官，<strong>必须和制作者用不同的模型家族</strong></td>
+<td>制作者用 Claude 时，复核者从 Amazon Nova、OpenAI GPT-6.1 Sol（$2 / $10）或 gpt-oss 里选</td>
+<td>必须走 <code>bedrock-runtime</code> 端点，确保护栏和调用日志都覆盖得到。GPT-6 Luna 的模型卡写明 mantle 端点不支持这两项（✅[B17]），其他型号 ⚠️ 要逐个确认</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>规则</strong></p>
+<ol>
+<li><strong>锁定模型 ID</strong>，用 <code>us.</code> 前缀的地理推理配置文件。<ul>
+<li>升级模型属于&quot;放宽&quot;类变更：先跑完全部评估集，再做金丝雀发布。</li>
+</ul>
+</li>
+<li><strong>数据保留模式是选模型的硬条件。</strong><ul>
+<li>处理客户机密数据（K4）的人物，只用允许 <code>none</code>（零数据保留）的模型。</li>
+<li>如果要用 <code>aws_review</code> 模式的模型，就必须在隐私政策和数据处理协议里披露。</li>
+<li>每个模型允许的保留模式要在上线前逐个确认（⚠️）。</li>
+</ul>
+</li>
+<li><strong>成本归到人物</strong>：每个人物有独立的 IAM 角色，用 CUR 2.0 按 IAM 主体统计，再配 AWS Budgets 的拒绝动作。这是 AWS 推荐的做法，可以避免给每个人物建应用推理配置文件、造成配置文件泛滥（✅[B9]）。</li>
+<li><strong>降级模型</strong>：每个人物配一个降级模型。主模型不可用时降级，或者进入安全模式。</li>
+<li><strong>不用 Intelligent Prompt Routing</strong>：它只支持 Nova Lite、Nova Pro 和 Llama（✅[B14]），覆盖不了本设计的主力模型。</li>
+</ol>
+<h3 id="5-5-会话-记忆与租户隔离"><a class="anchor" href="#5-5-会话-记忆与租户隔离" aria-label="本节链接">#</a>5.5 会话、记忆与租户隔离</h3>
+<p><strong>会话</strong></p>
+<ul>
+<li>一次会话对应&quot;一个租户的一张工作单&quot;。</li>
+<li>Runtime 给每个会话一台独立的 microVM，会话结束后销毁，内存清零（✅[A3]）。</li>
+</ul>
+<p><strong>记忆的设置</strong></p>
+<ul>
+<li><strong>每个人物账号一个 Memory 存储。</strong></li>
+<li><strong>策略</strong>：<ul>
+<li>启用&quot;摘要&quot;和&quot;用户偏好&quot;两种长期策略。</li>
+<li><strong>不启用&quot;情节&quot;（episodic）策略</strong>。经验沉淀走治理流程，不让人物悄悄学习（✅[A18]）。</li>
+</ul>
+</li>
+<li><strong>命名空间</strong>：<ul>
+<li>格式是 <code>/tenant/{tenantId}/persona/{actorId}/</code>，其中 <code>tenantId</code> 是自定义命名空间键，最多可以有 5 个（✅[A18]）。</li>
+<li>外壳代码从工作单令牌里取出 <code>tenantId</code>，模型指定不了。</li>
+<li>执行角色用 IAM 条件键 <code>bedrock-agentcore:namespacePath</code> 限定，人物只能访问带有自己 persona 段的路径。</li>
+</ul>
+</li>
+<li><strong>保留期</strong>：<ul>
+<li>短期事件 30 天（最长可以设 365 天）。</li>
+<li>长期记录 365 天（最短 31 天）（✅[A18]）。</li>
+</ul>
+</li>
+</ul>
+<p><strong>隐私删除和事实来源</strong></p>
+<ul>
+<li><strong>删除要做全</strong>：<code>DeleteEvent</code> 不会删除从事件里提取出来的长期记录（✅[A18]）。所以隐私删除流程必须对这个租户的命名空间执行 <code>BatchDeleteMemoryRecords</code>。</li>
+<li><strong>CRM 是客户事实的唯一来源。</strong> 记忆只存互动摘要和偏好，不存价格、合同状态这类事实；这些要用时去 CRM 实时查。</li>
+</ul>
+<h3 id="5-6-发布与版本"><a class="anchor" href="#5-6-发布与版本" aria-label="本节链接">#</a>5.6 发布与版本</h3>
+<ul>
+<li><strong>版本和端点</strong>：Runtime 的版本不可变。<code>prod</code> 和 <code>canary</code> 是两个命名端点，需要手动切换指向（✅[A6]）。</li>
+<li><strong>金丝雀发布</strong>：派工 Lambda 按比例分流，例如 10% 的工作单发给 <code>canary</code>。</li>
+<li><strong>发布流程</strong>：<ol>
+<li>预发环境跑完评估集。</li>
+<li>金丝雀发布，在线评估抽样打分（见 8.4）。</li>
+<li>指标达标后，把 <code>prod</code> 指向新版本。</li>
+<li>回滚时把 <code>prod</code> 指回旧版本，几秒钟就能完成。</li>
+</ol>
+</li>
+<li><strong>依赖版本</strong>：<ul>
+<li>AgentCore SDK、CLI 和 Strands 都锁定在 2026 年各个 CVE 修复之后的版本（✅[A26]）。其中 CVE-2026-15737 的问题是旧版 SDK 把原始提示词写进了追踪数据。</li>
+<li>生产环境<strong>不用 Starter Toolkit</strong>，它有代码注入和 SSRF 漏洞（CVE-2026-105812、CVE-2026-106032）。一律用 IaC 部署。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="6-rag-知识层"><a class="anchor" href="#6-rag-知识层" aria-label="本节链接">#</a>6. RAG 知识层</h2>
+<h3 id="6-1-知识分域"><a class="anchor" href="#6-1-知识分域" aria-label="本节链接">#</a>6.1 知识分域</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>域</th>
+<th>内容举例</th>
+<th>分级</th>
+<th>谁能读</th>
+<th>怎么更新</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>K1 公开知识</td>
+<td>服务目录、公开价格、FAQ、已获授权的案例</td>
+<td>公开</td>
+<td>所有人物</td>
+<td>知识管理员提议 → 复核官AI → 自动发布，并抽查</td>
+</tr>
+<tr>
+<td>K2 运营知识</td>
+<td>SOP、话术、异议处理、交付标准、品牌语气</td>
+<td>内部</td>
+<td>按岗位</td>
+<td>知识管理员提议 → Owner 批量批准</td>
+</tr>
+<tr>
+<td>K3 规则知识</td>
+<td>定价规则、折扣带、条款手册、退款政策、红线</td>
+<td>机密</td>
+<td>销售、合同、财务、复核、合规</td>
+<td><strong>只有 Owner 能改</strong>，而且由阈值文件自动生成（见下文）</td>
+</tr>
+<tr>
+<td>K4 客户知识</td>
+<td>客户提供的资料、需求、会议纪要、交付物</td>
+<td>客户机密</td>
+<td>只有正在处理该客户工作单的人物</td>
+<td>入库流水线按租户打标签</td>
+</tr>
+<tr>
+<td>K5 治理知识</td>
+<td>AI 政策、法规摘要、<strong>已批准的宣传用语库</strong></td>
+<td>内部</td>
+<td>复核、合规、内审；业务人物只能读用语库</td>
+<td>Owner、合规官AI</td>
+</tr>
+<tr>
+<td>不入库：业务数据</td>
+<td>CRM、订单、发票、签约状态</td>
+<td>—</td>
+<td>用工具实时查</td>
+<td>—</td>
+</tr>
+<tr>
+<td>不入库：记忆</td>
+<td>互动摘要、偏好</td>
+<td>—</td>
+<td>AgentCore Memory（见 5.5）</td>
+<td>—</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>阈值只定义一次。</strong></p>
+<ul>
+<li>折扣上限、合同金额、退款额度这些数字，只写在 <code>thresholds.yaml</code> 一个文件里。</li>
+<li>流水线用它生成三样东西，所以它们永远不会互相矛盾：<ol>
+<li>Cedar 策略里的常量。</li>
+<li>风险引擎的配置。</li>
+<li>K3 里给人物读的说明文档。</li>
+</ol>
+</li>
+<li>分工是：<strong>RAG 告诉 AI 规则是什么，Policy 决定 AI 能不能做。</strong></li>
+</ul>
+<h3 id="6-2-架构"><a class="anchor" href="#6-2-架构" aria-label="本节链接">#</a>6.2 架构</h3>
+<div class="diagram"><pre class="mermaid">flowchart LR
+    subgraph SRC[&quot;来源&quot;]
+        direction TB
+        S1[&quot;公司文档&lt;br/&gt;SOP · 话术 · 案例&quot;]:::src
+        S2[&quot;thresholds.yaml&lt;br/&gt;阈值唯一来源&quot;]:::src
+        S3[&quot;客户资料&lt;br/&gt;附件 · 需求 · 交付物&quot;]:::src
+    end
+
+    subgraph PIPE[&quot;入库流水线（Step Functions · platform）&quot;]
+        direction TB
+        C1[&quot;① 恶意软件扫描&quot;]:::pipe
+        C2[&quot;② PII 识别 · 定分级&quot;]:::pipe
+        C3[&quot;③ 注入扫描&lt;br/&gt;InvokeGuardrailChecks + 隐藏文字检查&quot;]:::pipe
+        C4[&quot;④ 打元数据&lt;br/&gt;域 · 分级 · 租户 · 版本 · 生效日 · 状态&quot;]:::pipe
+        C5{&quot;⑤ 按域审批&quot;}:::gate
+        C6[&quot;⑥ 发布到 curated/ · 同步知识库&quot;]:::pipe
+        C7[&quot;⑦ 检索回归评估&quot;]:::pipe
+        C1 --&gt; C2 --&gt; C3 --&gt; C4 --&gt; C5 --&gt; C6 --&gt; C7
+    end
+
+    subgraph IDX[&quot;托管知识库（platform）&quot;]
+        direction TB
+        KB1[(&quot;KB-公司&lt;br/&gt;K1 公开 · K2 运营&quot;)]:::kb
+        KB2[(&quot;KB-规则与治理&lt;br/&gt;K3 · K5&quot;)]:::kb
+        KB3[(&quot;KB-客户&lt;br/&gt;K4 · 按租户元数据&quot;)]:::kb
+    end
+
+    subgraph RET[&quot;检索路径&quot;]
+        direction TB
+        P[&quot;AI 人物&quot;]:::persona
+        G[&quot;Gateway&lt;br/&gt;人物 JWT 认证&quot;]:::cp
+        I[&quot;拦截器 + Policy&lt;br/&gt;按令牌注入租户和分级过滤&lt;br/&gt;人物 × 知识工具授权&quot;]:::cp
+        L[&quot;检索工具 Lambda&lt;br/&gt;Retrieve · 逐条复核元数据 · 带出处返回&quot;]:::cp
+        P --&gt; G --&gt; I --&gt; L
+    end
+
+    S1 &amp; S2 &amp; S3 --&gt; C1
+    C6 --&gt; KB1 &amp; KB2 &amp; KB3
+    L --&gt; KB1 &amp; KB2 &amp; KB3
+
+    classDef src fill:#eceff1,stroke:#546e7a,color:#263238,stroke-width:1px;
+    classDef pipe fill:#fffde7,stroke:#f9a825,color:#f57f17,stroke-width:2px;
+    classDef gate fill:#fff3e0,stroke:#e65100,color:#bf360c,stroke-width:3px;
+    classDef kb fill:#e8eaf6,stroke:#283593,color:#1a237e,stroke-width:2px;
+    classDef persona fill:#e3f2fd,stroke:#1565c0,color:#0d47a1,stroke-width:2px;
+    classDef cp fill:#ffebee,stroke:#c62828,color:#b71c1c,stroke-width:2px;</pre></div>
+<h3 id="6-3-关键决策"><a class="anchor" href="#6-3-关键决策" aria-label="本节链接">#</a>6.3 关键决策</h3>
+<p><strong>1. 知识库类型：用 Bedrock 托管知识库。</strong></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>选项</th>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>托管知识库（默认）</strong></td>
+<td>AWS 现在推荐的类型（✅[B1]）。<br>- 永远是混合检索（关键词 + 语义）。<br>- 内置解析、托管嵌入、托管重排都免费。<br>- 价格：索引每 GB 每月 $5，检索每千次 $1（✅[B3][B14]）。<br>- 不用运维向量库，最适合一人公司</td>
+<td>- 切分只支持默认、固定大小、不切分三种。<br>- 元数据过滤不支持 <code>startsWith</code> 和 <code>stringContains</code>（✅[B3]）</td>
+</tr>
+<tr>
+<td>自管知识库 + Aurora PostgreSQL（pgvector）</td>
+<td>支持混合检索；切分方式更多（分层、语义）</td>
+<td>要运维数据库</td>
+</tr>
+<tr>
+<td>自管知识库 + OpenSearch Serverless</td>
+<td>支持混合检索</td>
+<td>有最低容量费用</td>
+</tr>
+<tr>
+<td>自管知识库 + S3 Vectors</td>
+<td>最便宜，2025年12月已 GA（✅[S7]）</td>
+<td>在知识库里<strong>只能做语义检索</strong>；元数据最多 1 KB、35 个键（✅[B2][B3]）</td>
+</tr>
+</tbody></table>
+</div>
+<p>托管知识库的切分和过滤限制，对第一年的语料规模（几 GB）没有实质影响。真遇到瓶颈，再换成 Aurora pgvector：入库流水线和检索工具的接口不变。</p>
+<p><strong>2. 三个知识库，一个知识库对应一个检索工具。</strong></p>
+<ul>
+<li>三个检索工具：<code>knowledge___search_company</code>、<code>knowledge___search_governance</code>、<code>knowledge___search_customer</code>。</li>
+<li>这样 Cedar 在&quot;动作&quot;这一层就能管住&quot;哪个人物能查哪个知识域&quot;，不需要解析参数。</li>
+</ul>
+<p><strong>3. 只检索，不让知识库代为生成。</strong></p>
+<ul>
+<li>检索工具调用 <code>Retrieve</code> 接口，返回分数和出处，人物引用时要用。<ul>
+<li>11月9日新增的&quot;只检索模式&quot;属于 AgenticRetrieveStream，它返回的片段<strong>不带分数和出处</strong>（✅[B20]），所以不用它做业务检索。</li>
+</ul>
+</li>
+<li>由人物自己生成回答，再用 Guardrails 的上下文溯源检查核对回答和片段是否一致（✅[B6]）。</li>
+<li>单次 RAG 和 agentic 检索（每千次 $4 加底层检索费，✅[B14]）可以留给 Owner 的研究问答。</li>
+</ul>
+<p><strong>4. 租户隔离（四层）。</strong></p>
+<ol>
+<li><strong>服务端注入过滤条件。</strong> 拦截器从工作单令牌里取出租户 ID，注入元数据过滤条件，模型指定不了租户。<ul>
+<li>AWS 的说法是：元数据过滤是&quot;关键的安全边界&quot;，必须由应用代码每次都加上。</li>
+<li>AWS 在 2026-11-12 的博客里明确说：不要让 LLM 选择用户；要在 Gateway 拦截器里注入经过验证的身份，再叠加 Cedar 策略（✅[B4]）。</li>
+<li>托管知识库自带的&quot;按访问权限检索&quot;（<code>userContext</code>）<strong>不算授权机制</strong>，不能依赖它（✅[B4]）。</li>
+</ul>
+</li>
+<li><strong>返回前逐条复核。</strong> 检索工具检查每个片段的 <code>tenantId</code> 和分级；有任何不符就整批丢弃，并且告警（失败即关闭）。</li>
+<li><strong>每周做跨租户探测。</strong> 用 A 客户的令牌去查 B 客户才有的内容，泄漏率必须是 0。</li>
+<li><strong>合同要求更强隔离的客户，单独一个知识库</strong>（或者一个独立的向量索引）。AWS 也建议受监管的场景按租户分索引（✅[B4]）。</li>
+</ol>
+<p><strong>5. 检索结果也是不可信的。</strong></p>
+<ul>
+<li>Guardrails <strong>不作用于检索出来的知识库片段</strong>（✅[B5]）。</li>
+<li>防线有三道：<ol>
+<li>入库时做注入扫描（6.4 第③步）。</li>
+<li>响应拦截器给片段打提示词攻击分数（3.4）。</li>
+<li>人物把片段放进 <code>guardContent</code>，当作数据而不是指令。</li>
+</ol>
+</li>
+</ul>
+<p><strong>6. 检索质量。</strong></p>
+<ul>
+<li>混合检索 + 托管重排。</li>
+<li>分数低于阈值时宁可回答&quot;不知道&quot;，然后升级。</li>
+<li>对客户说的每一条事实都要带出处，复核官会核对。</li>
+</ul>
+<p><strong>7. 新鲜度。</strong></p>
+<ul>
+<li>每份文档都带版本、生效日期和状态元数据。</li>
+<li>检索时固定加上 <code>status = active</code> 过滤。</li>
+<li>知识管理员AI每周出一份&quot;过期、冲突文档&quot;报告。</li>
+</ul>
+<p><strong>8. 人和 AI 共用一套知识。</strong></p>
+<ul>
+<li>AWS Quick 可以直接接 Bedrock 知识库（研究文档 5.8 ✅）。</li>
+<li>Owner 想用对话方式查公司知识时可以选配它，不用再建一套。</li>
+</ul>
+<h3 id="6-4-入库流水线"><a class="anchor" href="#6-4-入库流水线" aria-label="本节链接">#</a>6.4 入库流水线</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>做什么</th>
+<th>用什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>① 扫描</td>
+<td>恶意软件扫描</td>
+<td>GuardDuty S3 恶意软件防护（✅[S4]）</td>
+</tr>
+<tr>
+<td>② PII 和分级</td>
+<td>识别个人信息，确定分级，必要时遮盖</td>
+<td>Amazon Macie（📚）</td>
+</tr>
+<tr>
+<td>③ 注入扫描</td>
+<td>按段打提示词攻击分数；检查隐藏文字：白色字、零宽字符、HTML 注释、&quot;忽略之前的指令&quot;一类的句式</td>
+<td><code>InvokeGuardrailChecks</code>（只检测，按分数判断，✅[B16]）+ 自写规则</td>
+</tr>
+<tr>
+<td>④ 元数据</td>
+<td>写入域、分级、租户、版本、生效日、状态、负责人、来源</td>
+<td>S3 元数据附属文件</td>
+</tr>
+<tr>
+<td>⑤ 审批</td>
+<td>按域走不同的审批：<br>- K1：自动 + 抽查<br>- K2：Owner 批量批准<br>- K3：只能由阈值文件生成，再经 Owner 批准<br>- K4：扫描通过即可<br>- K5：Owner 或合规官AI</td>
+<td>Step Functions + 审批服务</td>
+</tr>
+<tr>
+<td>⑥ 发布</td>
+<td>写入 <code>curated/</code> 前缀，触发知识库同步</td>
+<td>知识库数据源同步</td>
+</tr>
+<tr>
+<td>⑦ 回归评估</td>
+<td>用标准题检查召回和溯源有没有退步</td>
+<td>见 6.5</td>
+</tr>
+</tbody></table>
+</div>
+<p>注入扫描命中的文档进入隔离区，人工确认后才能入库。客户发来的文档也一样，这是防&quot;记忆和上下文投毒&quot;的入口关。</p>
+<h3 id="6-5-rag-评估"><a class="anchor" href="#6-5-rag-评估" aria-label="本节链接">#</a>6.5 RAG 评估</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>指标</th>
+<th>含义</th>
+<th>门槛（💡）</th>
+<th>频率</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>召回率</td>
+<td>标准问题集中，正确片段出现在前 k 条的比例</td>
+<td>≥ 90%</td>
+<td>每次知识变更 + 每周</td>
+</tr>
+<tr>
+<td>溯源率</td>
+<td>回答里的事实都能在片段中找到</td>
+<td>≥ 95%</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>引用准确率</td>
+<td>引用的出处确实支撑这个说法</td>
+<td>≥ 95%</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>拒答正确率</td>
+<td>知识库里没有答案时，能回答&quot;不知道&quot;</td>
+<td>≥ 90%</td>
+<td>每周</td>
+</tr>
+<tr>
+<td>跨租户泄漏</td>
+<td>用 A 客户的令牌检索到 B 客户的内容</td>
+<td><strong>0</strong></td>
+<td>每周 + 每次权限变更</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>工具</strong></p>
+<ul>
+<li>Bedrock 的知识库评估任务：支持&quot;只检索&quot;和&quot;检索加生成&quot;两种，用 LLM 当评委，每个任务最多 1,000 条提示，也可以评估自己生成的 RAG 结果（✅[B19]）。</li>
+<li>AgentCore Evaluations 的内置评估器，例如 Faithfulness、Correctness（✅[A20]）。</li>
+</ul>
+<p><strong>金丝雀文档</strong>：在知识库里埋几份内容独特的蜜罐文档。它们一旦出现在对外内容里，说明发生了越权检索或数据外泄，立即告警。</p>
+<hr>
+<h2 id="7-审核体系"><a class="anchor" href="#7-审核体系" aria-label="本节链接">#</a>7. 审核体系</h2>
+<h3 id="7-1-审核的四种含义"><a class="anchor" href="#7-1-审核的四种含义" aria-label="本节链接">#</a>7.1 &quot;审核&quot;的四种含义</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>什么时候</th>
+<th>谁来做</th>
+<th>用什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>执行前审批</td>
+<td>动作执行之前</td>
+<td>风险引擎、复核官AI、Owner</td>
+<td>Step Functions（<code>.waitForTaskToken</code>，✅[S1]）+ 审批服务 + Cedar</td>
+</tr>
+<tr>
+<td>内容审核</td>
+<td>模型输入、输出时，以及工具执行前</td>
+<td>Guardrails</td>
+<td>内容过滤（含提示词攻击）、屏蔽话题、敏感信息、上下文溯源、自动推理检查（✅[B6]）</td>
+</tr>
+<tr>
+<td>质量审核</td>
+<td>交付物完成后</td>
+<td>质检AI（做的人和查的人分开）</td>
+<td>验收标准评分表</td>
+</tr>
+<tr>
+<td>事后审计</td>
+<td>每天、每周</td>
+<td>内审AI、Owner、外部律师和 CPA</td>
+<td>审计账本、抽样</td>
+</tr>
+</tbody></table>
+</div>
+<h3 id="7-2-动作风险分级"><a class="anchor" href="#7-2-动作风险分级" aria-label="本节链接">#</a>7.2 动作风险分级</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>等级</th>
+<th>定义</th>
+<th>例子</th>
+<th>默认处理</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>R0</td>
+<td>只读，或者只写内部草稿</td>
+<td>查知识、读 CRM、写内部备忘</td>
+<td>直接执行</td>
+</tr>
+<tr>
+<td>R1</td>
+<td>对外，但风险低、能撤回、在模板范围内</td>
+<td>模板内的跟进邮件、FAQ 回复、约会议</td>
+<td>人物直接调用工具。工具内部会做 Cedar 参数检查和 Guardrails 检查，另抽查 5%</td>
+</tr>
+<tr>
+<td>R2</td>
+<td>对外，有一定影响</td>
+<td>定制方案、10–20% 的折扣、新的外联序列、公开发布内容</td>
+<td>人物只能&quot;提议&quot;；先过复核官AI，再由执行器执行</td>
+</tr>
+<tr>
+<td>R3</td>
+<td>影响大或不可撤回</td>
+<td>非标合同条款、超额退款、改价目表、回应法律威胁、对外付款</td>
+<td>复核官AI + <strong>Owner 批准</strong>，再由执行器执行</td>
+</tr>
+<tr>
+<td>R4</td>
+<td>禁止</td>
+<td>冒充真人、承认法律责任、修改自己的权限、向新收款方付款、删除审计记录</td>
+<td><strong>Cedar 直接拒绝。</strong> forbid 优先于任何 permit（✅[A13]），所以连 Owner 批准也不行；只能走冷静期修改规则</td>
+</tr>
+</tbody></table>
+</div>
+<h3 id="7-3-授权矩阵-示例阈值"><a class="anchor" href="#7-3-授权矩阵-示例阈值" aria-label="本节链接">#</a>7.3 授权矩阵（示例阈值）</h3>
+<p>阈值沿用研究文档第4节，需要 Owner 确认，最终写入 <code>thresholds.yaml</code>。</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>动作</th>
+<th>AI 直接做</th>
+<th>AI 做 + AI 复核</th>
+<th>要 Owner 批准</th>
+<th>禁止</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>报价折扣</td>
+<td>≤ 10%</td>
+<td>10–20%</td>
+<td>20–40%</td>
+<td>&gt; 40%</td>
+</tr>
+<tr>
+<td>合同</td>
+<td>标准模板，且金额 &lt; $5k</td>
+<td>标准模板，$5k–$25k</td>
+<td>任何非标条款；金额 &gt; $25k</td>
+<td>无限责任、独家条款</td>
+</tr>
+<tr>
+<td>退款</td>
+<td>—</td>
+<td>≤ $200</td>
+<td>$200–$2,000</td>
+<td>&gt; $2,000：只能由 Owner 在 Stripe 后台手工处理</td>
+</tr>
+<tr>
+<td>外联邮件</td>
+<td>已批准的模板</td>
+<td>新模板、新序列</td>
+<td>新的目标行业或新渠道</td>
+<td>发给退订名单里的人，或发给不在 CRM 里的人</td>
+</tr>
+<tr>
+<td>公开内容</td>
+<td>—</td>
+<td>常规博客、社交媒体</td>
+<td>敏感话题、和竞品对比</td>
+<td>未经授权的客户案例</td>
+</tr>
+<tr>
+<td>广告预算</td>
+<td>日预算以内的调整</td>
+<td>预算以内的新广告组</td>
+<td>提高预算</td>
+<td>—</td>
+</tr>
+<tr>
+<td>付款</td>
+<td>—</td>
+<td>—</td>
+<td>已登记供应商的账单</td>
+<td>付给新收款方（登记新收款方要走冷静期）</td>
+</tr>
+<tr>
+<td>数据删除请求</td>
+<td>—</td>
+<td>合规官AI核对申请人身份</td>
+<td>执行删除</td>
+<td>—</td>
+</tr>
+</tbody></table>
+</div>
+<h3 id="7-4-四道闸"><a class="anchor" href="#7-4-四道闸" aria-label="本节链接">#</a>7.4 四道闸</h3>
+<p>R2 及以上的动作走&quot;提议&quot;路径，如下图。R0 和 R1 由人物直接调用工具，但闸 2 和闸 3 同样在工具侧执行。</p>
+<div class="diagram"><pre class="mermaid">flowchart TB
+    A[&quot;AI 人物提出动作&lt;br/&gt;工具 · 参数 · 理由 · 出处&quot;]:::persona
+    G1[&quot;闸 1 · 自检（人物外壳）&lt;br/&gt;Schema · 岗位清单&quot;]:::g
+    G2[&quot;闸 2 · 规则（platform · 确定性）&lt;br/&gt;能否提议 · 定 R 等级 · 额度和频率&quot;]:::g
+    G3[&quot;闸 3 · 护栏（platform）&lt;br/&gt;PII · 屏蔽话题 · 溯源 · 自动推理检查&quot;]:::g
+    G4[&quot;闸 4 · 独立复核（agents-assurance）&lt;br/&gt;不同账号 · 不同模型家族 · 看原始出处&quot;]:::g
+    H{&quot;是 R3 吗？&quot;}:::gate
+    OWN[&quot;Owner 审批&lt;br/&gt;批准 · 修改后批准 · 驳回&quot;]:::human
+    EX[&quot;执行器（platform）&lt;br/&gt;载荷哈希必须等于批准时的哈希&quot;]:::exec
+    POL[&quot;Gateway Policy 终检&lt;br/&gt;执行器身份 · 硬上限&quot;]:::exec
+    LOG[(&quot;审计账本&quot;)]:::log
+    REJ[&quot;退回 · 升级&quot;]:::rej
+    DENY[&quot;R4：直接拒绝&quot;]:::rej
+
+    A --&gt; G1 --&gt; G2
+    G2 --&gt;|&quot;R4&quot;| DENY
+    G2 --&gt;|&quot;R2 / R3&quot;| G3 --&gt; G4 --&gt; H
+    H --&gt;|&quot;否（R2）&quot;| EX
+    H --&gt;|&quot;是&quot;| OWN --&gt; EX
+    EX --&gt; POL --&gt; LOG
+    G1 &amp; G3 &amp; G4 -.-&gt;|&quot;不通过&quot;| REJ
+
+    classDef persona fill:#e3f2fd,stroke:#1565c0,color:#0d47a1,stroke-width:2px;
+    classDef g fill:#fffde7,stroke:#f9a825,color:#f57f17,stroke-width:2px;
+    classDef gate fill:#fff3e0,stroke:#e65100,color:#bf360c,stroke-width:2px;
+    classDef human fill:#fff3e0,stroke:#e65100,color:#bf360c,stroke-width:3px;
+    classDef exec fill:#ffebee,stroke:#c62828,color:#b71c1c,stroke-width:3px;
+    classDef log fill:#eceff1,stroke:#455a64,color:#263238,stroke-width:2px;
+    classDef rej fill:#fafafa,stroke:#9e9e9e,color:#424242,stroke-width:1px,stroke-dasharray:4 3;</pre></div>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>闸</th>
+<th>谁来查</th>
+<th>查什么</th>
+<th>不通过时</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1 自检</td>
+<td>人物外壳代码</td>
+<td>输出符合 Schema；岗位清单逐项打勾，例如&quot;有出处吗？&quot;&quot;有 AI 身份说明吗？&quot;</td>
+<td>最多重试 2 次，然后升级</td>
+</tr>
+<tr>
+<td>2 规则</td>
+<td>风险引擎 + Cedar（确定性）</td>
+<td>这个人物能不能提议这个动作；算出 R 等级；检查额度和频率</td>
+<td>R4 直接拒绝；超过频率就排队</td>
+</tr>
+<tr>
+<td>3 护栏</td>
+<td>Guardrails（Standard 档，✅[B21]）</td>
+<td>- 敏感信息、屏蔽话题、内容过滤<br>- 回答和出处是否一致（上下文溯源）<br>- 关于价格、退款的说法是否符合写成逻辑规则的政策（自动推理检查）</td>
+<td>拦截并记录</td>
+</tr>
+<tr>
+<td>4 复核</td>
+<td>复核官AI</td>
+<td>按评分表逐项检查：<br>- 事实和出处是否一致<br>- 承诺是否在授权范围内<br>- 语气是否符合品牌<br>- 有没有误导性宣传（是否出自已批准的用语库）</td>
+<td>驳回并附理由；驳回两次就升级给 Owner</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>自动推理检查有局限</strong>：它只检测、不拦截，只支持美式英语，不支持流式输出，也防不了提示词注入（✅[B15]）。所以它只用来核对对外的英文价格和政策类表述，不能当作安全防线。</p>
+<p><strong>复核官的独立性要满足五条，缺一不可</strong></p>
+<ol>
+<li>和制作者不在同一个账号（<code>agents-assurance</code>）。</li>
+<li>和制作者用不同的模型家族。</li>
+<li>直接看原始出处和规则，不只听制作者的说法。</li>
+<li>制作者交过来的内容只当&quot;数据&quot;处理；复核官的指令只来自它自己的岗位卡和评分表。</li>
+<li>每月由 Owner 给 20 条复核结论打标签，做校准。复核官和 Owner 的一致率低于 95% 时，复核官本身要整改。</li>
+</ol>
+<h3 id="7-5-ai-提议-系统执行"><a class="anchor" href="#7-5-ai-提议-系统执行" aria-label="本节链接">#</a>7.5 AI 提议、系统执行</h3>
+<ul>
+<li><strong>人物在 Cedar 里根本没有高风险工具的权限。</strong> R2 及以上的工具（发送报价、发起合同、退款、公开发布、付款）只有执行器能调用。人物只能调用 <code>action___propose</code>。</li>
+<li><strong>执行器的流程</strong>（执行器是平台账号里的确定性代码）：<ol>
+<li>审批记录里保存：载荷的 SHA-256 哈希、批准人、规则版本、过期时间、&quot;只能用一次&quot;的标记。</li>
+<li>执行器调用工具前重新计算载荷哈希，必须和审批记录一致。</li>
+<li>请求拦截器再核对一次审批记录。</li>
+<li>Gateway 的 Policy 做最后一道检查：调用者是不是执行器；金额有没有超过硬上限。</li>
+</ol>
+</li>
+<li><strong>可选的第二把锁：Dogwood 时序策略</strong>（✅[A16]）。<ul>
+<li>规则是：执行器在同一个策略会话里，1 小时之内先调用过 <code>approval___verify</code>，返回结果是&quot;已批准&quot;，而且审批 ID 一致，才放行 <code>refund___process</code>。</li>
+<li>前提条件是：请求带上策略会话 ID 头，而且调用方和 Gateway 在同一个账号、同一个区域。执行器和 Gateway 都在平台账号，满足条件。</li>
+<li>写法见样例文件。</li>
+</ul>
+</li>
+<li><strong>好处</strong>：<ul>
+<li>不会出现&quot;批的是 A，做的是 B&quot;，也就是检查时和执行时不一致的问题。</li>
+<li>人物就算被注入了指令，也够不着高风险工具。</li>
+</ul>
+</li>
+</ul>
+<h3 id="7-6-owner-的审批体验"><a class="anchor" href="#7-6-owner-的审批体验" aria-label="本节链接">#</a>7.6 Owner 的审批体验</h3>
+<ul>
+<li><strong>审批卡片包含</strong>：<ul>
+<li>要做什么：原文，以及和模板的差异。</li>
+<li>为什么做：理由和出处链接。</li>
+<li>风险等级。</li>
+<li>复核官的意见。</li>
+<li>能不能撤回。</li>
+<li>要花多少钱。</li>
+<li>什么时候过期。</li>
+</ul>
+</li>
+<li><strong>按钮</strong>：批准、修改后批准、驳回，以及&quot;批准并提议改规则&quot;。最后一个会生成一个规则变更 PR，以后同类事情就不用再批。</li>
+<li><strong>节奏</strong>：<ul>
+<li>每天两个固定时段批量处理，例如 9:00 和 16:00。</li>
+<li>只有阻塞客户的 R3 才实时推送，推送内容里不放敏感信息。</li>
+</ul>
+</li>
+<li><strong>过期</strong>：72 小时没处理就自动驳回，同时告诉客户&quot;需要更多时间&quot;。<strong>永远不会默认放行。</strong></li>
+<li><strong>防审批疲劳</strong>：<ul>
+<li>统计每一类审批的通过率和平均用时。</li>
+<li>某一类连续 200 次以上、通过率超过 98% 时，系统会提议降低这类事项的审批级别。这个提议本身也要走变更流程。</li>
+<li>平均审批用时少于 5 秒时，提醒 Owner&quot;可能在走过场&quot;。</li>
+</ul>
+</li>
+<li><strong>渠道安全</strong>：<ul>
+<li>只能在登录后的控制台里审批，登录要用通行密钥。</li>
+<li><strong>不接受回复邮件审批</strong>，因为邮件可以伪造。</li>
+</ul>
+</li>
+</ul>
+<h3 id="7-7-事后审计与抽样"><a class="anchor" href="#7-7-事后审计与抽样" aria-label="本节链接">#</a>7.7 事后审计与抽样</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>抽查对象</th>
+<th>比例（💡）</th>
+<th>谁来查</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>R1 动作</td>
+<td>5%</td>
+<td>复核官AI</td>
+</tr>
+<tr>
+<td>R2 动作</td>
+<td>10%</td>
+<td>内审AI</td>
+</tr>
+<tr>
+<td>R3 动作</td>
+<td>100% 留档，Owner 每周看汇总</td>
+<td>Owner</td>
+</tr>
+<tr>
+<td>人物新版本上线后的前 50 个动作</td>
+<td>100%</td>
+<td>复核官AI</td>
+</tr>
+<tr>
+<td>长期记忆记录</td>
+<td>每周 50 条</td>
+<td>内审AI</td>
+</tr>
+<tr>
+<td>复核官的结论</td>
+<td>每月 20 条</td>
+<td>Owner（校准用）</td>
+</tr>
+</tbody></table>
+</div>
+<ul>
+<li><strong>内审AI每周给 Owner 写一份报告</strong>，内容包括：<ul>
+<li>自动化率和例外数量。</li>
+<li>驳回原因前五名。</li>
+<li>护栏拦截次数、规则拒绝次数。</li>
+<li>成本和事件。</li>
+</ul>
+</li>
+<li><strong>发现的问题会变成三样东西</strong>：评估集里的新用例、规则变更 PR、知识库修订。</li>
+</ul>
+<h3 id="7-8-时序-一次带折扣的报价"><a class="anchor" href="#7-8-时序-一次带折扣的报价" aria-label="本节链接">#</a>7.8 时序：一次带折扣的报价</h3>
+<div class="diagram"><pre class="mermaid">sequenceDiagram
+    autonumber
+    participant SF as 流程骨架&lt;br/&gt;(platform)
+    participant AE as 销售AI&lt;br/&gt;(agents-core)
+    participant GW as Gateway + Policy&lt;br/&gt;(platform)
+    participant RE as 风险引擎&lt;br/&gt;(platform)
+    participant RV as 复核官AI&lt;br/&gt;(agents-assurance)
+    participant OW as Owner&lt;br/&gt;(控制台)
+    participant EX as 执行器&lt;br/&gt;(platform)
+    participant CRM as CRM · 邮件
+
+    SF-&gt;&gt;AE: 派工 · 为客户 C 出报价
+    AE-&gt;&gt;GW: 查定价规则（K3）和客户历史
+    GW--&gt;&gt;AE: 片段 + 出处
+    AE-&gt;&gt;GW: action___propose（发送报价 · 折扣 · 理由 · 出处）
+    GW-&gt;&gt;RE: Policy 放行提议 · 规则分级 + 护栏检查
+    alt 折扣 10%–20%（R2）
+        RE-&gt;&gt;SF: 需要独立复核
+        SF-&gt;&gt;RV: 派工 · 复核（原始出处 + 规则 + 提议）
+        RV--&gt;&gt;SF: 通过（理由 · 风险点）
+    else 折扣超过 20%（R3）
+        RE-&gt;&gt;SF: 需要复核 + Owner
+        SF-&gt;&gt;RV: 派工 · 复核
+        RV--&gt;&gt;SF: 复核意见
+        SF-&gt;&gt;OW: 审批卡片（差异 · 出处 · 复核意见）
+        OW--&gt;&gt;SF: 批准（登录控制台后操作）
+    end
+    SF-&gt;&gt;EX: 执行已批准的载荷（审批 ID）
+    EX-&gt;&gt;GW: quote___send（执行器身份 · 审批 ID）
+    GW-&gt;&gt;CRM: 拦截器核对哈希 · Policy 终检 · 发送
+    EX--&gt;&gt;SF: 完成 · 写审计账本</pre></div>
+<hr>
+<h2 id="8-治理"><a class="anchor" href="#8-治理" aria-label="本节链接">#</a>8. 治理</h2>
+<h3 id="8-1-框架-nist-ai-rmf-三道防线"><a class="anchor" href="#8-1-框架-nist-ai-rmf-三道防线" aria-label="本节链接">#</a>8.1 框架：NIST AI RMF + 三道防线</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>NIST AI RMF 职能</th>
+<th>本设计里的机制</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>治理（Govern）</td>
+<td>公司宪章；三道防线；Owner 职责；治理即代码；变更流程；人物登记</td>
+</tr>
+<tr>
+<td>映射（Map）</td>
+<td>用例和风险台账：每个人物、每类动作的 R 等级，以及适用的法规</td>
+</tr>
+<tr>
+<td>度量（Measure）</td>
+<td>离线和在线评估；RAG 指标；复核官校准；红队测试</td>
+</tr>
+<tr>
+<td>管理（Manage）</td>
+<td>自主度的晋升和降级；熔断；事件响应；事后复盘</td>
+</tr>
+</tbody></table>
+</div>
+<ul>
+<li><strong>这张对照表本身就是合规材料。</strong> 研究文档第9节提到，在得州 TRAIGA 下，按 NIST AI RMF 治理可以作为免责依据，所以这张表要跟着版本一起保存。</li>
+<li><strong>ISO/IEC 42001</strong>：AWS 在 2024 年 11 月取得该认证，当时 Bedrock 在认证范围内（✅[B18]）；AgentCore 是否在范围内 ⚠️ 未确认。公司自己要不要做这项认证，第二年按客户要求再定。</li>
+</ul>
+<h3 id="8-2-治理即代码"><a class="anchor" href="#8-2-治理即代码" aria-label="本节链接">#</a>8.2 治理即代码</h3>
+<pre class="code"><code>governance/                  # 一个 Git 仓库
+  constitution.md            # 公司宪章：红线、诚实、AI 身份告知
+  thresholds.yaml            # 阈值唯一来源 → 生成 Cedar 常量、风险引擎配置、K3 文档
+  personas/&lt;id&gt;.yaml         # 人物卡
+  policies/*.cedar           # 授权策略，附带测试用例
+  guardrails/*.json          # 护栏配置（组织基线 + 岗位）
+  prompts/                   # 宪章以外的提示词模板
+  evals/&lt;persona&gt;/           # 评估集：标准题、对抗题、合规题
+  knowledge/manifest.yaml    # 知识域、分级、访问表
+  processes/*.asl.json       # 状态机定义
+  risk-register.yaml         # 风险与合规台账
+  adr/                       # 架构决策记录</code></pre>
+<p><strong>变更分四类</strong></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>类别</th>
+<th>例子</th>
+<th>流程</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>收紧</td>
+<td>降低额度、增加屏蔽话题、停用工具</td>
+<td>自动检查通过就发布，事后通知 Owner</td>
+</tr>
+<tr>
+<td>中性</td>
+<td>FAQ 措辞、非规则类知识</td>
+<td>自动检查 + 复核官AI + 抽查</td>
+</tr>
+<tr>
+<td>放宽</td>
+<td>提高额度、增加工具、新增人物、晋升自主度、换模型</td>
+<td>1. 合规官AI写风险说明<br>2. 在预发环境跑评估<br>3. Owner 批准<br>4. <strong>等 24 小时冷静期</strong><br>5. 金丝雀发布<br>6. 全量发布</td>
+</tr>
+<tr>
+<td>紧急</td>
+<td>事件处理中的临时变更</td>
+<td>破窗：Owner 用硬件密钥执行，72 小时内补上复盘和 PR</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>一个人怎么做职责分离</strong></p>
+<p>传统的职责分离需要两个人。这里用四样东西代替&quot;第二个人&quot;：</p>
+<ol>
+<li><strong>机器当第二把钥匙</strong>：复核官和合规官在别的账号、用别的模型家族。</li>
+<li><strong>时间当第二把钥匙</strong>：放宽类变更有冷静期。即使 Owner 被钓鱼或者一时冲动，也有 24 小时可以反悔，期间系统会反复提醒。</li>
+<li><strong>记录不可篡改</strong>：Owner 自己的操作也写进审计账本，删不掉。</li>
+<li><strong>外部第三方</strong>：律师和 CPA 每季度或每年复看一次。</li>
+</ol>
+<p>另外，Owner 日常登录的身份只有&quot;审批人&quot;和&quot;只读&quot;权限，没有 AWS 管理员权限。基础设施只能通过流水线修改，见 G-07 和 G-08。</p>
+<h3 id="8-3-人物生命周期与自主度"><a class="anchor" href="#8-3-人物生命周期与自主度" aria-label="本节链接">#</a>8.3 人物生命周期与自主度</h3>
+<div class="diagram"><pre class="mermaid">stateDiagram-v2
+    state &quot;提案（Registry 草稿）&quot; as Draft
+    state &quot;A0 影子运行&quot; as A0
+    state &quot;A1 逐条批准&quot; as A1
+    state &quot;A2 自动 + 抽查&quot; as A2
+    state &quot;A3 只处理例外&quot; as A3
+    state &quot;停职&quot; as Suspended
+    state &quot;退役（Registry 弃用）&quot; as Retired
+
+    [*] --&gt; Draft
+    Draft --&gt; A0: Owner 批准登记 · 上岗评估通过
+    A0 --&gt; A1: 样本≥50 · 评估通过率≥90%
+    A1 --&gt; A2: 同类≥200次 · 修改率低于5% · 30天无严重事件
+    A2 --&gt; A3: 运行≥90天 · 抽查缺陷率低于1%
+    A2 --&gt; A1: 质量回退或出事（自动）
+    A3 --&gt; A1: 质量回退或出事（自动）
+    A1 --&gt; Suspended: 严重事件（自动）
+    A2 --&gt; Suspended: 严重事件（自动）
+    A3 --&gt; Suspended: 严重事件（自动）
+    Suspended --&gt; A0: 整改后重新评估
+    Suspended --&gt; Retired
+    Retired --&gt; [*]
+
+    classDef shadow fill:#eceff1,stroke:#546e7a,color:#263238
+    classDef good fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20
+    classDef bad fill:#ffebee,stroke:#c62828,color:#b71c1c
+    class A0 shadow
+    class A2,A3 good
+    class Suspended,Retired bad</pre></div>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>等级</th>
+<th>名称</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A0</td>
+<td>影子运行</td>
+<td>AI 做，但不发出去；和标准答案或人的做法对比</td>
+</tr>
+<tr>
+<td>A1</td>
+<td>逐条批准</td>
+<td>每个对外动作都要批准：R1 由复核官批，R2 及以上按授权矩阵</td>
+</tr>
+<tr>
+<td>A2</td>
+<td>自动 + 抽查</td>
+<td>授权矩阵以内自动执行，按 7.7 抽查</td>
+</tr>
+<tr>
+<td>A3</td>
+<td>只处理例外</td>
+<td>只有触发了规则的情况才交给人</td>
+</tr>
+</tbody></table>
+</div>
+<ul>
+<li><strong>自主度按&quot;人物 × 动作类型&quot;分别设定。</strong> 不是给整个人物一刀切。例如获客AI的模板外联可以到 A3，同时它的新外联序列还停在 A1。</li>
+<li><strong>晋升门槛看数据</strong>（图上的数字是示例），而且必须走&quot;放宽&quot;类变更流程。</li>
+<li><strong>降级是自动的</strong>，触发条件包括：<ul>
+<li>严重事件。</li>
+<li>质量金丝雀分数下降。</li>
+<li>模型或提示词发生变更。</li>
+</ul>
+</li>
+<li><strong>和 Registry 的关系</strong>：人物和工具的登记走 Agent Registry 的流程：草稿 → 待批准 → 已批准；关闭自动批准；&quot;弃用&quot;是终态（✅[A19]）。<ul>
+<li>修改已批准的记录，会生成新的草稿修订版。</li>
+<li>有新的提交时，Registry 会通过 EventBridge 通知，正好接到 Owner 的审批队列。</li>
+</ul>
+</li>
+</ul>
+<h3 id="8-4-评估体系"><a class="anchor" href="#8-4-评估体系" aria-label="本节链接">#</a>8.4 评估体系</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>内容</th>
+<th>什么时候跑</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>离线评估</td>
+<td>每个人物三类题：<br>- 标准题<br>- 对抗题：注入、诱导越权<br>- 合规题：话术、AI 身份告知</td>
+<td>每次改提示词、模型、工具或知识；每周跑一次全量</td>
+</tr>
+<tr>
+<td>在线评估</td>
+<td>AgentCore Evaluations 对生产追踪数据按比例或按条件抽样打分（✅[A20]）</td>
+<td>持续进行；金丝雀端点 100% 打分</td>
+</tr>
+<tr>
+<td>质量金丝雀</td>
+<td>每小时用生产配置跑几道标准题</td>
+<td>持续进行；分数下降就自动降级</td>
+</tr>
+<tr>
+<td>红队</td>
+<td>自动化红队工具在预发环境跑</td>
+<td>每月一次；每季度可以请外部做一次</td>
+</tr>
+<tr>
+<td>业务 KPI</td>
+<td>自动化率、例外率、审批时延、复核分歧率、客户满意度、每单成本</td>
+<td>每周报告</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>AgentCore Evaluations 怎么用</strong>（✅[A20][A24]）</p>
+<ul>
+<li><strong>内置评估器</strong>：GoalSuccessRate、Correctness、Faithfulness、Harmfulness、InstructionFollowing、ToolSelectionAccuracy、ToolParameterAccuracy 等。<ul>
+<li>价格：每千个输入 token $0.0024，每千个输出 token $0.012。</li>
+</ul>
+</li>
+<li><strong>自定义评估器有两种</strong>：<ul>
+<li>LLM 评委：按 Owner 的评分表打分，每千次评估 $1.50 加模型费。</li>
+<li>基于 Lambda 代码的评估器：适合做确定性检查，例如&quot;邮件里有没有 AI 身份说明&quot;&quot;有没有附出处&quot;&quot;是否用了已批准的模板&quot;。</li>
+</ul>
+</li>
+</ul>
+<h3 id="8-5-模型治理"><a class="anchor" href="#8-5-模型治理" aria-label="本节链接">#</a>8.5 模型治理</h3>
+<ul>
+<li><strong>白名单</strong>：只允许 G-03 列出的模型。每个模型在 Registry 里登记用途、版本和数据条款。</li>
+<li><strong>数据条款</strong>：<ul>
+<li>Bedrock 不把输入输出交给模型提供方，也不用它们训练模型（✅[B23]）。</li>
+<li>但 2026 年起每个模型有自己的数据保留模式，有的模型强制 30 天保留（✅[B11]）。所以&quot;保留模式&quot;是选模型的硬条件，见 5.4。</li>
+</ul>
+</li>
+<li><strong>端点</strong>：只用 <code>bedrock-runtime</code>，禁用 <code>bedrock-mantle</code>（G-04）。原因是 mantle 端点不支持护栏和调用日志。</li>
+<li><strong>升级</strong>：换模型或升级模型属于&quot;放宽&quot;类变更：<ol>
+<li>跑完全部评估集。</li>
+<li>金丝雀端点承接 10% 的工作单，运行一周。</li>
+<li>全量发布。</li>
+</ol>
+</li>
+</ul>
+<h3 id="8-6-成本治理"><a class="anchor" href="#8-6-成本治理" aria-label="本节链接">#</a>8.6 成本治理</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>层</th>
+<th>机制</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>单次调用</td>
+<td>外壳代码限制 token 数和工具调用次数</td>
+</tr>
+<tr>
+<td>单个人物</td>
+<td>每日预算，用 DynamoDB 计数；超了就停下来并升级</td>
+</tr>
+<tr>
+<td>归因</td>
+<td>每个人物有独立的 IAM 角色，用 CUR 2.0 按 IAM 主体统计（✅[B9]）；再按流程汇总出&quot;每单成本&quot;</td>
+</tr>
+<tr>
+<td>账号</td>
+<td>AWS Budgets 告警；用到 120% 时自动挂拒绝 SCP（G-13，✅[B9]）</td>
+</tr>
+<tr>
+<td>优化</td>
+<td>提示词缓存（5.2）；按档位选模型（5.4）；<strong>护栏只放在边界上</strong>（见第12节）</td>
+</tr>
+</tbody></table>
+</div>
+<h3 id="8-7-合规与对外透明"><a class="anchor" href="#8-7-合规与对外透明" aria-label="本节链接">#</a>8.7 合规与对外透明</h3>
+<ul>
+<li><strong>AI 身份告知</strong>：<ul>
+<li>人物可以有名字，例如&quot;Ava，X 公司的 AI 助理&quot;。</li>
+<li>但第一次接触时和邮件签名里都必须说明自己是 AI，并且随时可以转给真人（Owner）。</li>
+<li>不使用真人的名字和照片。</li>
+<li>相关法规：<ul>
+<li>欧盟 AI 法案第50条（有欧盟客户时）。</li>
+<li>加州 BOT 法。</li>
+<li>科罗拉多聊天机器人法（2027 年起）。</li>
+<li>得州 DTPA 的误导风险。</li>
+<li>见研究文档第7、9节。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>已批准宣传用语库（K5）</strong>：<ul>
+<li>所有对外的能力、效果和价格说法，都必须出自这个用语库。</li>
+<li>复核官会逐条核对。</li>
+<li>这是防 DTPA 误导性宣传的主要手段。</li>
+</ul>
+</li>
+<li><strong>外联合规</strong>：<ul>
+<li>遵守 CAN-SPAM：真实的发件人、退订链接、及时处理退订（📚）。</li>
+<li>退订名单是 Cedar 策略里的一个条件，命中就拒绝发送。</li>
+</ul>
+</li>
+<li><strong>隐私</strong>：<ul>
+<li>得州 TDPSA 下的访问和删除请求，由合规官AI受理、Owner 批准执行。</li>
+<li>删除范围包括记忆（见 5.5）。</li>
+</ul>
+</li>
+<li><strong>记录保留</strong>：见第10节，具体年限要律师确认。</li>
+<li><strong>风险台账</strong>：每个用例对应适用的法规和控制措施，每季度复看一次。</li>
+</ul>
+<h3 id="8-8-事件与熔断"><a class="anchor" href="#8-8-事件与熔断" aria-label="本节链接">#</a>8.8 事件与熔断</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>级别</th>
+<th>名称</th>
+<th>作用</th>
+<th>实现</th>
+<th>谁能触发</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>K1</td>
+<td>停工具</td>
+<td>某个工具对所有人停用</td>
+<td>请求拦截器读取开关表，命中就直接返回拒绝（拦截器支持短路返回，✅[A12]）；之后再由流水线补一条 Cedar 禁止策略</td>
+<td>Owner、哨兵AI</td>
+</tr>
+<tr>
+<td>K2</td>
+<td>停人物</td>
+<td>某个人物停职</td>
+<td>拦截器拒绝该人物的所有调用；派工 Lambda 停止给它派工；必要时停用它的 Cognito 客户端</td>
+<td>Owner、哨兵AI</td>
+</tr>
+<tr>
+<td>K3</td>
+<td>停渠道</td>
+<td>停止对外发信或发布</td>
+<td>暂停 SES 账号发送（📚）+ 拦截器关闭发送类工具</td>
+<td>Owner、哨兵AI</td>
+</tr>
+<tr>
+<td>K4</td>
+<td>安全模式</td>
+<td>所有对外动作都要 Owner 批准</td>
+<td>风险引擎的全局开关：所有对外动作一律升为 R3</td>
+<td>Owner、哨兵AI、缺席检测</td>
+</tr>
+<tr>
+<td>K5</td>
+<td>全停</td>
+<td>所有人物停止</td>
+<td>给 Workloads OU 挂拒绝模型调用和 Runtime 调用的 SCP；收到的内容留在 S3 和队列里</td>
+<td><strong>只有 Owner</strong>；预算动作</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>为什么 K1–K4 用开关，而不是改策略</strong></p>
+<ul>
+<li>G-07 规定策略只能由流水线修改，以防有人悄悄放宽。</li>
+<li>但应急时需要几秒内生效。</li>
+<li>所以 K1–K4 都是拦截器和风险引擎读取的&quot;只收紧&quot;开关。</li>
+</ul>
+<p><strong>规则</strong></p>
+<ul>
+<li><strong>自动触发只能收紧，不能放宽。</strong> 恢复一律由 Owner 操作。</li>
+<li><strong>哨兵AI自己也可能被诱导乱按开关</strong>，造成拒绝服务。所以：<ul>
+<li>它每小时最多触发 3 次。</li>
+<li>每次触发都通知 Owner。</li>
+<li>K5 不归它管。</li>
+</ul>
+</li>
+<li><strong>每次事件都要复盘</strong>，产出三样东西：新的评估用例、规则变更、知识修订。</li>
+</ul>
+<hr>
+<h2 id="9-安全"><a class="anchor" href="#9-安全" aria-label="本节链接">#</a>9. 安全</h2>
+<h3 id="9-1-威胁模型"><a class="anchor" href="#9-1-威胁模型" aria-label="本节链接">#</a>9.1 威胁模型</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>威胁</th>
+<th>在这家公司里怎么发生</th>
+<th>主要控制</th>
+<th>见</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>目标劫持、提示词注入</td>
+<td>客户邮件、网页、附件、知识片段里藏着指令</td>
+<td>- 隔离读信员<br>- <code>guardContent</code> 标记<br>- 响应拦截器打分<br>- 人物没有外网<br>- 高风险工具不在人物手里</td>
+<td>9.3</td>
+</tr>
+<tr>
+<td><strong>护栏盲区</strong></td>
+<td>- 提示词攻击过滤<strong>只扫描打了标记的输入</strong>；工具结果和知识片段不扫描（✅[B6][B5]）<br>- mantle 端点没有护栏，也没有调用日志（✅[B17]）</td>
+<td>- 外壳代码强制打标记<br>- 响应拦截器调用 <code>InvokeGuardrailChecks</code><br>- G-04 禁用 mantle<br>- G-02 组织级护栏兜底</td>
+<td>3.4、4.2</td>
+</tr>
+<tr>
+<td>工具滥用</td>
+<td>人物用合法工具做不该做的事</td>
+<td>- Cedar 参数级规则<br>- 频率限制<br>- 执行器</td>
+<td>7.5</td>
+</tr>
+<tr>
+<td>身份和权限滥用</td>
+<td>幕僚长或被注入的人物给自己提权</td>
+<td>- 每个人物独立身份<br>- 人物账号禁止 IAM 写操作<br>- 放宽类变更有冷静期</td>
+<td>4.2、8.2</td>
+</tr>
+<tr>
+<td><strong>同账号横向接管（AgentCorruption）</strong></td>
+<td>攻击链（✅[A25]）：<br>1. 通过 shell 或 HTTP 工具读元数据服务，拿到执行角色凭据。<br>2. 用这个凭据调用其他 Agent、读所有对话、投毒记忆、偷密钥</td>
+<td>- 不给通用工具<br>- 最小权限执行角色<br>- 凭据只能在 Runtime 里用（G-09）<br>- 只有派工角色能调用 Runtime（G-08）<br>- 密钥不放在人物账号<br>- 三个人物账号分开</td>
+<td>4.1–4.3</td>
+</tr>
+<tr>
+<td><strong>悄悄关掉授权</strong></td>
+<td>有人把 Policy 改成 LOG_ONLY，或者把策略引擎摘掉（✅[A15]）</td>
+<td>- G-07 只允许流水线修改<br>- CloudTrail 事件告警<br>- 定时检查模式是不是 ENFORCE</td>
+<td>9.8</td>
+</tr>
+<tr>
+<td>记忆和上下文投毒</td>
+<td>恶意内容进入长期记忆或知识库</td>
+<td>- 入库时做注入扫描<br>- 按知识域审批<br>- 关闭情节记忆<br>- 每周抽查</td>
+<td>5.5、6.4</td>
+</tr>
+<tr>
+<td>不安全的 Agent 间通信</td>
+<td>人物之间互相传话，放大错误或注入</td>
+<td>- 用工作单 + Schema 交接<br>- 不开放自由对话和 A2A</td>
+<td>5.3</td>
+</tr>
+<tr>
+<td>错误连锁扩散</td>
+<td>一步错、步步错</td>
+<td>- 状态机分段<br>- 每段都有闸<br>- 质量金丝雀</td>
+<td>3.3、8.4</td>
+</tr>
+<tr>
+<td>利用人对 Agent 的信任</td>
+<td>Owner 疲劳时随手批准；伪造的审批邮件</td>
+<td>- 审批卡片附复核意见<br>- 防疲劳指标<br>- 只能在控制台审批</td>
+<td>7.6</td>
+</tr>
+<tr>
+<td>失控的 Agent</td>
+<td>死循环、乱花钱</td>
+<td>- 外壳代码的预算熔断<br>- K1–K5 熔断</td>
+<td>8.6、8.8</td>
+</tr>
+<tr>
+<td>供应链</td>
+<td>- 依赖包被投毒（2026年3月 LiteLLM 后门）<br>- AgentCore SDK/CLI 的漏洞（✅[A26]）<br>- 恶意 MCP 服务器</td>
+<td>- 私有包仓库 + 锁定版本<br>- 镜像扫描和签名<br>- MCP 只从 Registry 白名单里选</td>
+<td>9.9</td>
+</tr>
+<tr>
+<td>Owner 被盗号或被社工</td>
+<td>钓鱼；深度伪造的&quot;客户来电&quot;</td>
+<td>- 通行密钥 + 硬件密钥<br>- R4 硬红线<br>- 冷静期</td>
+<td>9.2</td>
+</tr>
+<tr>
+<td>拒绝钱包（Denial of Wallet）</td>
+<td>攻击者诱导人物大量调用模型</td>
+<td>- 每个人物的预算<br>- WAF 频率限制<br>- 预算动作</td>
+<td>8.6</td>
+</tr>
+</tbody></table>
+</div>
+<p>OWASP Agent 应用十大风险的完整清单见研究文档 7.1。</p>
+<h3 id="9-2-身份与访问"><a class="anchor" href="#9-2-身份与访问" aria-label="本节链接">#</a>9.2 身份与访问</h3>
+<p><strong>人</strong></p>
+<ul>
+<li>AWS 控制台用 IAM Identity Center 登录，必须用防钓鱼的 MFA：硬件安全密钥或通行密钥。</li>
+<li>日常只用&quot;审批人&quot;和&quot;只读&quot;两个权限集。</li>
+<li><strong>破窗管理员</strong>：用硬件密钥登录，一用就告警，事后必须复盘。</li>
+<li><strong>root 账号</strong>：<ul>
+<li>新建的成员账号本来就没有 root 凭据。</li>
+<li>需要 root 权限的操作，由管理账号用 <code>sts:AssumeRoot</code> 发起短时会话（✅[S3]）。</li>
+<li>管理账号的 root 用硬件 MFA，锁起来。</li>
+</ul>
+</li>
+</ul>
+<p><strong>AI 人物</strong></p>
+<p>下表把 NIST 2026 年的 Agent 身份管理原则（✅[N1]）对应到本设计：</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>原则</th>
+<th>本设计的落点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>每个 Agent 有独立身份</td>
+<td>每个人物一个执行角色 + 一个工作负载身份 + 一个 Gateway 客户端</td>
+</tr>
+<tr>
+<td>委托机制</td>
+<td>工作单令牌说明&quot;这次替哪个流程、哪个客户做事&quot;</td>
+</tr>
+<tr>
+<td>最小权限，且可以撤销</td>
+<td>Cedar 默认拒绝；K2 一键停职</td>
+</tr>
+<tr>
+<td>高风险动作要人参与</td>
+<td>R3 必须由 Owner 批准</td>
+</tr>
+<tr>
+<td>&quot;允许做什么&quot;和&quot;决定做什么&quot;分开</td>
+<td>模型只提议，由 Cedar 和执行器决定</td>
+</tr>
+<tr>
+<td>不可篡改的审计记录</td>
+<td>审计账本放在 log-archive，S3 Object Lock 合规模式</td>
+</tr>
+</tbody></table>
+</div>
+<ul>
+<li><strong>人物永远看不到密钥。</strong><ul>
+<li>SaaS 的 API 密钥和 OAuth 凭据只放在平台账号，存在 AgentCore Identity 的凭据库里（用 CMK 加密，也可以引用 Secrets Manager，✅[A17]）。</li>
+<li>这些凭据由 Gateway 的出站认证使用：Lambda 目标用 Gateway 角色，OAuth 和 API 密钥类目标用凭据库（✅[A10]）。</li>
+</ul>
+</li>
+<li><strong>执行角色</strong>：<ul>
+<li>按资源限定权限，不用 <code>bedrock-agentcore:*</code> 和 <code>Resource: *</code> 这样的通配符。</li>
+<li>不用自动生成的默认角色。</li>
+</ul>
+</li>
+<li><strong>凭据要单独防一层。</strong> microVM 里的任何代码都能读到执行角色的凭据（✅[A7]）。所以要三件事一起做：<ol>
+<li>人物没有通用的 shell 和 HTTP 工具。</li>
+<li>执行角色最小权限。</li>
+<li>凭据只能在 Runtime 里用（G-09）。</li>
+</ol>
+</li>
+</ul>
+<h3 id="9-3-提示词注入的纵深防御"><a class="anchor" href="#9-3-提示词注入的纵深防御" aria-label="本节链接">#</a>9.3 提示词注入的纵深防御</h3>
+<div class="diagram"><pre class="mermaid">flowchart LR
+    X[&quot;外部内容&lt;br/&gt;邮件 · 附件 · 网页 · 客户文档&quot;]:::untrusted
+    S[&quot;① 恶意软件扫描&lt;br/&gt;GuardDuty S3&quot;]:::ctl
+    Q[&quot;② 隔离读信员AI&lt;br/&gt;没有工具 · 没有知识库 · 没有长期记忆&quot;]:::edge
+    J[&quot;③ 结构化输出&lt;br/&gt;JSON Schema 校验 · 意图只能取枚举值&quot;]:::ctl
+    T[&quot;④ 原文只当数据&lt;br/&gt;guardContent 标记 · 提示词攻击检测&quot;]:::ctl
+    C[&quot;⑤ 核心区人物&lt;br/&gt;以结构化字段为准&quot;]:::core
+    P[&quot;⑥ Gateway Policy&lt;br/&gt;按人物限定工具和参数&quot;]:::cp
+    H[&quot;⑦ 高风险动作&lt;br/&gt;执行器 + 复核 + Owner&quot;]:::human
+    HQ[&quot;人工队列&quot;]:::human
+
+    X --&gt; S --&gt; Q --&gt; J --&gt; C
+    J -.-&gt;|&quot;需要时附上原文&quot;| T --&gt; C
+    J --&gt;|&quot;校验失败或判为可疑&quot;| HQ
+    C --&gt; P --&gt; H
+
+    classDef untrusted fill:#fafafa,stroke:#d32f2f,color:#b71c1c,stroke-width:2px,stroke-dasharray:5 3;
+    classDef ctl fill:#fffde7,stroke:#f9a825,color:#f57f17,stroke-width:2px;
+    classDef edge fill:#fce4ec,stroke:#ad1457,color:#880e4f,stroke-width:2px;
+    classDef core fill:#e3f2fd,stroke:#1565c0,color:#0d47a1,stroke-width:2px;
+    classDef cp fill:#ffebee,stroke:#c62828,color:#b71c1c,stroke-width:3px;
+    classDef human fill:#fff3e0,stroke:#e65100,color:#bf360c,stroke-width:3px;</pre></div>
+<ol>
+<li><strong>恶意软件扫描</strong>：附件先过 GuardDuty S3 恶意软件防护（✅[S4]）。</li>
+<li><strong>隔离读信员</strong>：<ul>
+<li>它没有工具、没有知识库、没有长期记忆，只能输出固定的 Schema。</li>
+<li>这就是&quot;双 LLM&quot;模式：读不可信内容的模型，碰不到任何能力。</li>
+</ul>
+</li>
+<li><strong>校验</strong>：Schema 校验失败，或者判定为可疑，就转人工队列。</li>
+<li><strong>原文只当数据</strong>：<ul>
+<li>原文进入下游时一律放进 <code>guardContent</code>。只有打了标记的内容才会被提示词攻击过滤检测（✅[B6]）。</li>
+<li>组织级护栏策略可以设成&quot;对消息全量检测&quot;，作为兜底（✅[B7]）。</li>
+</ul>
+</li>
+<li><strong>Policy 限死参数</strong>：下游人物能用的工具和参数由 Cedar 限死。例如销售AI只能给本客户域名下的联系人发信。</li>
+<li><strong>高风险动作不在人物手里</strong>，见 7.5。</li>
+<li><strong>不留外带通道</strong>：对外内容里不能出现未登记的链接和外部图片，防止通过链接把数据带出去。</li>
+</ol>
+<h3 id="9-4-数据保护"><a class="anchor" href="#9-4-数据保护" aria-label="本节链接">#</a>9.4 数据保护</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>分级</th>
+<th>例子</th>
+<th>加密</th>
+<th>谁能访问</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>公开</td>
+<td>K1</td>
+<td>S3 托管密钥即可</td>
+<td>所有人物</td>
+</tr>
+<tr>
+<td>内部</td>
+<td>K2、K5、指标</td>
+<td>平台 CMK</td>
+<td>按岗位</td>
+</tr>
+<tr>
+<td>机密</td>
+<td>K3、合同模板、财务</td>
+<td>独立 CMK</td>
+<td>指定的人物 + Owner</td>
+</tr>
+<tr>
+<td>客户机密</td>
+<td>K4、客户记忆、交付物</td>
+<td>独立 CMK</td>
+<td>只有处理该客户工作单的人物</td>
+</tr>
+<tr>
+<td>受限</td>
+<td>模型调用全文日志、追踪数据、审计账本</td>
+<td>日志账号 CMK</td>
+<td>审计角色 + 内审AI（只读）</td>
+</tr>
+</tbody></table>
+</div>
+<ul>
+<li><strong>个人信息</strong>：<ul>
+<li>Macie 扫描知识桶里的个人信息（📚）。</li>
+<li>Guardrails 的敏感信息过滤在输出时遮盖个人信息（✅[B6]）。</li>
+</ul>
+</li>
+<li><strong>调用日志含全文。</strong><ul>
+<li>Bedrock 的模型调用日志包含完整的请求和响应，而且只能写到同账号、同区域（✅[B12]）。</li>
+<li>所以先写到人物账号，再复制到 log-archive，按&quot;受限&quot;级管理，保留 180 天。</li>
+</ul>
+</li>
+<li><strong>追踪数据也可能含提示词。</strong> CVE-2026-15737 就是旧版 SDK 把原始提示词写进了追踪数据（✅[A26]）。所以追踪数据同样按&quot;受限&quot;级管理，保留 90 天。</li>
+<li><strong>隐私删除和不可篡改审计的矛盾</strong>：<ul>
+<li>审计账本只存 ID、哈希、决定和规则版本，不存邮件正文和个人信息。</li>
+<li>全文放在可以删除、保留期较短的地方。</li>
+<li>这样删除请求能执行，审计链也完整。</li>
+</ul>
+</li>
+<li><strong>模型的数据保留模式</strong>：见 5.4 和 8.5。处理客户机密数据的人物只用允许零保留的模型。</li>
+</ul>
+<h3 id="9-5-运行与网络隔离"><a class="anchor" href="#9-5-运行与网络隔离" aria-label="本节链接">#</a>9.5 运行与网络隔离</h3>
+<ul>
+<li><strong>会话隔离</strong>：每个会话一台 microVM（✅[A3]）。</li>
+<li><strong>沙箱</strong>：不可信代码只在 Code Interpreter 沙箱里跑，网页只在 Browser 会话里打开。</li>
+<li><strong>出网</strong>：人物没有外网（4.3）。唯一的出口是平台账号工具层的 DNS 防火墙白名单。</li>
+<li><strong>公网入口</strong>：全部在 CloudFront + WAF 之后；SaaS 回调要验签。</li>
+</ul>
+<h3 id="9-6-资金安全"><a class="anchor" href="#9-6-资金安全" aria-label="本节链接">#</a>9.6 资金安全</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>控制点</th>
+<th>做法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>收款</td>
+<td>Stripe 受限密钥，只给开票和查询类权限</td>
+</tr>
+<tr>
+<td>退款</td>
+<td>只能由执行器发起，额度见 7.3；超过上限只能 Owner 在 Stripe 后台手工处理</td>
+</tr>
+<tr>
+<td>付款</td>
+<td>人物碰不到银行账户。付供应商用虚拟卡，设单笔和每月上限，只能付给已登记的供应商；登记新收款方属于 R4，只能 Owner 走冷静期</td>
+</tr>
+<tr>
+<td>购买 API 或 MCP 服务</td>
+<td>如果用 AgentCore Payments，每个支付会话都设最高金额和过期时间，并按人物设上限（✅[A27]）</td>
+</tr>
+<tr>
+<td>频率</td>
+<td>Cedar + 计数器，限制每天的退款笔数和金额</td>
+</tr>
+</tbody></table>
+</div>
+<h3 id="9-7-邮件与域名"><a class="anchor" href="#9-7-邮件与域名" aria-label="本节链接">#</a>9.7 邮件与域名</h3>
+<ul>
+<li><strong>两个域名</strong>：主域名和外联子域名分开，外联子域名被拉黑也不影响主域名。</li>
+<li><strong>认证</strong>：配置 SPF、DKIM、DMARC，DMARC 策略设为 <code>p=reject</code>。</li>
+<li><strong>发件地址</strong>：每个人物有自己的发件地址；Cedar 规定人物只能用自己的地址发信。</li>
+<li><strong>收信校验</strong>：收到的邮件保存 SPF、DKIM、DMARC 的校验结果。没通过校验的邮件，一律不当作客户指令处理。</li>
+</ul>
+<h3 id="9-8-检测与响应"><a class="anchor" href="#9-8-检测与响应" aria-label="本节链接">#</a>9.8 检测与响应</h3>
+<ul>
+<li><strong>安全服务</strong>：GuardDuty（含 S3 恶意软件防护）、Security Hub、Config、IAM Access Analyzer，结果汇总到 security-tooling 账号。</li>
+<li><strong>控制面变更告警</strong>：<ul>
+<li>CloudTrail 只记录 AgentCore 的 Gateway 和 Registry（✅[A21]）。</li>
+<li>对 Gateway、目标、拦截器和策略引擎的任何变更都告警。</li>
+<li>每小时检查一次策略引擎是不是还在 ENFORCE 模式。</li>
+</ul>
+</li>
+<li><strong>AI 专项告警</strong>：<ul>
+<li>某个人物的 token 用量、工具调用频率、Policy 拒绝次数、护栏拦截次数突然升高。</li>
+<li>跨租户探测失败。</li>
+<li>金丝雀文档出现在对外内容里。</li>
+</ul>
+</li>
+<li><strong>处置流程</strong>：告警 → EventBridge → 哨兵AI分诊 → 按剧本收紧（K1–K4）→ 通知 Owner。</li>
+</ul>
+<h3 id="9-9-供应链"><a class="anchor" href="#9-9-供应链" aria-label="本节链接">#</a>9.9 供应链</h3>
+<ul>
+<li><strong>Python 依赖</strong>：走 CodeArtifact 私有仓库，锁定版本和哈希。</li>
+<li><strong>AgentCore SDK、CLI 和 Strands</strong>：锁定在 2026 年 CVE 修复之后的版本。生产环境不用 Starter Toolkit（✅[A26]）。</li>
+<li><strong>镜像</strong>：放 ECR，开启 Inspector 扫描，并签名；每个镜像生成 SBOM。</li>
+<li><strong>MCP 服务器和工具</strong>：只能从 Registry 白名单里选，并锁定版本。MCP 协议版本也要锁定，因为 2026 年 7 月的新版本不向下兼容（研究文档第2节）。</li>
+<li><strong>不从任何&quot;技能市场&quot;直接安装</strong>：OpenClaw 的技能市场出现过恶意技能（研究文档第8节）。</li>
+</ul>
+<h3 id="9-10-和研究文档八层防护的对照"><a class="anchor" href="#9-10-和研究文档八层防护的对照" aria-label="本节链接">#</a>9.10 和研究文档&quot;八层防护&quot;的对照</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>研究文档第8节的层</th>
+<th>本设计</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1 身份</td>
+<td>9.2</td>
+</tr>
+<tr>
+<td>2 工具调用网关</td>
+<td>Gateway + Policy + 拦截器 + 执行器（3.4、7.5）</td>
+</tr>
+<tr>
+<td>3 输入输出护栏</td>
+<td>组织级 + 岗位护栏，隔离读信员（4.2、9.3）</td>
+</tr>
+<tr>
+<td>4 运行隔离</td>
+<td>microVM、没有外网、三个人物账号（4.1、4.3）</td>
+</tr>
+<tr>
+<td>5 资金</td>
+<td>9.6</td>
+</tr>
+<tr>
+<td>6 检测与响应</td>
+<td>9.8 + 熔断（8.8）</td>
+</tr>
+<tr>
+<td>7 供应链</td>
+<td>9.9</td>
+</tr>
+<tr>
+<td>8 数据</td>
+<td>9.4</td>
+</tr>
+</tbody></table>
+</div>
+<hr>
+<h2 id="10-可观测性与审计"><a class="anchor" href="#10-可观测性与审计" aria-label="本节链接">#</a>10. 可观测性与审计</h2>
+<p><strong>一条关联 ID 链</strong></p>
+<pre class="code"><code>CRM 记录 ID ↔ 工作单 ID ↔ Step Functions 执行 ↔ AgentCore 会话 ID ↔ 追踪 ID ↔ 提议 ID ↔ 审批 ID ↔ 工具调用 ID</code></pre>
+<p>从任何一端都能查到整条链。模型调用日志通过 <code>requestMetadata</code> 挂到这条链上（✅[B12]）。</p>
+<p><strong>为什么要自建审计账本</strong></p>
+<ul>
+<li>AgentCore 只有 Gateway 和 Registry 会写 CloudTrail（✅[A21]）。</li>
+<li>Bedrock 的 ApplyGuardrail 和 Retrieve 属于 CloudTrail 数据事件，要额外开启、额外付费（✅[B13]）。</li>
+<li>所以&quot;谁在什么依据下做了什么&quot;必须自己记。写入方有：请求和响应拦截器、执行器、Step Functions、审批服务。</li>
+</ul>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>记录</th>
+<th>存在哪里</th>
+<th>内容</th>
+<th>保留（💡 需律师确认）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>审计账本</td>
+<td>log-archive，S3 Object Lock 合规模式</td>
+<td>谁、做了什么、依据哪条规则的哪个版本、谁批准、载荷哈希、成本。<strong>不含正文和个人信息</strong></td>
+<td>7 年</td>
+</tr>
+<tr>
+<td>模型调用日志</td>
+<td>先写人物账号，再复制到 log-archive（受限级 CMK）</td>
+<td>完整的请求和响应（✅[B12]）</td>
+<td>180 天</td>
+</tr>
+<tr>
+<td>追踪</td>
+<td>CloudWatch（OTEL）</td>
+<td>每一步的耗时、工具、token</td>
+<td>90 天</td>
+</tr>
+<tr>
+<td>CloudTrail</td>
+<td>log-archive</td>
+<td>AWS API 调用。InvokeModel 和 Converse 属于管理事件，默认就会记录；另外按需开启知识库 Retrieve 的数据事件（✅[B13]）</td>
+<td>在线 1 年 + 归档 7 年</td>
+</tr>
+<tr>
+<td>审批记录</td>
+<td>平台账号 DynamoDB + 审计账本</td>
+<td>审批卡片快照</td>
+<td>7 年</td>
+</tr>
+<tr>
+<td>记忆</td>
+<td>AgentCore Memory</td>
+<td>事件和长期记录</td>
+<td>见 5.5</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>开启方式</strong></p>
+<ul>
+<li>需要先在 CloudWatch 一次性开启 Transaction Search。</li>
+<li>Runtime、Memory、Tools、Policy 的追踪和日志都要逐项开启（✅[A21]）。</li>
+</ul>
+<p><strong>Owner 驾驶舱</strong>（先用 CloudWatch 仪表板；AWS Quick 可选，用来做对话式查询）</p>
+<ul>
+<li><strong>业务</strong>：线索、成交、收入、交付 SLA。</li>
+<li><strong>AI 健康</strong>：自动化率、例外、护栏拦截、规则拒绝、评估分数、各人物当前的自主度。</li>
+<li><strong>成本</strong>：按人物、按流程统计的每单成本。</li>
+<li><strong>待办</strong>：审批队列和各自的过期时间。</li>
+</ul>
+<hr>
+<h2 id="11-可靠性与-dr"><a class="anchor" href="#11-可靠性与-dr" aria-label="本节链接">#</a>11. 可靠性与 DR</h2>
+<p>按常见的灾备分级思路：</p>
+<ul>
+<li><strong>等级</strong>：Tier 3，同区多可用区 + 跨区备份。RTO 24 小时，RPO 1 小时（💡）。</li>
+<li><strong>多可用区</strong>：Step Functions、DynamoDB、Lambda、AgentCore、Bedrock 这些托管服务本身就跨多个可用区。</li>
+<li><strong>备份</strong>：<ul>
+<li>DynamoDB 开启时间点恢复（PITR），并用 AWS Backup 跨区复制到 us-west-2。</li>
+<li>知识源文件和审计账本用 S3 跨区复制。</li>
+</ul>
+</li>
+<li><strong>重建</strong>：<ul>
+<li>全部基础设施用 IaC 描述。</li>
+<li>AgentCore 的全部服务在 us-west-2 都可用（✅[A2]），所以可以在 us-west-2 整体重建。</li>
+<li>知识库从 S3 重新同步即可。</li>
+</ul>
+</li>
+<li><strong>模型容量</strong>：<ul>
+<li>US 地理推理配置文件本身就在三个美国区域之间路由（✅[B10]）。</li>
+<li>每个人物另配一个降级模型。</li>
+</ul>
+</li>
+<li><strong>区域故障时</strong>：<ul>
+<li>进入 K4 安全模式。</li>
+<li>用 us-west-2 的 SES 发自动答复（两个区域都支持收发信，✅[S5]）。</li>
+</ul>
+</li>
+<li><strong>AI 的&quot;灰色故障&quot;</strong>：<ul>
+<li>模型被悄悄更新、知识库发生漂移，都会让质量慢慢变差，但系统表面上看起来一切&quot;正常&quot;。</li>
+<li>用质量金丝雀（8.4）来发现这类问题。分数下降就自动降级到 A1。</li>
+<li>这类&quot;灰色故障&quot;是传统灾备演练覆盖不到的，要单独监测。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="12-成本估算-📌"><a class="anchor" href="#12-成本估算-📌" aria-label="本节链接">#</a>12. 成本估算（📌）</h2>
+<p><strong>规模假设</strong>：每月 200 条线索、20 个活跃客户、约 5,000 次人物会话、约 5 万次工具调用、约 1.5 亿 token。</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>项</th>
+<th>每月</th>
+<th>依据</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>账号与安全基线（8 个账号）</td>
+<td>$80–200</td>
+<td>Config、GuardDuty、Security Hub、KMS、Secrets Manager（📚）</td>
+</tr>
+<tr>
+<td>网络</td>
+<td>$350–450</td>
+<td>接口端点约 $300（✅[S6]）+ NAT + DNS 防火墙（📚）；staging 只用 1 个可用区</td>
+</tr>
+<tr>
+<td>AgentCore Runtime</td>
+<td>$30–100</td>
+<td>第二版按量计费：每 vCPU 小时 $0.1276，每 GB 小时 $0.0169；<strong>等待 I/O 时不收 CPU 费用</strong>（✅[A24]）</td>
+</tr>
+<tr>
+<td>Gateway + Policy</td>
+<td>低于 $5</td>
+<td>每千次调用 $0.005；每次授权 $0.000025（✅[A24]）</td>
+</tr>
+<tr>
+<td>Memory</td>
+<td>$5–20</td>
+<td>长期记录每千条每月 $0.75；检索每千次 $0.50（✅[A24]）</td>
+</tr>
+<tr>
+<td>Evaluations</td>
+<td>$30–150</td>
+<td>内置评估器：每千个输入 token $0.0024，每千个输出 token $0.012（✅[A24]）</td>
+</tr>
+<tr>
+<td>模型 token</td>
+<td>$300–2,500</td>
+<td><strong>最大的变量</strong>。参考价：Sonnet 5.5 $2/$10，Haiku 5.5 $0.10/$0.50（US 地理配置文件再加约 10%，✅[B14]）。复核会让用量多出 30–50%；提示词缓存能省下不少</td>
+</tr>
+<tr>
+<td>Guardrails</td>
+<td>$50–400</td>
+<td>每千个文本单位：内容过滤 $0.15，屏蔽话题 $0.15，敏感信息 $0.10，溯源 $0.10（✅[B14]）。贵在哪里，见下文</td>
+</tr>
+<tr>
+<td>知识库</td>
+<td>$25–60</td>
+<td>托管知识库：索引每 GB 每月 $5，检索每千次 $1（✅[B14]）</td>
+</tr>
+<tr>
+<td>骨架与存储</td>
+<td>$20–60</td>
+<td>Step Functions、DynamoDB、S3、EventBridge（📚）</td>
+</tr>
+<tr>
+<td>入口</td>
+<td>$20–40</td>
+<td>WAF、CloudFront、SES、API Gateway（📚）</td>
+</tr>
+<tr>
+<td><strong>AWS 合计</strong></td>
+<td><strong>约 $900–4,000</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>SaaS</td>
+<td>见研究文档 10.7</td>
+<td>CRM、电子签、Stripe 手续费、线索数据等</td>
+</tr>
+<tr>
+<td>AWS Quick（可选）</td>
+<td>约 $270–290</td>
+<td>1 名用户：Professional 或 Enterprise 档，加每账户 $250（研究文档 5.8 ✅）</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>护栏成本</strong></p>
+<ul>
+<li>Guardrails 按文本单位计费，而 Agent 每轮循环都会把整段对话历史再发一遍。</li>
+<li>所以，如果对全部消息做检测，成本会随着轮数的平方增长。</li>
+<li>建议的做法：<ul>
+<li>组织基线默认用&quot;只检测打了标记的内容&quot;（selective）。</li>
+<li>外壳代码只给<strong>新进来的外部内容</strong>打标记。</li>
+<li>只有 agents-edge 账号设成&quot;全量检测&quot;（comprehensive），作为兜底（✅[B7]）。</li>
+</ul>
+</li>
+</ul>
+<p><strong>和研究文档的关系</strong></p>
+<ul>
+<li>研究文档里&quot;一步到位版&quot;每月 $3,000–20,000 是全口径，包括 SaaS 和人工监督。本表只算 AWS 部分。</li>
+<li>搭建费仍按研究文档的 $15–40 万估算。如果 Owner 本人就是架构师，再配一名自由职业工程师，可以压到区间的下沿。</li>
+</ul>
+<p><strong>主要的省钱手段</strong></p>
+<ul>
+<li>提示词缓存。</li>
+<li>按档位选模型。</li>
+<li>护栏只放在边界上。</li>
+<li>staging 只用 1 个可用区。</li>
+<li>评估共享 VPC 来集中接口端点（⚠️）。</li>
+</ul>
+<hr>
+<h2 id="13-实施路线图"><a class="anchor" href="#13-实施路线图" aria-label="本节链接">#</a>13. 实施路线图</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>时长</th>
+<th>内容</th>
+<th>完成标准</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0 地基</td>
+<td>3–4 周</td>
+<td>- 8 个账号；SCP、RCP、Bedrock 策略；Identity Center；日志和安全基线<br>- 治理仓库；宪章、阈值、人物卡<br>- 得州法律事务（研究文档 9.9）</td>
+<td>- SCP 和 Cedar 测试全部通过<br>- 审计账本&quot;能写不能删&quot;</td>
+</tr>
+<tr>
+<td>1 控制面和知识</td>
+<td>4–6 周</td>
+<td>- Gateway + Policy + 拦截器<br>- 执行器和审批服务<br>- Owner 控制台<br>- 托管知识库和入库流水线<br>- 可观测性<br>- 隔离读信员、复核官、幕僚长以 A0 上线</td>
+<td>- 跨租户泄漏为 0<br>- 第一轮红队测试通过<br>- ENFORCE 模式检查告警可用</td>
+</tr>
+<tr>
+<td>2 获客到报价</td>
+<td>4–6 周</td>
+<td>- 获客AI、前台AI、销售AI 从 A0 升到 A1<br>- 状态机前半段</td>
+<td>Owner 每天审批用时少于 1 小时</td>
+</tr>
+<tr>
+<td>3 合同、收款、交付</td>
+<td>6–8 周</td>
+<td>- 合同AI、财务AI、项目/生产/质检AI<br>- 接入电子签和 Stripe</td>
+<td>完成第一笔端到端成交</td>
+</tr>
+<tr>
+<td>4 客户成功和放权</td>
+<td>持续</td>
+<td>- 客户成功AI<br>- 按数据逐个动作晋升到 A2、A3<br>- 用 Harness 把简单人物配置化<br>- 需要时加关系检索（Neptune Analytics GraphRAG，✅[B2]）<br>- 成本优化</td>
+<td>自动化率达到目标</td>
+</tr>
+</tbody></table>
+</div>
+<p>合计约 5–7 个月，和研究文档&quot;一步到位版需要 5–8 个月&quot;的判断一致。</p>
+<hr>
+<h2 id="14-待你确认-下一步"><a class="anchor" href="#14-待你确认-下一步" aria-label="本节链接">#</a>14. 待你确认 / 下一步</h2>
+<p><strong>业务和规则</strong></p>
+<ol>
+<li><strong>卖什么、怎么交付</strong>：决定生产AI需要哪些工具和知识。</li>
+<li><strong>授权矩阵的阈值</strong>：7.3 里的数字只是示例。</li>
+</ol>
+<p><strong>架构和成本取舍</strong></p>
+<ol start="3">
+<li><strong>账号数量</strong>：接受 8 个账号吗？<ul>
+<li>platform 和三个人物账号不建议合并。</li>
+<li>如果要精简，可以先不建 staging，用 canary 端点 + 合成数据代替。代价是红队测试只能在生产账号里做。</li>
+</ul>
+</li>
+<li><strong>网络成本</strong>：接口端点每月约 $300，接受吗？还是先评估共享 VPC，或者让边缘区人物用 PUBLIC 网络模式（安全性会下降）？</li>
+<li><strong>全球跨区推理</strong>：要不要放开？它大约便宜 10%，但数据可能离开美国（G-01）。</li>
+<li><strong>Claude Fable 5.x</strong>：它强制 30 天数据保留，而且被标记的流量可能被 AWS 人工审阅。要不要用，用在哪些人物上（5.4）？</li>
+</ol>
+<p><strong>人和渠道</strong></p>
+<ol start="7">
+<li><strong>审批渠道</strong>：自建控制台（推荐），还是 Slack，或者 AWS Quick？</li>
+<li><strong>紧急联系人</strong>：有没有一位可信的人？他只有冻结权限。</li>
+<li><strong>CRM 选型</strong>：HubSpot 还是别的。</li>
+</ol>
+<p><strong>合规</strong></p>
+<ol start="10">
+<li><strong>客户所在地</strong>：有没有欧盟、加州、科罗拉多的客户？这决定 AI 身份告知和自动化决策方面的义务。</li>
+<li><strong>记录保留年限</strong>：需要律师确认。</li>
+</ol>
+<p><strong>预算</strong></p>
+<ol start="12">
+<li><strong>预算上限和上线时间。</strong></li>
+</ol>
+<p><strong>我可以接着做的</strong></p>
+<ul>
+<li>把第3节的流程骨架细化成可以直接实现的 ASL，包括输入输出约定。</li>
+<li>把授权矩阵写成完整的 Cedar 策略集，并配上测试用例。</li>
+<li>出一份 IaC 模块清单：账号基线、人物模块、Gateway 目标模块、拦截器。</li>
+</ul>
+<hr>
+<h2 id="术语表"><a class="anchor" href="#术语表" aria-label="本节链接">#</a>术语表</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>术语</th>
+<th>英文</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Owner</td>
+<td>—</td>
+<td>公司里唯一的人：所有者、董事会、唯一审批人</td>
+</tr>
+<tr>
+<td>AI 人物</td>
+<td>Persona</td>
+<td>一个受治理的 AI 岗位：岗位卡 + 身份 + 权限 + 预算 + 考核</td>
+</tr>
+<tr>
+<td>三道防线</td>
+<td>Three lines of defense</td>
+<td>业务自控、独立控制、审计</td>
+</tr>
+<tr>
+<td>四道闸</td>
+<td>—</td>
+<td>自检、规则、护栏、独立复核</td>
+</tr>
+<tr>
+<td>R0–R4</td>
+<td>—</td>
+<td>动作风险等级，从只读到禁止</td>
+</tr>
+<tr>
+<td>A0–A3</td>
+<td>—</td>
+<td>自主度等级：影子运行、逐条批准、自动 + 抽查、只处理例外</td>
+</tr>
+<tr>
+<td>执行器</td>
+<td>Executor</td>
+<td>平台账号里的确定性代码，按批准的载荷执行高风险动作</td>
+</tr>
+<tr>
+<td>工作单令牌</td>
+<td>Work-item token</td>
+<td>骨架签发的短期签名令牌，写明工作单、租户和人物</td>
+</tr>
+<tr>
+<td>载荷哈希</td>
+<td>Payload hash</td>
+<td>被批准的工具调用参数的 SHA-256，保证&quot;批什么就做什么&quot;</td>
+</tr>
+<tr>
+<td>冷静期</td>
+<td>Cooling-off period</td>
+<td>放宽类变更批准后、生效前的强制等待时间</td>
+</tr>
+<tr>
+<td>破窗</td>
+<td>Break-glass</td>
+<td>紧急情况下的人工越权操作，全程留痕</td>
+</tr>
+<tr>
+<td>熔断</td>
+<td>Kill switch</td>
+<td>K1–K5 分级停止</td>
+</tr>
+<tr>
+<td>隔离读信员</td>
+<td>Quarantine reader</td>
+<td>没有任何工具的人物，把不可信内容转成结构化数据（双 LLM 模式）</td>
+</tr>
+<tr>
+<td>拦截器</td>
+<td>Gateway interceptor</td>
+<td>挂在 Gateway 上的请求或响应 Lambda，可以改写请求，也可以直接短路返回</td>
+</tr>
+<tr>
+<td>Cedar / Dogwood</td>
+<td>—</td>
+<td>AgentCore Policy 使用的策略语言。Dogwood 是 Cedar 的超集，增加了时序条件和护栏条件</td>
+</tr>
+<tr>
+<td>LOG_ONLY / ENFORCE</td>
+<td>—</td>
+<td>Policy 的两种模式：只记录 / 真正拦截</td>
+</tr>
+<tr>
+<td>输入标记</td>
+<td>Input tagging / <code>guardContent</code></td>
+<td>只对提示词里被标记的不可信部分做提示词攻击检测；不打标记就不检测</td>
+</tr>
+<tr>
+<td><code>InvokeGuardrailChecks</code></td>
+<td>—</td>
+<td>不依赖护栏资源、只检测不拦截的 API，返回内容、提示词攻击、敏感信息的分数</td>
+</tr>
+<tr>
+<td>上下文溯源检查</td>
+<td>Contextual grounding check</td>
+<td>检查回答是否被检索到的片段支撑</td>
+</tr>
+<tr>
+<td>自动推理检查</td>
+<td>Automated Reasoning checks</td>
+<td>用形式逻辑核对回答是否符合写成规则的政策；只检测，只支持美式英语</td>
+</tr>
+<tr>
+<td>托管知识库</td>
+<td>Managed Knowledge Base</td>
+<td>由 Bedrock 托管解析、嵌入、索引和检索的知识库，永远是混合检索</td>
+</tr>
+<tr>
+<td>混合检索 / 重排</td>
+<td>Hybrid search / Rerank</td>
+<td>关键词 + 语义检索 / 用专门模型对结果重新排序</td>
+</tr>
+<tr>
+<td>推理配置文件</td>
+<td>Inference profile</td>
+<td>模型调用入口。地理配置文件在一个地理区域内的多个区域之间路由；全球配置文件可能路由到任何商业区域</td>
+</tr>
+<tr>
+<td>数据保留模式</td>
+<td>Data retention mode</td>
+<td>每个账号、每个区域的模型数据保留设置：零保留、默认、AWS 审阅等</td>
+</tr>
+<tr>
+<td><code>bedrock-mantle</code></td>
+<td>—</td>
+<td>Bedrock 的另一个推理端点。目前不支持护栏和调用日志，本设计禁用它</td>
+</tr>
+<tr>
+<td>SCP / RCP</td>
+<td>Service / Resource Control Policy</td>
+<td>组织级护栏：分别从身份一侧和资源一侧限制</td>
+</tr>
+<tr>
+<td>Bedrock 策略</td>
+<td><code>BEDROCK_POLICY</code></td>
+<td>Organizations 的一种策略类型，用来在组织范围强制护栏</td>
+</tr>
+<tr>
+<td>Object Lock 合规模式</td>
+<td>S3 Object Lock compliance mode</td>
+<td>保留期内任何人（包括 root）都删不掉</td>
+</tr>
+<tr>
+<td>任务令牌</td>
+<td>Task token</td>
+<td>Step Functions 回调模式里用来挂起流程的令牌</td>
+</tr>
+<tr>
+<td>元数据服务</td>
+<td>MMDS</td>
+<td>microVM 里的实例元数据服务。能读到执行角色的凭据，AgentCorruption 就是从这里入手的</td>
+</tr>
+<tr>
+<td>AgentCorruption</td>
+<td>—</td>
+<td>Zenity 在 2026 年 10 月披露的攻击链：一条提示就能接管同账号、同区域的 AgentCore Agent</td>
+</tr>
+<tr>
+<td>NIST AI RMF</td>
+<td>AI Risk Management Framework</td>
+<td>美国 NIST 的 AI 风险管理框架</td>
+</tr>
+<tr>
+<td>TRAIGA / DTPA / TDPSA</td>
+<td>—</td>
+<td>得州的 AI 治理法 / 消费者保护法 / 隐私法</td>
+</tr>
+</tbody></table>
+</div>
+<hr>
+<h2 id="引用来源"><a class="anchor" href="#引用来源" aria-label="本节链接">#</a>引用来源</h2>
+<blockquote>
+<p>AWS 文档和博客由两个研究子任务于 2026-11-12 抓取核实。内容为归纳改写（Content was rephrased for compliance with licensing restrictions），具体数值和行为以链接里的当前官方文档为准。
+缩写：D = <code>https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/</code>，UG = <code>https://docs.aws.amazon.com/bedrock/latest/userguide/</code>。</p>
+</blockquote>
+<p><strong>AgentCore</strong></p>
+<ul>
+<li>[A2] 区域可用性：D + <code>agentcore-regions.html</code></li>
+<li>[A3] Runtime 会话隔离、协议、IAM 上下文键：D + <code>runtime-sessions.html</code></li>
+<li>[A4] Runtime 生命周期设置：D + <code>runtime-lifecycle-settings.html</code></li>
+<li>[A5] Runtime VPC 模式：D + <code>agentcore-vpc.html</code></li>
+<li>[A6] Runtime 版本与端点：D + <code>agent-runtime-versioning.html</code></li>
+<li>[A7] Runtime 安全最佳实践、凭据管理：D + <code>runtime-security-best-practices.html</code>、D + <code>security-credentials-management.html</code></li>
+<li>[A8] Harness：D + <code>harness.html</code>、D + <code>harness-vs-runtime.html</code>、D + <code>harness-models.html</code></li>
+<li>[A10] Gateway 入站和出站认证：D + <code>gateway-inbound-auth.html</code>、D + <code>gateway-outbound-auth.html</code></li>
+<li>[A12] Gateway 拦截器：D + <code>gateway-interceptors.html</code></li>
+<li>[A13] Policy 核心概念（Cedar、Dogwood、默认拒绝、forbid 优先）：D + <code>policy-core-concepts.html</code></li>
+<li>[A14] Policy 实体模型：D + <code>policy-authorization-flow.html</code>、D + <code>policy-conditions.html</code></li>
+<li>[A15] Policy 执行模式：D + <code>policy-enforcement-modes.html</code></li>
+<li>[A16] Policy 时序策略：D + <code>policy-temporal.html</code></li>
+<li>[A17] Identity：D + <code>understanding-agent-identities.html</code>、D + <code>key-features-and-benefits.html</code></li>
+<li>[A18] Memory：D + <code>memory-strategies.html</code>、D + <code>specify-long-term-memory-organization.html</code>、D + <code>memory-create-a-memory-store.html</code>、D + <code>short-term-delete-event.html</code></li>
+<li>[A19] Registry 记录生命周期：D + <code>registry-record-lifecycle.html</code></li>
+<li>[A20] Evaluations：D + <code>built-in-evaluators-overview.html</code>、D + <code>evaluations-types.html</code></li>
+<li>[A21] 可观测性：D + <code>observability.html</code>、D + <code>observability-service-provided.html</code></li>
+<li>[A22] VPC 接口端点：D + <code>vpc-interface-endpoints.html</code></li>
+<li>[A23] Browser、Code Interpreter：D + <code>browser-tool.html</code>、D + <code>code-interpreter-tool.html</code></li>
+<li>[A24] AgentCore 价格：<a href="https://aws.amazon.com/bedrock/agentcore/pricing/" target="_blank" rel="noopener">https://aws.amazon.com/bedrock/agentcore/pricing/</a></li>
+<li>[A25] AgentCorruption：<ul>
+<li><a href="https://labs.zenity.io/post/agentcorruption-how-a-single-prompt-collapsed-the-entire-cloud-security-model" target="_blank" rel="noopener">https://labs.zenity.io/post/agentcorruption-how-a-single-prompt-collapsed-the-entire-cloud-security-model</a></li>
+<li><a href="https://thenextweb.com/news/aws-agentcore-zenity-agentcorruption-one-prompt-agents" target="_blank" rel="noopener">https://thenextweb.com/news/aws-agentcore-zenity-agentcorruption-one-prompt-agents</a></li>
+</ul>
+</li>
+<li>[A26] AWS 安全公告（2026-040、044、058、065、073、127）：<a href="https://aws.amazon.com/security/security-bulletins/" target="_blank" rel="noopener">https://aws.amazon.com/security/security-bulletins/</a></li>
+<li>[A27] Payments：D + <code>payments.html</code></li>
+</ul>
+<p><strong>Bedrock</strong></p>
+<ul>
+<li>[B1] 知识库类型与托管知识库：UG + <code>knowledge-base.html</code>、UG + <code>kb-build-managed.html</code>、UG + <code>kb-managed-create.html</code></li>
+<li>[B2] 向量库支持：UG + <code>knowledge-base-setup.html</code></li>
+<li>[B3] 混合检索与元数据过滤：UG + <code>kb-test-config.html</code></li>
+<li>[B4] 多租户与细粒度访问控制：<ul>
+<li><a href="https://aws.amazon.com/blogs/machine-learning/multi-tenancy-in-rag-applications-in-a-single-amazon-bedrock-knowledge-base-with-metadata-filtering/" target="_blank" rel="noopener">https://aws.amazon.com/blogs/machine-learning/multi-tenancy-in-rag-applications-in-a-single-amazon-bedrock-knowledge-base-with-metadata-filtering/</a></li>
+<li><a href="https://aws.amazon.com/blogs/machine-learning/fine-grained-access-control-for-amazon-bedrock-managed-knowledge-base-tools/" target="_blank" rel="noopener">https://aws.amazon.com/blogs/machine-learning/fine-grained-access-control-for-amazon-bedrock-managed-knowledge-base-tools/</a></li>
+<li>UG + <code>kb-managed-acl.html</code></li>
+<li><a href="https://aws.amazon.com/blogs/storage/how-hathr-ai-delivers-multi-tenant-agentic-rag-for-regulated-us-government-workloads-with-amazon-s3-vectors/" target="_blank" rel="noopener">https://aws.amazon.com/blogs/storage/how-hathr-ai-delivers-multi-tenant-agentic-rag-for-regulated-us-government-workloads-with-amazon-s3-vectors/</a></li>
+</ul>
+</li>
+<li>[B5] 检索片段不经过 Guardrails：UG + <code>kb-test-retrieve.html</code></li>
+<li>[B6] Guardrails 安全策略与输入标记：UG + <code>guardrails.html</code>、UG + <code>guardrails-tagging.html</code>、UG + <code>guardrails-prompt-attack.html</code>、<a href="https://aws.amazon.com/bedrock/guardrails/" target="_blank" rel="noopener">https://aws.amazon.com/bedrock/guardrails/</a></li>
+<li>[B7] 组织级护栏强制：UG + <code>guardrails-enforcements.html</code>、<a href="https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_bedrock.html" target="_blank" rel="noopener">https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_bedrock.html</a></li>
+<li>[B8] <code>bedrock:GuardrailIdentifier</code> 条件键：UG + <code>guardrails-permissions-id.html</code></li>
+<li>[B9] 成本归因与花费封顶：UG + <code>cost-mgmt-application-inference-profiles.html</code>、<a href="https://aws.amazon.com/blogs/machine-learning/tokenomics-at-scale-track-and-cap-amazon-bedrock-spend-per-iam-principal-with-cur-2-0-and-aws-budgets/" target="_blank" rel="noopener">https://aws.amazon.com/blogs/machine-learning/tokenomics-at-scale-track-and-cap-amazon-bedrock-spend-per-iam-principal-with-cur-2-0-and-aws-budgets/</a></li>
+<li>[B10] 跨区推理与 SCP：UG + <code>geographic-cross-region-inference.html</code>、UG + <code>global-cross-region-inference.html</code>、UG + <code>cross-region-inference.html</code></li>
+<li>[B11] 数据保留模式：UG + <code>data-retention.html</code>、UG + <code>abuse-detection.html</code></li>
+<li>[B12] 模型调用日志：UG + <code>model-invocation-logging.html</code></li>
+<li>[B13] CloudTrail 记录：UG + <code>logging-using-cloudtrail.html</code></li>
+<li>[B14] Bedrock 价格：<a href="https://aws.amazon.com/bedrock/pricing/" target="_blank" rel="noopener">https://aws.amazon.com/bedrock/pricing/</a></li>
+<li>[B15] 自动推理检查：UG + <code>guardrails-automated-reasoning-checks.html</code></li>
+<li>[B16] <code>InvokeGuardrailChecks</code>：UG + <code>guardrails-use-invoke-guardrail-checks.html</code></li>
+<li>[B17] 模型卡：UG + <code>model-cards-anthropic.html</code>、UG + <code>model-cards.html</code>、UG + <code>model-card-openai-gpt-6-luna.html</code></li>
+<li>[B18] 合规范围：<ul>
+<li><a href="https://aws.amazon.com/compliance/services-in-scope/" target="_blank" rel="noopener">https://aws.amazon.com/compliance/services-in-scope/</a></li>
+<li><a href="https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/compliance-validation.html" target="_blank" rel="noopener">https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/compliance-validation.html</a></li>
+<li><a href="https://aws.amazon.com/blogs/machine-learning/aws-achieves-iso-iec-420012023-artificial-intelligence-management-system-accredited-certification/" target="_blank" rel="noopener">https://aws.amazon.com/blogs/machine-learning/aws-achieves-iso-iec-420012023-artificial-intelligence-management-system-accredited-certification/</a></li>
+</ul>
+</li>
+<li>[B19] 知识库评估：UG + <code>evaluation-kb.html</code></li>
+<li>[B20] 单次 RAG 与 agentic 检索（2026-11-09）：<a href="https://aws.amazon.com/blogs/machine-learning/single-shot-and-agentic-retrieval-with-amazon-bedrock-managed-knowledge-base/" target="_blank" rel="noopener">https://aws.amazon.com/blogs/machine-learning/single-shot-and-agentic-retrieval-with-amazon-bedrock-managed-knowledge-base/</a>、UG + <code>kb-test-agentic-retrieve.html</code></li>
+<li>[B21] Guardrails 档位：UG + <code>guardrails-tiers.html</code></li>
+<li>[B22] 提示词缓存：UG + <code>prompt-caching.html</code></li>
+<li>[B23] 数据隐私：<a href="https://aws.amazon.com/bedrock/faqs/" target="_blank" rel="noopener">https://aws.amazon.com/bedrock/faqs/</a>、UG + <code>data-protection.html</code></li>
+</ul>
+<p><strong>配套服务</strong></p>
+<ul>
+<li>[S1] Step Functions 服务集成模式与配额：<a href="https://docs.aws.amazon.com/step-functions/latest/dg/connect-to-resource.html" target="_blank" rel="noopener">https://docs.aws.amazon.com/step-functions/latest/dg/connect-to-resource.html</a>、<a href="https://docs.aws.amazon.com/step-functions/latest/dg/service-quotas.html" target="_blank" rel="noopener">https://docs.aws.amazon.com/step-functions/latest/dg/service-quotas.html</a></li>
+<li>[S2] 资源控制策略（RCP）：<a href="https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_rcps.html" target="_blank" rel="noopener">https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_rcps.html</a></li>
+<li>[S3] 集中式 root 访问：<a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_root-user-privileged-task.html" target="_blank" rel="noopener">https://docs.aws.amazon.com/IAM/latest/UserGuide/id_root-user-privileged-task.html</a>、<a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_root-enable-root-access.html" target="_blank" rel="noopener">https://docs.aws.amazon.com/IAM/latest/UserGuide/id_root-enable-root-access.html</a></li>
+<li>[S4] GuardDuty S3 恶意软件防护：<a href="https://docs.aws.amazon.com/guardduty/latest/ug/gdu-malware-protection-s3.html" target="_blank" rel="noopener">https://docs.aws.amazon.com/guardduty/latest/ug/gdu-malware-protection-s3.html</a></li>
+<li>[S5] SES 端点与收信区域：<a href="https://docs.aws.amazon.com/general/latest/gr/ses.html" target="_blank" rel="noopener">https://docs.aws.amazon.com/general/latest/gr/ses.html</a></li>
+<li>[S6] PrivateLink 价格：<a href="https://aws.amazon.com/privatelink/pricing/" target="_blank" rel="noopener">https://aws.amazon.com/privatelink/pricing/</a></li>
+<li>[S7] S3 Vectors 正式发布：<a href="https://aws.amazon.com/blogs/aws/amazon-s3-vectors-now-generally-available-with-increased-scale-and-performance/" target="_blank" rel="noopener">https://aws.amazon.com/blogs/aws/amazon-s3-vectors-now-generally-available-with-increased-scale-and-performance/</a></li>
+</ul>
+<p><strong>标准</strong></p>
+<ul>
+<li>[N1] NIST Agent 身份管理设计原则：<a href="https://www.nist.gov/blogs/cybersecurity-insights/design-tenets-agent-identity-management-systems" target="_blank" rel="noopener">https://www.nist.gov/blogs/cybersecurity-insights/design-tenets-agent-identity-management-systems</a></li>
+<li>OWASP Agent 应用十大风险：<a href="https://genai.owasp.org/2025/12/09/owasp-genai-security-project-releases-top-10-risks-and-mitigations-for-agentic-ai-security/" target="_blank" rel="noopener">https://genai.owasp.org/2025/12/09/owasp-genai-security-project-releases-top-10-risks-and-mitigations-for-agentic-ai-security/</a></li>
+</ul>
+<p><strong>前序研究</strong></p>
+<ul>
+<li>同目录 <code>ai-native-company-research-and-plan.md</code>，主要用到第2、4、5.4、5.8、6、7、8、9、10节。法规事实以该文档的核实状态为准。</li>
+</ul>
+
+    </article>
+    <nav class="pager" aria-label="翻页">
+    <a class="prev" href="full-research.html"><span>上一页</span><strong>全文 · 研究汇总 v0.2</strong></a>
+    <a class="next" href="full-artifacts.html"><span>下一页</span><strong>全文 · 参考样例</strong></a>
+  </nav>
+    <footer class="foot">本站为方案构想，供讨论用；法律与税务内容未经律师或会计审阅，不构成法律意见。状态标记：✅ 已核实 · ⚠️ 待核实 · 💡 判断 · 📌 估算 · 📚 训练知识未复核。</footer>
+  </main>
+  <nav class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><ul><li><a href="#0-一句话结论-决策速览">0. 一句话结论 + 决策速览</a></li><li><a href="#1-范围-假设与设计目标">1. 范围、假设与设计目标</a></li><li><a href="#2-组织架构-一个人-ai-人物">2. 组织架构：一个人 + AI 人物</a></li><li><a href="#3-总体架构">3. 总体架构</a></li><li><a href="#4-aws-账号-网络与预防性护栏">4. AWS 账号、网络与预防性护栏</a></li><li><a href="#5-ai-人物运行设计-agentcore">5. AI 人物运行设计（AgentCore）</a></li><li><a href="#6-rag-知识层">6. RAG 知识层</a></li><li><a href="#7-审核体系">7. 审核体系</a></li><li><a href="#8-治理">8. 治理</a></li><li><a href="#9-安全">9. 安全</a></li><li><a href="#10-可观测性与审计">10. 可观测性与审计</a></li><li><a href="#11-可靠性与-dr">11. 可靠性与 DR</a></li><li><a href="#12-成本估算-📌">12. 成本估算（📌）</a></li><li><a href="#13-实施路线图">13. 实施路线图</a></li><li><a href="#14-待你确认-下一步">14. 待你确认 / 下一步</a></li><li><a href="#术语表">术语表</a></li><li><a href="#引用来源">引用来源</a></li></ul></nav>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

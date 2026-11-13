@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>前期准备总览 · 一人 AI 公司 · 方案构想</title>
+<meta name="description" content="用 AI 组成整家公司、尽量少的人来管理：研究、架构设计与前期准备清单。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23255f73'/%3E%3Ccircle cx='16' cy='11' r='4.5' fill='%23ffd28a'/%3E%3Ccircle cx='8' cy='22' r='3' fill='%23fff'/%3E%3Ccircle cx='16' cy='24' r='3' fill='%23fff'/%3E%3Ccircle cx='24' cy='22' r='3' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+</head>
+<body data-page="prep">
+<a class="skip" href="#content">跳到正文</a>
+<header class="topbar">
+  <button class="menu-btn" type="button" aria-label="打开目录" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>一人 AI 公司 · 方案构想</a>
+  <span class="progress" aria-label="阅读进度">第 13 / 22 页</span>
+  <button class="theme-btn" type="button" aria-label="切换深色/浅色">◐</button>
+</header>
+<div class="shell">
+  <aside class="sidebar" id="sidebar"><div class="nav-group"><div class="nav-group-title">开始</div><ul><li><a href="index.html">首页：一页看懂</a></li></ul></div><div class="nav-group"><div class="nav-group-title">基础研究</div><ul><li><a href="feasibility.html">可行性：能做到什么程度</a></li><li><a href="platforms.html">工具与平台选型</a></li><li><a href="compliance.html">合规：得州与美国</a></li><li><a href="updates.html">研究更新（11-13 补充核实）</a></li></ul></div><div class="nav-group"><div class="nav-group-title">方案设计</div><ul><li><a href="org.html">组织架构：1 个人 + AI 人物</a></li><li><a href="architecture.html">推荐架构：AWS Bedrock 路线</a></li><li><a href="knowledge.html">专属 RAG 知识层</a></li><li><a href="review.html">审核：风险分级与授权矩阵</a></li><li><a href="governance.html">AI 治理</a></li><li><a href="security.html">安全防护</a></li><li><a href="cost-roadmap.html">成本与实施路线图</a></li></ul></div><div class="nav-group"><div class="nav-group-title">前期准备（请贵司配合）</div><ul><li><a href="prep.html" aria-current="page">前期准备总览</a></li><li><a href="prep-questionnaire.html">① 业务信息问卷</a></li><li><a href="prep-assets.html">② 资料与账号清单</a></li><li><a href="prep-decisions.html">③ 需要拍板的决策</a></li><li><a href="prep-plan.html">④ 前期工作计划与验收</a></li></ul></div><div class="nav-group"><div class="nav-group-title">附录</div><ul><li><a href="glossary.html">术语表</a></li><li><a href="sources.html">来源索引</a></li><li><a href="full-research.html">全文 · 研究汇总 v0.2</a></li><li><a href="full-architecture.html">全文 · Bedrock 架构设计</a></li><li><a href="full-artifacts.html">全文 · 参考样例</a></li></ul></div>
+    <div class="side-foot">更新于 2026-11-13</div>
+  </aside>
+  <main id="content" class="content">
+    <article>
+      
+      <h1 class="page-title">前期准备总览</h1>
+      <blockquote>
+<p><strong>一句话</strong>：前面的设计是一份<strong>通用模板</strong>。要把它变成贵司能用的公司，我们需要贵司回答&quot;卖什么、卖给谁、怎么交付、能接受多大风险&quot;，并准备好知识资料和账号。这一步做得越扎实，后面搭建越快、自动化率越高。</p>
+</blockquote>
+<h2 id="为什么前期准备决定成败"><a class="anchor" href="#为什么前期准备决定成败" aria-label="本节链接">#</a>为什么前期准备决定成败</h2>
+<p>AI 人物的表现几乎完全取决于三样东西，而这三样只有贵司能提供：</p>
+<ol>
+<li><strong>业务知识</strong>：价格怎么定、交付标准是什么、哪些条款能让步。AI 不知道的事，它要么瞎编，要么每次都来问 Owner。</li>
+<li><strong>规则和红线</strong>：哪些事 AI 可以自己做、哪些要人批、哪些绝对不能做。这些数字直接写进系统的规则引擎。</li>
+<li><strong>真实样例</strong>：过去的客户对话、报价、交付物，以及处理得好和不好的例子。它们是每个 AI 岗位上线前的&quot;考题&quot;。</li>
+</ol>
+<h2 id="贵司的回答会改变什么"><a class="anchor" href="#贵司的回答会改变什么" aria-label="本节链接">#</a>贵司的回答会改变什么</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>贵司的回答</th>
+<th>会改变方案的哪部分</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>卖什么、交付是否数字化</td>
+<td>需要哪些&quot;生产AI&quot;、用什么工具、可行的自动化率</td>
+</tr>
+<tr>
+<td>客单价和合同金额</td>
+<td>授权矩阵的阈值、合同审批规则、是否适用 DTPA 豁免</td>
+</tr>
+<tr>
+<td>客户是企业还是个人、在哪些州或国家</td>
+<td>AI 身份告知、隐私义务、科罗拉多/加州/欧盟规则是否适用</td>
+</tr>
+<tr>
+<td>获客要不要电话和短信</td>
+<td>是否要办得州电话推销登记和 $10,000 保证金；是否要建同意管理</td>
+</tr>
+<tr>
+<td>现有办公生态（微软 / Google / 没有）</td>
+<td>底座选 AWS、微软还是 Google</td>
+</tr>
+<tr>
+<td>Owner 每天能投入多少时间</td>
+<td>审批阈值的松紧、是否需要兼职运营</td>
+</tr>
+<tr>
+<td>预算和上线时间</td>
+<td>一步到位还是分阶段；第一期覆盖哪些流程</td>
+</tr>
+<tr>
+<td>是否打算复制给更多公司</td>
+<td>是否要做多租户和模板化设计</td>
+</tr>
+</tbody></table>
+</div>
+<h2 id="四件事"><a class="anchor" href="#四件事" aria-label="本节链接">#</a>四件事</h2>
+<div class="cards">
+<a class="card warm" href="prep-questionnaire.html"><b>① 业务信息问卷</b><span>约 60 个问题，分 12 组。大部分是选择或短答，预计 2–3 小时。不确定的可以先写"不确定"，我们在研讨会上一起定。</span></a>
+<a class="card warm" href="prep-assets.html"><b>② 资料与账号清单</b><span>知识资料、测试样例、必须由人开通的账号、合规与保险。页面上的复选框可以勾选，进度保存在您的浏览器里。</span></a>
+<a class="card warm" href="prep-decisions.html"><b>③ 需要拍板的决策</b><span>17 个决策点，每个都附我们的建议；另有授权矩阵、红线和岗位选择三张工作表。</span></a>
+<a class="card warm" href="prep-plan.html"><b>④ 前期工作计划与验收</b><span>3–6 周的周计划、3 场研讨会、我们交回的成果，以及"可以开工"的验收清单。</span></a>
+</div>
+
+<h2 id="时间不够的话-先做这-10-件"><a class="anchor" href="#时间不够的话-先做这-10-件" aria-label="本节链接">#</a>时间不够的话，先做这 10 件</h2>
+<p>如果只能先做一部分，下面这 10 件能让我们开始定稿设计：</p>
+<ul>
+<li><input disabled="" type="checkbox"> 回答问卷的 <strong>B 组（卖什么）和 C 组（卖给谁）</strong></li>
+<li><input disabled="" type="checkbox"> 提供 <strong>服务目录和价格表</strong>（哪怕是草稿）</li>
+<li><input disabled="" type="checkbox"> 用文字或录屏走一遍 <strong>一个客户从第一次接触到交付完成的全过程</strong></li>
+<li><input disabled="" type="checkbox"> 确认 <strong>公司注册地、Owner 是谁、还有没有其他人参与</strong></li>
+<li><input disabled="" type="checkbox"> 确认 <strong>获客要不要电话或短信</strong></li>
+<li><input disabled="" type="checkbox"> 确认 <strong>现在用微软 365、Google Workspace，还是都没有</strong></li>
+<li><input disabled="" type="checkbox"> 填写 <strong>授权矩阵工作表</strong>（折扣、合同金额、退款三行即可）</li>
+<li><input disabled="" type="checkbox"> 列出 <strong>3–5 条绝对红线</strong>（AI 无论如何不能做的事）</li>
+<li><input disabled="" type="checkbox"> 提供 <strong>10–20 段真实或模拟的客户对话</strong>（邮件往来即可，可去掉姓名）</li>
+<li><input disabled="" type="checkbox"> 给出 <strong>预算区间和期望上线时间</strong></li>
+</ul>
+<h2 id="贵司这边需要谁参与"><a class="anchor" href="#贵司这边需要谁参与" aria-label="本节链接">#</a>贵司这边需要谁参与</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>角色</th>
+<th>做什么</th>
+<th>投入（📌）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Owner（决策人）</strong></td>
+<td>回答问卷、拍板决策、参加 3 场研讨会、开通必须实名的账号</td>
+<td>前期共约 10–15 小时</td>
+</tr>
+<tr>
+<td>业务骨干（如有）</td>
+<td>提供 SOP、价格规则、交付标准、真实案例</td>
+<td>约 8–12 小时</td>
+</tr>
+<tr>
+<td>行政或 IT（如有）</td>
+<td>开通域名、邮箱、云账号，整理现有资料</td>
+<td>约 4–8 小时</td>
+</tr>
+<tr>
+<td>得州律师</td>
+<td>审阅合同模板、隐私政策、话术、合规材料</td>
+<td>按项目计费，约 $5k–15k</td>
+</tr>
+<tr>
+<td>CPA</td>
+<td>销售税设置、特许税和账务设置</td>
+<td>约 $1k–3k</td>
+</tr>
+</tbody></table>
+</div>
+<blockquote>
+<p>如果贵司现在只有 Owner 一个人，所有事都可以由 Owner 完成；我们会在研讨会里帮您把 SOP 和规则&quot;问出来&quot;并整理成文档。</p>
+</blockquote>
+<h2 id="我们会交回什么"><a class="anchor" href="#我们会交回什么" aria-label="本节链接">#</a>我们会交回什么</h2>
+<p>前期准备结束时，我们交回一套<strong>为贵司定制的</strong>方案包：</p>
+<ol>
+<li><strong>定稿设计 v1.0</strong>：按贵司业务改写的架构、人物清单和流程图。</li>
+<li><strong>规则初稿</strong>：<code>thresholds.yaml</code>（授权阈值）、红线清单、每个 AI 岗位的人物卡初稿。</li>
+<li><strong>流程图</strong>：从获客到续约，标出每个 AI 判断点和人工审批点。</li>
+<li><strong>风险与合规台账 v0</strong>：每个用例对应的风险等级和适用法规，供律师审阅。</li>
+<li><strong>评估集 v0</strong>：用贵司提供的对话和案例整理出来的第一批&quot;考题&quot;。</li>
+<li><strong>预算与报价</strong>：搭建费、每月运营费和分阶段计划。</li>
+</ol>
+<p>详见 <a href="prep-plan.html">④ 前期工作计划与验收</a>。</p>
+<h2 id="怎么提交"><a class="anchor" href="#怎么提交" aria-label="本节链接">#</a>怎么提交</h2>
+<ul>
+<li>问卷可以直接在本站打印成 PDF 填写，也可以把答案写在邮件或共享文档里，按题号对应即可。</li>
+<li>资料放在一个共享文件夹里，按 <a href="prep-assets.html">② 资料与账号清单</a> 的分组建子文件夹。<strong>不要</strong>把密码、银行账号、API 密钥这类凭据放进共享文件夹或发邮件。</li>
+<li>不确定、没想好、还没有的，直接写出来。这比勉强给一个数字更有用。</li>
+</ul>
+
+    </article>
+    <nav class="pager" aria-label="翻页">
+    <a class="prev" href="cost-roadmap.html"><span>上一页</span><strong>成本与实施路线图</strong></a>
+    <a class="next" href="prep-questionnaire.html"><span>下一页</span><strong>① 业务信息问卷</strong></a>
+  </nav>
+    <footer class="foot">本站为方案构想，供讨论用；法律与税务内容未经律师或会计审阅，不构成法律意见。状态标记：✅ 已核实 · ⚠️ 待核实 · 💡 判断 · 📌 估算 · 📚 训练知识未复核。</footer>
+  </main>
+  <nav class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><ul><li><a href="#为什么前期准备决定成败">为什么前期准备决定成败</a></li><li><a href="#贵司的回答会改变什么">贵司的回答会改变什么</a></li><li><a href="#四件事">四件事</a></li><li><a href="#时间不够的话-先做这-10-件">时间不够的话，先做这 10 件</a></li><li><a href="#贵司这边需要谁参与">贵司这边需要谁参与</a></li><li><a href="#我们会交回什么">我们会交回什么</a></li><li><a href="#怎么提交">怎么提交</a></li></ul></nav>
+</div>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

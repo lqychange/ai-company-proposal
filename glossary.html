@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>术语表 · 一人 AI 公司 · 方案构想</title>
+<meta name="description" content="用 AI 组成整家公司、尽量少的人来管理：研究、架构设计与前期准备清单。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23255f73'/%3E%3Ccircle cx='16' cy='11' r='4.5' fill='%23ffd28a'/%3E%3Ccircle cx='8' cy='22' r='3' fill='%23fff'/%3E%3Ccircle cx='16' cy='24' r='3' fill='%23fff'/%3E%3Ccircle cx='24' cy='22' r='3' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+</head>
+<body data-page="glossary">
+<a class="skip" href="#content">跳到正文</a>
+<header class="topbar">
+  <button class="menu-btn" type="button" aria-label="打开目录" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>一人 AI 公司 · 方案构想</a>
+  <span class="progress" aria-label="阅读进度">第 18 / 22 页</span>
+  <button class="theme-btn" type="button" aria-label="切换深色/浅色">◐</button>
+</header>
+<div class="shell">
+  <aside class="sidebar" id="sidebar"><div class="nav-group"><div class="nav-group-title">开始</div><ul><li><a href="index.html">首页：一页看懂</a></li></ul></div><div class="nav-group"><div class="nav-group-title">基础研究</div><ul><li><a href="feasibility.html">可行性：能做到什么程度</a></li><li><a href="platforms.html">工具与平台选型</a></li><li><a href="compliance.html">合规：得州与美国</a></li><li><a href="updates.html">研究更新（11-13 补充核实）</a></li></ul></div><div class="nav-group"><div class="nav-group-title">方案设计</div><ul><li><a href="org.html">组织架构：1 个人 + AI 人物</a></li><li><a href="architecture.html">推荐架构：AWS Bedrock 路线</a></li><li><a href="knowledge.html">专属 RAG 知识层</a></li><li><a href="review.html">审核：风险分级与授权矩阵</a></li><li><a href="governance.html">AI 治理</a></li><li><a href="security.html">安全防护</a></li><li><a href="cost-roadmap.html">成本与实施路线图</a></li></ul></div><div class="nav-group"><div class="nav-group-title">前期准备（请贵司配合）</div><ul><li><a href="prep.html">前期准备总览</a></li><li><a href="prep-questionnaire.html">① 业务信息问卷</a></li><li><a href="prep-assets.html">② 资料与账号清单</a></li><li><a href="prep-decisions.html">③ 需要拍板的决策</a></li><li><a href="prep-plan.html">④ 前期工作计划与验收</a></li></ul></div><div class="nav-group"><div class="nav-group-title">附录</div><ul><li><a href="glossary.html" aria-current="page">术语表</a></li><li><a href="sources.html">来源索引</a></li><li><a href="full-research.html">全文 · 研究汇总 v0.2</a></li><li><a href="full-architecture.html">全文 · Bedrock 架构设计</a></li><li><a href="full-artifacts.html">全文 · 参考样例</a></li></ul></div>
+    <div class="side-foot">更新于 2026-11-13</div>
+  </aside>
+  <main id="content" class="content">
+    <article>
+      
+      <h1 class="page-title">术语表</h1>
+      <div class="table-wrap"><table>
+<thead>
+<tr>
+<th>术语</th>
+<th>英文</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Owner</td>
+<td>—</td>
+<td>公司里唯一的人：所有者、董事会、唯一审批人</td>
+</tr>
+<tr>
+<td>AI 人物</td>
+<td>Persona</td>
+<td>一个受治理的 AI 岗位：岗位卡 + 身份 + 权限 + 预算 + 考核</td>
+</tr>
+<tr>
+<td>三道防线</td>
+<td>Three lines of defense</td>
+<td>业务自控、独立控制、审计</td>
+</tr>
+<tr>
+<td>四道闸</td>
+<td>—</td>
+<td>自检、规则、护栏、独立复核</td>
+</tr>
+<tr>
+<td>R0–R4</td>
+<td>—</td>
+<td>动作风险等级，从只读到禁止</td>
+</tr>
+<tr>
+<td>A0–A3</td>
+<td>—</td>
+<td>自主度等级：影子运行、逐条批准、自动 + 抽查、只处理例外</td>
+</tr>
+<tr>
+<td>授权矩阵</td>
+<td>Authorization matrix</td>
+<td>每类动作在什么额度内由 AI 做、AI 复核、人批准或禁止</td>
+</tr>
+<tr>
+<td>单向门 / 双向门</td>
+<td>One-way / two-way door</td>
+<td>一旦决定很难回头的选择 / 以后可以低成本调整的选择</td>
+</tr>
+<tr>
+<td>执行器</td>
+<td>Executor</td>
+<td>确定性代码，按批准时的载荷执行高风险动作</td>
+</tr>
+<tr>
+<td>工作单</td>
+<td>Work item</td>
+<td>AI 人物之间交接工作的结构化记录，替代自由对话</td>
+</tr>
+<tr>
+<td>工作单令牌</td>
+<td>Work-item token</td>
+<td>流程骨架签发的短期签名令牌，写明工作单、客户和人物</td>
+</tr>
+<tr>
+<td>载荷哈希</td>
+<td>Payload hash</td>
+<td>被批准的工具调用参数的指纹，保证&quot;批什么就做什么&quot;</td>
+</tr>
+<tr>
+<td>冷静期</td>
+<td>Cooling-off period</td>
+<td>放宽类变更批准后、生效前的强制等待时间</td>
+</tr>
+<tr>
+<td>破窗</td>
+<td>Break-glass</td>
+<td>紧急情况下的人工越权操作，全程留痕</td>
+</tr>
+<tr>
+<td>熔断</td>
+<td>Kill switch</td>
+<td>K1–K5 分级停止</td>
+</tr>
+<tr>
+<td>隔离读信员</td>
+<td>Quarantine reader</td>
+<td>没有任何工具的 AI，把不可信内容转成结构化数据（&quot;双 LLM&quot;模式）</td>
+</tr>
+<tr>
+<td>影子运行</td>
+<td>Shadow mode</td>
+<td>AI 做，但结果不发出去，只和人的做法对比</td>
+</tr>
+<tr>
+<td>灰度发布</td>
+<td>Canary release</td>
+<td>新版本先承接一小部分工作，指标达标再全量</td>
+</tr>
+<tr>
+<td>质量金丝雀</td>
+<td>Quality canary</td>
+<td>每小时用生产配置跑几道标准题，及早发现质量下降</td>
+</tr>
+<tr>
+<td>蜜罐文档</td>
+<td>Honeytoken / canary document</td>
+<td>埋在知识库里的独特文档，一旦出现在对外内容里就说明有越权或外泄</td>
+</tr>
+<tr>
+<td>提示词注入</td>
+<td>Prompt injection</td>
+<td>把给 AI 的指令藏在邮件、网页、文档里，诱导 AI 做不该做的事</td>
+</tr>
+<tr>
+<td>RAG</td>
+<td>Retrieval-augmented generation</td>
+<td>先从知识库检索资料，再让模型基于资料回答</td>
+</tr>
+<tr>
+<td>混合检索 / 重排</td>
+<td>Hybrid search / Rerank</td>
+<td>关键词 + 语义检索 / 用专门模型对结果重新排序</td>
+</tr>
+<tr>
+<td>上下文溯源检查</td>
+<td>Contextual grounding check</td>
+<td>检查回答是否被检索到的资料支撑</td>
+</tr>
+<tr>
+<td>自动推理检查</td>
+<td>Automated Reasoning checks</td>
+<td>用形式逻辑核对回答是否符合写成规则的政策；只检测，只支持美式英语</td>
+</tr>
+<tr>
+<td>MCP</td>
+<td>Model Context Protocol</td>
+<td>给 AI 接工具的开放协议</td>
+</tr>
+<tr>
+<td>A2A</td>
+<td>Agent2Agent</td>
+<td>AI Agent 之间通信的开放协议</td>
+</tr>
+<tr>
+<td>Bedrock</td>
+<td>Amazon Bedrock</td>
+<td>AWS 的大模型托管服务，提供多家厂商的模型、知识库和护栏</td>
+</tr>
+<tr>
+<td>AgentCore</td>
+<td>Amazon Bedrock AgentCore</td>
+<td>AWS 的 Agent 运行与治理服务：运行环境、网关、策略、身份、记忆、观测、评估、登记等</td>
+</tr>
+<tr>
+<td>Gateway / Policy</td>
+<td>AgentCore Gateway / Policy</td>
+<td>AgentCore 里的&quot;唯一的门&quot;：所有工具调用都经过网关，由策略决定是否放行</td>
+</tr>
+<tr>
+<td>Cedar / Dogwood</td>
+<td>—</td>
+<td>AgentCore Policy 使用的策略语言；Dogwood 是 Cedar 的超集，增加了时序条件</td>
+</tr>
+<tr>
+<td>Guardrails</td>
+<td>Amazon Bedrock Guardrails</td>
+<td>Bedrock 的内容安全护栏</td>
+</tr>
+<tr>
+<td>Step Functions</td>
+<td>AWS Step Functions</td>
+<td>AWS 的托管状态机服务，本方案的流程骨架</td>
+</tr>
+<tr>
+<td>SCP / RCP</td>
+<td>Service / Resource Control Policy</td>
+<td>AWS 组织级护栏：分别从身份一侧和资源一侧限制</td>
+</tr>
+<tr>
+<td>Object Lock 合规模式</td>
+<td>S3 Object Lock compliance mode</td>
+<td>保留期内任何人（包括 root）都删不掉</td>
+</tr>
+<tr>
+<td>AgentCorruption</td>
+<td>—</td>
+<td>Zenity 在 2026 年 10 月披露的攻击链：一条提示就能接管同账号同区域的 AgentCore Agent</td>
+</tr>
+<tr>
+<td>NIST AI RMF</td>
+<td>AI Risk Management Framework</td>
+<td>美国 NIST 的 AI 风险管理框架</td>
+</tr>
+<tr>
+<td>OWASP Agent 十大风险</td>
+<td>OWASP Top 10 for Agentic Applications</td>
+<td>OWASP 在 2025 年 12 月发布的 Agent 应用十大安全风险（ASI01–ASI10）</td>
+</tr>
+<tr>
+<td>TRAIGA</td>
+<td>Texas Responsible AI Governance Act</td>
+<td>得州 AI 治理法（HB 149），2026-01-01 生效</td>
+</tr>
+<tr>
+<td>DTPA</td>
+<td>Deceptive Trade Practices Act</td>
+<td>得州消费者保护法，针对欺骗性商业行为</td>
+</tr>
+<tr>
+<td>TDPSA</td>
+<td>Texas Data Privacy and Security Act</td>
+<td>得州隐私法</td>
+</tr>
+<tr>
+<td>CUBI</td>
+<td>Capture or Use of Biometric Identifier</td>
+<td>得州生物识别法</td>
+</tr>
+<tr>
+<td>UETA</td>
+<td>Uniform Electronic Transactions Act</td>
+<td>电子交易法（得州第 322 章）</td>
+</tr>
+<tr>
+<td>TCPA</td>
+<td>Telephone Consumer Protection Act</td>
+<td>联邦电话消费者保护法</td>
+</tr>
+<tr>
+<td>E&amp;O</td>
+<td>Errors and omissions insurance</td>
+<td>职业责任险</td>
+</tr>
+<tr>
+<td>DPA</td>
+<td>Data processing agreement</td>
+<td>数据处理协议</td>
+</tr>
+</tbody></table>
+</div>
+
+    </article>
+    <nav class="pager" aria-label="翻页">
+    <a class="prev" href="prep-plan.html"><span>上一页</span><strong>④ 前期工作计划与验收</strong></a>
+    <a class="next" href="sources.html"><span>下一页</span><strong>来源索引</strong></a>
+  </nav>
+    <footer class="foot">本站为方案构想，供讨论用；法律与税务内容未经律师或会计审阅，不构成法律意见。状态标记：✅ 已核实 · ⚠️ 待核实 · 💡 判断 · 📌 估算 · 📚 训练知识未复核。</footer>
+  </main>
+  
+</div>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

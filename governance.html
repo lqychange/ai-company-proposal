@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>AI 治理 · 一人 AI 公司 · 方案构想</title>
+<meta name="description" content="用 AI 组成整家公司、尽量少的人来管理：研究、架构设计与前期准备清单。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23255f73'/%3E%3Ccircle cx='16' cy='11' r='4.5' fill='%23ffd28a'/%3E%3Ccircle cx='8' cy='22' r='3' fill='%23fff'/%3E%3Ccircle cx='16' cy='24' r='3' fill='%23fff'/%3E%3Ccircle cx='24' cy='22' r='3' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+</head>
+<body data-page="governance">
+<a class="skip" href="#content">跳到正文</a>
+<header class="topbar">
+  <button class="menu-btn" type="button" aria-label="打开目录" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>一人 AI 公司 · 方案构想</a>
+  <span class="progress" aria-label="阅读进度">第 10 / 22 页</span>
+  <button class="theme-btn" type="button" aria-label="切换深色/浅色">◐</button>
+</header>
+<div class="shell">
+  <aside class="sidebar" id="sidebar"><div class="nav-group"><div class="nav-group-title">开始</div><ul><li><a href="index.html">首页：一页看懂</a></li></ul></div><div class="nav-group"><div class="nav-group-title">基础研究</div><ul><li><a href="feasibility.html">可行性：能做到什么程度</a></li><li><a href="platforms.html">工具与平台选型</a></li><li><a href="compliance.html">合规：得州与美国</a></li><li><a href="updates.html">研究更新（11-13 补充核实）</a></li></ul></div><div class="nav-group"><div class="nav-group-title">方案设计</div><ul><li><a href="org.html">组织架构：1 个人 + AI 人物</a></li><li><a href="architecture.html">推荐架构：AWS Bedrock 路线</a></li><li><a href="knowledge.html">专属 RAG 知识层</a></li><li><a href="review.html">审核：风险分级与授权矩阵</a></li><li><a href="governance.html" aria-current="page">AI 治理</a></li><li><a href="security.html">安全防护</a></li><li><a href="cost-roadmap.html">成本与实施路线图</a></li></ul></div><div class="nav-group"><div class="nav-group-title">前期准备（请贵司配合）</div><ul><li><a href="prep.html">前期准备总览</a></li><li><a href="prep-questionnaire.html">① 业务信息问卷</a></li><li><a href="prep-assets.html">② 资料与账号清单</a></li><li><a href="prep-decisions.html">③ 需要拍板的决策</a></li><li><a href="prep-plan.html">④ 前期工作计划与验收</a></li></ul></div><div class="nav-group"><div class="nav-group-title">附录</div><ul><li><a href="glossary.html">术语表</a></li><li><a href="sources.html">来源索引</a></li><li><a href="full-research.html">全文 · 研究汇总 v0.2</a></li><li><a href="full-architecture.html">全文 · Bedrock 架构设计</a></li><li><a href="full-artifacts.html">全文 · 参考样例</a></li></ul></div>
+    <div class="side-foot">更新于 2026-11-13</div>
+  </aside>
+  <main id="content" class="content">
+    <article>
+      
+      <h1 class="page-title">AI 治理</h1>
+      <blockquote>
+<p><strong>一句话</strong>：按 NIST AI RMF 搭框架、按&quot;三道防线&quot;分工、把规则写成代码放进 Git。一个人做不了传统的&quot;职责分离&quot;，就用<strong>机器、时间、不可篡改的记录和外部第三方</strong>来代替&quot;第二个人&quot;。</p>
+</blockquote>
+<h2 id="框架-nist-ai-rmf-三道防线"><a class="anchor" href="#框架-nist-ai-rmf-三道防线" aria-label="本节链接">#</a>框架：NIST AI RMF + 三道防线</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>NIST AI RMF 职能</th>
+<th>本方案里的机制</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>治理（Govern）</td>
+<td>公司宪章；三道防线；Owner 职责；治理即代码；变更流程；人物登记</td>
+</tr>
+<tr>
+<td>映射（Map）</td>
+<td>用例和风险台账：每个人物、每类动作的 R 等级，以及适用的法规</td>
+</tr>
+<tr>
+<td>度量（Measure）</td>
+<td>离线和在线评估；RAG 指标；复核官校准；红队测试</td>
+</tr>
+<tr>
+<td>管理（Manage）</td>
+<td>自主度的晋升和降级；熔断；事件响应；事后复盘</td>
+</tr>
+</tbody></table>
+</div>
+<ul>
+<li><strong>这张对照表本身就是合规材料</strong>：在得州 TRAIGA 下，实质遵循 NIST AI RMF 并通过内部审查发现的违规可以免责。</li>
+<li>NIST AI RMF 目前仍是 1.0 + 生成式 AI 配置文件（AI 600-1），没有 2.0；NIST 正在做 Agent 标准倡议和面向 Agent 的控制叠加，出来后再对齐 ✅。</li>
+<li><strong>ISO/IEC 42001</strong>：贵司要不要做这项认证，第二年按客户要求再定。</li>
+</ul>
+<h2 id="治理即代码"><a class="anchor" href="#治理即代码" aria-label="本节链接">#</a>治理即代码</h2>
+<pre class="code"><code class="language-text">governance/                  # 一个 Git 仓库
+  constitution.md            # 公司宪章：红线、诚实、AI 身份告知
+  thresholds.yaml            # 阈值唯一来源 → 生成 Cedar 常量、风险引擎配置、K3 文档
+  personas/&lt;id&gt;.yaml         # 人物卡
+  policies/*.cedar           # 授权策略，附带测试用例
+  guardrails/*.json          # 护栏配置（组织基线 + 岗位）
+  prompts/                   # 宪章以外的提示词模板
+  evals/&lt;persona&gt;/           # 评估集：标准题、对抗题、合规题
+  knowledge/manifest.yaml    # 知识域、分级、访问表
+  processes/*.asl.json       # 状态机定义
+  risk-register.yaml         # 风险与合规台账
+  adr/                       # 架构决策记录</code></pre>
+<p>这个仓库同时也是 TRAIGA 调查时要提供的 8 类材料的来源。</p>
+<h2 id="变更分四类"><a class="anchor" href="#变更分四类" aria-label="本节链接">#</a>变更分四类</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>类别</th>
+<th>例子</th>
+<th>流程</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>收紧</td>
+<td>降低额度、增加屏蔽话题、停用工具</td>
+<td>自动检查通过就发布，事后通知 Owner</td>
+</tr>
+<tr>
+<td>中性</td>
+<td>FAQ 措辞、非规则类知识</td>
+<td>自动检查 + 复核官AI + 抽查</td>
+</tr>
+<tr>
+<td>放宽</td>
+<td>提高额度、增加工具、新增人物、晋升自主度、换模型</td>
+<td>合规官AI写风险说明 → 预发环境跑评估 → Owner 批准 → <strong>等 24 小时冷静期</strong> → 灰度发布 → 全量</td>
+</tr>
+<tr>
+<td>紧急</td>
+<td>事件处理中的临时变更</td>
+<td>破窗：Owner 用硬件密钥执行，72 小时内补复盘</td>
+</tr>
+</tbody></table>
+</div>
+<h2 id="一个人怎么做职责分离"><a class="anchor" href="#一个人怎么做职责分离" aria-label="本节链接">#</a>一个人怎么做职责分离</h2>
+<ol>
+<li><strong>机器当第二把钥匙</strong>：复核官和合规官在别的账号、用别的模型家族。</li>
+<li><strong>时间当第二把钥匙</strong>：放宽类变更有冷静期。即使 Owner 被钓鱼或一时冲动，也有 24 小时可以反悔。</li>
+<li><strong>记录不可篡改</strong>：Owner 自己的操作也写进审计账本，删不掉。</li>
+<li><strong>外部第三方</strong>：律师和 CPA 每季度或每年复看一次。</li>
+</ol>
+<p>另外，Owner 日常登录的身份只有&quot;审批人&quot;和&quot;只读&quot;权限，没有云平台管理员权限；基础设施只能通过流水线修改。</p>
+<h2 id="人物生命周期与自主度"><a class="anchor" href="#人物生命周期与自主度" aria-label="本节链接">#</a>人物生命周期与自主度</h2>
+<div class="diagram"><pre class="mermaid">stateDiagram-v2
+    state &quot;提案（登记草稿）&quot; as Draft
+    state &quot;A0 影子运行&quot; as A0
+    state &quot;A1 逐条批准&quot; as A1
+    state &quot;A2 自动 + 抽查&quot; as A2
+    state &quot;A3 只处理例外&quot; as A3
+    state &quot;停职&quot; as Suspended
+    state &quot;退役&quot; as Retired
+    [*] --&gt; Draft
+    Draft --&gt; A0: Owner 批准登记 · 上岗评估通过
+    A0 --&gt; A1: 样本≥50 · 评估通过率≥90%
+    A1 --&gt; A2: 同类≥200次 · 修改率低于5% · 30天无严重事件
+    A2 --&gt; A3: 运行≥90天 · 抽查缺陷率低于1%
+    A2 --&gt; A1: 质量回退或出事（自动）
+    A3 --&gt; A1: 质量回退或出事（自动）
+    A1 --&gt; Suspended: 严重事件（自动）
+    A2 --&gt; Suspended: 严重事件（自动）
+    A3 --&gt; Suspended: 严重事件（自动）
+    Suspended --&gt; A0: 整改后重新评估
+    Suspended --&gt; Retired
+    Retired --&gt; [*]</pre></div>
+<ul>
+<li><strong>自主度按&quot;人物 × 动作类型&quot;分别设定</strong>。例如获客AI的模板外联可以到 A3，同时它的新外联序列还停在 A1。</li>
+<li><strong>晋升看数据</strong>，而且必须走&quot;放宽&quot;类变更流程；<strong>降级是自动的</strong>（严重事件、质量下降、模型或提示词变更）。</li>
+</ul>
+<h2 id="评估体系"><a class="anchor" href="#评估体系" aria-label="本节链接">#</a>评估体系</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>内容</th>
+<th>什么时候跑</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>离线评估</td>
+<td>每个人物三类题：标准题、对抗题（注入、诱导越权）、合规题（话术、AI 身份告知）</td>
+<td>每次改提示词、模型、工具或知识；每周全量</td>
+</tr>
+<tr>
+<td>在线评估</td>
+<td>对生产数据按比例抽样打分</td>
+<td>持续；灰度端点 100% 打分</td>
+</tr>
+<tr>
+<td>质量金丝雀</td>
+<td>每小时用生产配置跑几道标准题</td>
+<td>持续；分数下降自动降级</td>
+</tr>
+<tr>
+<td>红队</td>
+<td>自动化红队工具在预发环境跑</td>
+<td>每月；每季度可以请外部做一次</td>
+</tr>
+<tr>
+<td>业务 KPI</td>
+<td>自动化率、例外率、审批时延、复核分歧率、客户满意度、每单成本</td>
+<td>每周报告</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>评估集需要贵司参与</strong>：标准题的&quot;正确答案&quot;来自贵司的业务判断。请在前期准备里提供 <a href="prep-assets.html">真实或模拟的客户对话和刁钻案例</a>。</p>
+<h2 id="模型和成本治理"><a class="anchor" href="#模型和成本治理" aria-label="本节链接">#</a>模型和成本治理</h2>
+<ul>
+<li><strong>模型白名单</strong>，锁定版本；换模型属于&quot;放宽&quot;类变更：跑完评估集 → 灰度 10% 运行一周 → 全量。</li>
+<li><strong>数据保留模式是选模型的硬条件</strong>：处理客户机密数据的人物，只用允许零数据保留的模型。</li>
+<li><strong>成本四层控制</strong>：单次调用的 token 和工具次数上限 → 每个人物的日预算 → 按人物归因的成本报表 → 账号预算用到 120% 自动挂拒绝策略。</li>
+</ul>
+<h2 id="对外透明"><a class="anchor" href="#对外透明" aria-label="本节链接">#</a>对外透明</h2>
+<ul>
+<li><strong>AI 身份告知</strong>：人物可以有名字（如&quot;Ava，X 公司的 AI 助理&quot;），但第一次接触时和邮件签名里都必须说明自己是 AI，并且随时可以转给真人。不使用真人的名字和照片。</li>
+<li><strong>已批准宣传用语库</strong>：所有对外的能力、效果和价格说法都必须出自这个库，复核官逐条核对。这是防 DTPA 误导性宣传的主要手段。</li>
+<li><strong>外联合规</strong>：真实发件人、退订链接、及时处理退订；退订名单是规则里的一个条件，命中就拒绝发送。</li>
+</ul>
+<h2 id="事件与熔断"><a class="anchor" href="#事件与熔断" aria-label="本节链接">#</a>事件与熔断</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>级别</th>
+<th>名称</th>
+<th>作用</th>
+<th>谁能触发</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>K1</td>
+<td>停工具</td>
+<td>某个工具对所有人停用</td>
+<td>Owner、哨兵AI</td>
+</tr>
+<tr>
+<td>K2</td>
+<td>停人物</td>
+<td>某个人物停职</td>
+<td>Owner、哨兵AI</td>
+</tr>
+<tr>
+<td>K3</td>
+<td>停渠道</td>
+<td>停止对外发信或发布</td>
+<td>Owner、哨兵AI</td>
+</tr>
+<tr>
+<td>K4</td>
+<td>安全模式</td>
+<td>所有对外动作都要 Owner 批准</td>
+<td>Owner、哨兵AI、缺席检测</td>
+</tr>
+<tr>
+<td>K5</td>
+<td>全停</td>
+<td>所有人物停止</td>
+<td><strong>只有 Owner</strong>；预算动作</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>自动触发只能收紧，不能放宽</strong>；恢复一律由 Owner 操作。哨兵AI每小时最多触发 3 次，每次都通知 Owner，K5 不归它管。每次事件都要复盘，产出新的评估用例、规则变更和知识修订。</p>
+
+    </article>
+    <nav class="pager" aria-label="翻页">
+    <a class="prev" href="review.html"><span>上一页</span><strong>审核：风险分级与授权矩阵</strong></a>
+    <a class="next" href="security.html"><span>下一页</span><strong>安全防护</strong></a>
+  </nav>
+    <footer class="foot">本站为方案构想，供讨论用；法律与税务内容未经律师或会计审阅，不构成法律意见。状态标记：✅ 已核实 · ⚠️ 待核实 · 💡 判断 · 📌 估算 · 📚 训练知识未复核。</footer>
+  </main>
+  <nav class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><ul><li><a href="#框架-nist-ai-rmf-三道防线">框架：NIST AI RMF + 三道防线</a></li><li><a href="#治理即代码">治理即代码</a></li><li><a href="#变更分四类">变更分四类</a></li><li><a href="#一个人怎么做职责分离">一个人怎么做职责分离</a></li><li><a href="#人物生命周期与自主度">人物生命周期与自主度</a></li><li><a href="#评估体系">评估体系</a></li><li><a href="#模型和成本治理">模型和成本治理</a></li><li><a href="#对外透明">对外透明</a></li><li><a href="#事件与熔断">事件与熔断</a></li></ul></nav>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

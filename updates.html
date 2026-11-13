@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>研究更新（11-13 补充核实） · 一人 AI 公司 · 方案构想</title>
+<meta name="description" content="用 AI 组成整家公司、尽量少的人来管理：研究、架构设计与前期准备清单。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23255f73'/%3E%3Ccircle cx='16' cy='11' r='4.5' fill='%23ffd28a'/%3E%3Ccircle cx='8' cy='22' r='3' fill='%23fff'/%3E%3Ccircle cx='16' cy='24' r='3' fill='%23fff'/%3E%3Ccircle cx='24' cy='22' r='3' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+</head>
+<body data-page="updates">
+<a class="skip" href="#content">跳到正文</a>
+<header class="topbar">
+  <button class="menu-btn" type="button" aria-label="打开目录" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>一人 AI 公司 · 方案构想</a>
+  <span class="progress" aria-label="阅读进度">第 5 / 22 页</span>
+  <button class="theme-btn" type="button" aria-label="切换深色/浅色">◐</button>
+</header>
+<div class="shell">
+  <aside class="sidebar" id="sidebar"><div class="nav-group"><div class="nav-group-title">开始</div><ul><li><a href="index.html">首页：一页看懂</a></li></ul></div><div class="nav-group"><div class="nav-group-title">基础研究</div><ul><li><a href="feasibility.html">可行性：能做到什么程度</a></li><li><a href="platforms.html">工具与平台选型</a></li><li><a href="compliance.html">合规：得州与美国</a></li><li><a href="updates.html" aria-current="page">研究更新（11-13 补充核实）</a></li></ul></div><div class="nav-group"><div class="nav-group-title">方案设计</div><ul><li><a href="org.html">组织架构：1 个人 + AI 人物</a></li><li><a href="architecture.html">推荐架构：AWS Bedrock 路线</a></li><li><a href="knowledge.html">专属 RAG 知识层</a></li><li><a href="review.html">审核：风险分级与授权矩阵</a></li><li><a href="governance.html">AI 治理</a></li><li><a href="security.html">安全防护</a></li><li><a href="cost-roadmap.html">成本与实施路线图</a></li></ul></div><div class="nav-group"><div class="nav-group-title">前期准备（请贵司配合）</div><ul><li><a href="prep.html">前期准备总览</a></li><li><a href="prep-questionnaire.html">① 业务信息问卷</a></li><li><a href="prep-assets.html">② 资料与账号清单</a></li><li><a href="prep-decisions.html">③ 需要拍板的决策</a></li><li><a href="prep-plan.html">④ 前期工作计划与验收</a></li></ul></div><div class="nav-group"><div class="nav-group-title">附录</div><ul><li><a href="glossary.html">术语表</a></li><li><a href="sources.html">来源索引</a></li><li><a href="full-research.html">全文 · 研究汇总 v0.2</a></li><li><a href="full-architecture.html">全文 · Bedrock 架构设计</a></li><li><a href="full-artifacts.html">全文 · 参考样例</a></li></ul></div>
+    <div class="side-foot">更新于 2026-11-13</div>
+  </aside>
+  <main id="content" class="content">
+    <article>
+      
+      <h1 class="page-title">研究更新（11-13 补充核实）</h1>
+      <blockquote>
+<p>11 月 11 日做第一轮研究时，OpenAI、Anthropic 等官网无法访问，很多事实只能从新闻摘要推断。11 月 13 日在外网补查了一轮，结果如下。全文已同步更新到 <a href="full-research.html">研究汇总 v0.2</a>。</p>
+</blockquote>
+<h2 id="核实或更正的事项"><a class="anchor" href="#核实或更正的事项" aria-label="本节链接">#</a>核实或更正的事项</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>编号</th>
+<th>事项</th>
+<th>之前</th>
+<th>现在</th>
+<th>来源</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>R-05</td>
+<td><strong>Claude Opus 5.5 价格</strong></td>
+<td>输入 $4，输出&quot;约 $20&quot;（由新闻推算）⚠️</td>
+<td>输入 $4 / 输出 $20 每百万 token；5 分钟缓存写入 $5，缓存命中 $0.20 ✅</td>
+<td>Anthropic 定价页</td>
+</tr>
+<tr>
+<td>R-05</td>
+<td><strong>Sonnet 5.5、Haiku 5.5、Fable 5.2 API 价格</strong></td>
+<td>没核实 ⚠️</td>
+<td>Sonnet 5.5 $2/$10；Haiku 5.5 $0.10/$0.50（提示超过 10 万 token 时 $0.50/$2.50）；Fable 5.2 $8/$40。Batch API 五折。美国境内推理 1.1 倍 ✅</td>
+<td>Anthropic 定价页</td>
+</tr>
+<tr>
+<td>R-05</td>
+<td><strong>Cowork 是否进入审计日志和 Compliance API</strong></td>
+<td>早期文档说不包含 ⚠️</td>
+<td>从 2026-08-26 起，Compliance API 覆盖 Cowork（桌面、网页、移动端）和 Claude Code 的会话记录；<strong>只限 Enterprise 计划</strong>，Team 计划没有 ✅</td>
+<td>Anthropic 博客；Harmonic 安全指南</td>
+</tr>
+<tr>
+<td>R-05</td>
+<td><strong>Anthropic 合规认证</strong></td>
+<td>没核实 ⚠️</td>
+<td>ISO/IEC 42001（2025 年 1 月取得）、SOC 2 Type II、ISO 27001/27017/27018、CSA STAR；可签 HIPAA BAA（范围要逐项确认）✅</td>
+<td>Anthropic 新闻与支持文档</td>
+</tr>
+<tr>
+<td>R-04</td>
+<td><strong>OpenAI Business Premium 价格</strong></td>
+<td>没找到 ⚠️</td>
+<td>每人每月 $125（月付）/ $100（年付），含第一个 dot；更多 dot 的价格未公布 ✅（多家来源一致，OpenAI 官方页面未直接读到）</td>
+<td>eesel、AI Business 等</td>
+</tr>
+<tr>
+<td>R-04</td>
+<td><strong>OpenAI Agent Builder 关停</strong></td>
+<td>11-30 关停 ✅</td>
+<td>补充：2026-06-03 宣布；Evals 10-31 起只读、11-30 一并关停；迁移路径是 Agents SDK（代码）或 ChatGPT Workspace Agents（自然语言）✅</td>
+<td>OpenAI AgentKit 页面、迁移指南</td>
+</tr>
+<tr>
+<td>R-04</td>
+<td><strong>OpenAI Frontier</strong></td>
+<td>功能和价格 ⚠️</td>
+<td>2026-02-05 发布；四大支柱：共享业务上下文、Agent 执行、评估、安全治理；可以管理其他厂商的 Agent；<strong>价格不公开</strong>，走企业销售 ✅/⚠️</td>
+<td>新闻综合</td>
+</tr>
+<tr>
+<td>R-03</td>
+<td><strong>AgentCorruption 的后续</strong></td>
+<td>AWS 怎么回应 ⚠️</td>
+<td>AWS 称这是&quot;已记录的预期行为&quot;，不是漏洞；据 Zenity，AWS 已将新 Agent 改为 IMDSv2，并收紧默认执行角色，但收紧时间各方说法不一 ✅/⚠️</td>
+<td>Dark Reading、CSO Online、Zenity</td>
+</tr>
+<tr>
+<td>R-06</td>
+<td><strong>Paperclip 安全公告</strong></td>
+<td>3 个中危&quot;没查&quot;；2 个没写修复版本</td>
+<td>3 个中危都已在 v2026.416.0 修复 ✅；<strong>GHSA-x8hx（DNS 重绑定远程执行）和 GHSA-gqqj（Codex 继承 Gmail 发信）仍未标注修复版本</strong> ⚠️；最新版 v2026.1106.0</td>
+<td>GitHub 安全公告 API</td>
+</tr>
+<tr>
+<td>R-07</td>
+<td><strong>联邦参议员选举</strong></td>
+<td>结果 ⚠️</td>
+<td>民主党 James Talarico 击败 Ken Paxton ✅</td>
+<td>KSAT、WJLA 等</td>
+</tr>
+<tr>
+<td>R-07</td>
+<td><strong>新任州总检察长 Nathan Johnson 的立场</strong></td>
+<td>⚠️</td>
+<td>竞选承诺上任 30 天内审查消费者保护、竞争和就业法律中的 AI 漏洞；消费者保护部门每半年发布技术风险报告；关注职场 AI 披露 ✅</td>
+<td>Axios、Fisher Phillips</td>
+</tr>
+<tr>
+<td>R-07</td>
+<td><strong>DIR 监管沙盒</strong></td>
+<td>是否开放 ⚠️</td>
+<td>仍没找到公开的申请入口，也没查到依 TRAIGA 的执法案例 ⚠️</td>
+<td>Chambers 2026 实务指南</td>
+</tr>
+<tr>
+<td>R-08</td>
+<td><strong>2025-12-11 行政令</strong></td>
+<td>内容 ⚠️</td>
+<td>&quot;确保 AI 国家政策框架&quot;：司法部 AI 诉讼工作组、商务部 90 天内评估州法、联邦资金附加条件、FTC 政策声明；儿童安全等领域除外。<strong>行政令本身不能废止州法</strong> ✅</td>
+<td>Bloomberg Law、ZwillGen、JD Supra</td>
+</tr>
+<tr>
+<td>R-02</td>
+<td><strong>AWS re:Invent 2026 日期</strong></td>
+<td>⚠️</td>
+<td>2026-11-30 至 12-04，拉斯维加斯 ✅</td>
+<td>多个活动列表，引用 AWS FAQ</td>
+</tr>
+<tr>
+<td>R-01</td>
+<td><strong>微软 Ignite 2026</strong></td>
+<td>11-17 至 20</td>
+<td>还没开。微软 11-10 的预告说 Agent 365 将从&quot;控制面&quot;扩展为&quot;AI 可观测性平台&quot;，并加入跨厂商的预算护栏 ✅</td>
+<td>Microsoft Tech Community</td>
+</tr>
+<tr>
+<td>R-27</td>
+<td><strong>OWASP Agent 十大风险的顺序</strong></td>
+<td>第 4 项以后 ⚠️</td>
+<td>ASI01 目标劫持 → ASI02 工具滥用 → ASI03 身份和权限滥用 → ASI04 供应链 → ASI05 意外代码执行 → ASI06 记忆和上下文投毒 → ASI07 不安全的 Agent 间通信 → ASI08 错误连锁扩散 → ASI09 利用人对 Agent 的信任 → ASI10 失控的 Agent ✅（2025-12-09 发布）</td>
+<td>OWASP GenAI 项目及多家解读</td>
+</tr>
+<tr>
+<td>R-27</td>
+<td><strong>NIST AI RMF 有没有更新</strong></td>
+<td>⚠️</td>
+<td>还没有 1.1 或 2.0。NIST CAISI 于 2026-02-17 启动 AI Agent 标准倡议，计划 2026 年第四季度出&quot;Agent 互操作配置文件&quot;；面向 Agent 的 SP 800-53 控制叠加（COSAiS）预计 2026 下半年 ✅/⚠️</td>
+<td>CSA 研究笔记、NIST NCCoE</td>
+</tr>
+<tr>
+<td>R-10</td>
+<td><strong>批量发信规则</strong></td>
+<td>📚</td>
+<td>Google、雅虎 2024 年起、微软 2025-05-05 起强制：SPF + DKIM + DMARC、对齐的发件身份、投诉率低于 0.1%（绝不超过 0.3%）、营销邮件可一键退订；Gmail 从 2025 年 11 月起对不合规的发件方直接拒收 ✅（以官方页面为准）</td>
+<td>Red Sift 等综合</td>
+</tr>
+<tr>
+<td>R-13</td>
+<td><strong>Langfuse 价格</strong></td>
+<td>⚠️</td>
+<td>Hobby 免费、Core $29、Pro $199、Enterprise $2,499 每月；审计日志和 SCIM 只在 Enterprise；可免费自部署 ✅</td>
+<td>langfuse.com/pricing</td>
+</tr>
+<tr>
+<td>R-12</td>
+<td><strong>Stripe Tax 价格</strong></td>
+<td>⚠️</td>
+<td>按用量：无代码 0.5%/笔，API $0.50/笔；Tax Complete 套餐 $90/月起（含 2 个登记、4 次申报/年）✅</td>
+<td>stripe.com/tax/pricing</td>
+</tr>
+<tr>
+<td>R-19</td>
+<td><strong>保险</strong></td>
+<td>⚠️</td>
+<td>科技 E&amp;O 中位数约 $3,700/年（Vouch 创业公司数据），网络安全险约 $2,900/年；<strong>各家对 AI 的承保差别很大</strong>：有的标准条款排除 AI，要买附加险；有的自动附带 AI 背书 ✅/⚠️</td>
+<td>Vouch、Insureon、Embroker、Corgi</td>
+</tr>
+</tbody></table>
+</div>
+<h2 id="对方案的影响"><a class="anchor" href="#对方案的影响" aria-label="本节链接">#</a>对方案的影响</h2>
+<ol>
+<li><strong>预算里的保险项要调高</strong>：原估算每年 $2k–6k，按创业公司中位数，E&amp;O + 网络安全险合计更接近 <strong>$5k–8k/年</strong> 📌，而且要专门确认 AI 相关的承保条款。</li>
+<li><strong>Claude 成了更可信的&quot;员工工位&quot;选项</strong>：Cowork 进入 Compliance API 后，Enterprise 计划下的 Cowork 可以当受控工位使用。但它仍然跑在个人电脑上，不替代云端的 AI 人物。</li>
+<li><strong>Paperclip 维持&quot;可选、先加固&quot;的定位</strong>：两个公告仍未标注修复，默认部署模式仍然危险。</li>
+<li><strong>合规话术不能放松</strong>：总检察长换人后执法重点可能转向职场 AI 和消费者披露，但 DTPA 本身没变，企业客户仍然可以起诉。</li>
+<li><strong>底座签约放到 12 月上旬</strong>：等 Ignite 和 re:Invent 的发布结束后再定。</li>
+</ol>
+<h2 id="还没有答案的问题"><a class="anchor" href="#还没有答案的问题" aria-label="本节链接">#</a>还没有答案的问题</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>编号</th>
+<th>问题</th>
+<th>计划</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>R-01</td>
+<td>Ignite 的发布：Agent 365 价格变化、Foundry 上的 Claude、A2A 支持</td>
+<td>11-21 后补查</td>
+</tr>
+<tr>
+<td>R-02</td>
+<td>re:Invent 的发布：AgentCore 新功能和价格、Bedrock 上能否用 GPT-6</td>
+<td>12-05 后补查</td>
+</tr>
+<tr>
+<td>R-07</td>
+<td>DIR 沙盒入口；第 90 届议会预提交的 AI 法案；SB 140 是否涵盖邮件</td>
+<td>请得州律师确认</td>
+</tr>
+<tr>
+<td>R-09</td>
+<td>AWS Quick 的 Automate 能否自选模型、和 AgentCore 是否原生集成</td>
+<td>概念验证时实测</td>
+</tr>
+<tr>
+<td>—</td>
+<td>架构里标 ⚠️ 的实现细节（G-09 条件键、拦截器与 Policy 的执行顺序等）</td>
+<td>第 0–1 阶段在 staging 实测</td>
+</tr>
+</tbody></table>
+</div>
+<p>以下项目和贵司业务直接相关，等 <a href="prep.html">前期准备</a> 有了答案再做：获客数据和外联工具（R-10）、语音 AI（R-11）、CRM 和电子签（R-12）的具体选型和价格。</p>
+
+    </article>
+    <nav class="pager" aria-label="翻页">
+    <a class="prev" href="compliance.html"><span>上一页</span><strong>合规：得州与美国</strong></a>
+    <a class="next" href="org.html"><span>下一页</span><strong>组织架构：1 个人 + AI 人物</strong></a>
+  </nav>
+    <footer class="foot">本站为方案构想，供讨论用；法律与税务内容未经律师或会计审阅，不构成法律意见。状态标记：✅ 已核实 · ⚠️ 待核实 · 💡 判断 · 📌 估算 · 📚 训练知识未复核。</footer>
+  </main>
+  <nav class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><ul><li><a href="#核实或更正的事项">核实或更正的事项</a></li><li><a href="#对方案的影响">对方案的影响</a></li><li><a href="#还没有答案的问题">还没有答案的问题</a></li></ul></nav>
+</div>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

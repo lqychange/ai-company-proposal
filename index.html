@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>首页：一页看懂 · 一人 AI 公司 · 方案构想</title>
+<meta name="description" content="用 AI 组成整家公司、尽量少的人来管理：研究、架构设计与前期准备清单。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23255f73'/%3E%3Ccircle cx='16' cy='11' r='4.5' fill='%23ffd28a'/%3E%3Ccircle cx='8' cy='22' r='3' fill='%23fff'/%3E%3Ccircle cx='16' cy='24' r='3' fill='%23fff'/%3E%3Ccircle cx='24' cy='22' r='3' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+</head>
+<body data-page="index">
+<a class="skip" href="#content">跳到正文</a>
+<header class="topbar">
+  <button class="menu-btn" type="button" aria-label="打开目录" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>一人 AI 公司 · 方案构想</a>
+  <span class="progress" aria-label="阅读进度">第 1 / 22 页</span>
+  <button class="theme-btn" type="button" aria-label="切换深色/浅色">◐</button>
+</header>
+<div class="shell">
+  <aside class="sidebar" id="sidebar"><div class="nav-group"><div class="nav-group-title">开始</div><ul><li><a href="index.html" aria-current="page">首页：一页看懂</a></li></ul></div><div class="nav-group"><div class="nav-group-title">基础研究</div><ul><li><a href="feasibility.html">可行性：能做到什么程度</a></li><li><a href="platforms.html">工具与平台选型</a></li><li><a href="compliance.html">合规：得州与美国</a></li><li><a href="updates.html">研究更新（11-13 补充核实）</a></li></ul></div><div class="nav-group"><div class="nav-group-title">方案设计</div><ul><li><a href="org.html">组织架构：1 个人 + AI 人物</a></li><li><a href="architecture.html">推荐架构：AWS Bedrock 路线</a></li><li><a href="knowledge.html">专属 RAG 知识层</a></li><li><a href="review.html">审核：风险分级与授权矩阵</a></li><li><a href="governance.html">AI 治理</a></li><li><a href="security.html">安全防护</a></li><li><a href="cost-roadmap.html">成本与实施路线图</a></li></ul></div><div class="nav-group"><div class="nav-group-title">前期准备（请贵司配合）</div><ul><li><a href="prep.html">前期准备总览</a></li><li><a href="prep-questionnaire.html">① 业务信息问卷</a></li><li><a href="prep-assets.html">② 资料与账号清单</a></li><li><a href="prep-decisions.html">③ 需要拍板的决策</a></li><li><a href="prep-plan.html">④ 前期工作计划与验收</a></li></ul></div><div class="nav-group"><div class="nav-group-title">附录</div><ul><li><a href="glossary.html">术语表</a></li><li><a href="sources.html">来源索引</a></li><li><a href="full-research.html">全文 · 研究汇总 v0.2</a></li><li><a href="full-architecture.html">全文 · Bedrock 架构设计</a></li><li><a href="full-artifacts.html">全文 · 参考样例</a></li></ul></div>
+    <div class="side-foot">更新于 2026-11-13</div>
+  </aside>
+  <main id="content" class="content">
+    <article>
+      
+      <h1 class="page-title">首页：一页看懂</h1>
+      <div class="hero">
+<p class="lead">一个人当董事会，十几个 AI 人物当员工。</p>
+<p>目标是让 AI 担任公司的绝大多数岗位——获客、销售、签约、交付、收款、客服、财务——人只负责<strong>定目标、定红线、处理例外</strong>。</p>
+<p>这份网站是给贵司的<strong>方案构想</strong>：先讲清楚能做到什么、大概怎么搭，再在最后几页列出<strong>前期需要贵司准备什么</strong>，以便我们把方案落到具体的设计和报价。</p>
+</div>
+
+<div class="stats">
+<div class="stat"><b>80–95%</b><span>流程跑成熟后，不需要人参与的工作单比例 💡</span></div>
+<div class="stat"><b>≤ 1 小时/天</b><span>所有者每天处理审批和例外的时间目标</span></div>
+<div class="stat"><b>5–7 个月</b><span>"一步到位"版从地基到第一笔端到端成交 📌</span></div>
+<div class="stat"><b>$900–4,000/月</b><span>AWS 部分的运行成本（另有 SaaS 和人工）📌</span></div>
+</div>
+
+<h2 id="三句话结论"><a class="anchor" href="#三句话结论" aria-label="本节链接">#</a>三句话结论</h2>
+<ol>
+<li><strong>能做，但不是 100% 无人。</strong> 合理目标是&quot;L4 级自动驾驶&quot;：日常全自动，例外交给人。&quot;100% 由 AI 完成&quot;既做不到，也不该写进对外宣传（在得州还有误导性宣传的法律风险）。</li>
+<li><strong>没有哪个产品能单独一步到位。</strong> &quot;一步到位&quot;指的是<strong>架构一步到位</strong>：每一层都能替换，而公司自己牢牢掌握四样资产——<strong>流程定义、知识与数据、规则与权限、评估与日志</strong>。</li>
+<li><strong>推荐底座是 AWS Bedrock + AgentCore。</strong> 骨架用确定性的流程和规则，AI 只在需要判断的地方干活；对外、花钱、改规则的动作都要过&quot;四道闸&quot;，高风险动作由系统而不是 AI 执行。</li>
+</ol>
+<h2 id="怎么读这个网站"><a class="anchor" href="#怎么读这个网站" aria-label="本节链接">#</a>怎么读这个网站</h2>
+<div class="cards">
+<a class="card" href="feasibility.html"><b>基础研究</b><span>可行性、工具与平台横向对比、得州与美国合规，以及 11 月 13 日补充核实的研究更新。</span></a>
+<a class="card" href="org.html"><b>方案设计</b><span>组织架构、AWS 架构、专属 RAG、审核、治理、安全、成本与路线图。</span></a>
+<a class="card warm" href="prep.html"><b>前期准备（请贵司配合）</b><span>业务问卷、资料与账号清单、需要拍板的决策、前期工作计划。<strong>这是最需要贵司参与的部分。</strong></span></a>
+<a class="card" href="full-architecture.html"><b>附录 · 完整文档</b><span>研究汇总、架构设计和参考样例（人物卡、Cedar 策略、SCP 等）的全文。</span></a>
+</div>
+
+<blockquote>
+<p><strong>时间有限的话</strong>：看这一页 → <a href="org.html">组织架构</a> → <a href="review.html">审核与授权矩阵</a> → <a href="prep.html">前期准备总览</a>。大约 20 分钟。</p>
+</blockquote>
+<h2 id="公司长什么样"><a class="anchor" href="#公司长什么样" aria-label="本节链接">#</a>公司长什么样</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>角色</th>
+<th>由谁担任</th>
+<th>做什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>所有者（Owner）</td>
+<td><strong>唯一的人</strong></td>
+<td>法律和金融身份（注册、银行、报税）；定目标、预算和红线；批准高风险动作；处理例外</td>
+</tr>
+<tr>
+<td>业务 AI 人物</td>
+<td>AI</td>
+<td>幕僚长、市场、获客、前台、销售、合同、项目、生产、质检、客户成功、财务</td>
+</tr>
+<tr>
+<td>独立控制 AI</td>
+<td>AI（不同账号、不同模型家族）</td>
+<td>复核官、合规官、安全哨兵、内审</td>
+</tr>
+<tr>
+<td>外部专业人士</td>
+<td>人（按需）</td>
+<td>得州律师、CPA，每季度或每年复核</td>
+</tr>
+</tbody></table>
+</div>
+<p>详见 <a href="org.html">组织架构</a>。</p>
+<h2 id="目前的状态"><a class="anchor" href="#目前的状态" aria-label="本节链接">#</a>目前的状态</h2>
+<ul>
+<li><strong>已完成</strong>：工具与平台的横向研究（2026-11-11）、AWS Bedrock 参考架构（2026-11-12）、补充核实（2026-11-13，见 <a href="updates.html">研究更新</a>）。</li>
+<li><strong>还缺</strong>：贵司的业务信息。卖什么、卖给谁、怎么交付、风险偏好和预算，这些会直接改变岗位设计、授权阈值、工具清单和成本。所以下一步是 <a href="prep.html">前期准备</a>。</li>
+<li><strong>刻意先不定的</strong>：底座的最终签约。微软 Ignite（11 月 17–20 日）和 AWS re:Invent（11 月 30 日–12 月 4 日）都在接下来三周内，等发布会之后再定更稳妥。</li>
+</ul>
+<h2 id="状态标记"><a class="anchor" href="#状态标记" aria-label="本节链接">#</a>状态标记</h2>
+<p>全站沿用研究文档的标记，方便区分事实和判断：</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>标记</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>✅</td>
+<td>已核实，附来源</td>
+</tr>
+<tr>
+<td>⚠️</td>
+<td>没有核实、来源不足或信息冲突</td>
+</tr>
+<tr>
+<td>💡</td>
+<td>分析判断，不是事实</td>
+</tr>
+<tr>
+<td>📌</td>
+<td>估算数字</td>
+</tr>
+<tr>
+<td>📚</td>
+<td>来自训练知识（2025 年及以前），没有复核</td>
+</tr>
+</tbody></table>
+</div>
+<blockquote>
+<p><strong>声明</strong>：法律和税务内容来自公开法条和新闻报道，没有经过律师或会计审阅，不构成法律意见。产品、价格和法规在 2026 年变化很快，签约前请以官方最新信息为准。</p>
+</blockquote>
+
+    </article>
+    <nav class="pager" aria-label="翻页">
+    <span></span>
+    <a class="next" href="feasibility.html"><span>下一页</span><strong>可行性：能做到什么程度</strong></a>
+  </nav>
+    <footer class="foot">本站为方案构想，供讨论用；法律与税务内容未经律师或会计审阅，不构成法律意见。状态标记：✅ 已核实 · ⚠️ 待核实 · 💡 判断 · 📌 估算 · 📚 训练知识未复核。</footer>
+  </main>
+  <nav class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><ul><li><a href="#三句话结论">三句话结论</a></li><li><a href="#怎么读这个网站">怎么读这个网站</a></li><li><a href="#公司长什么样">公司长什么样</a></li><li><a href="#目前的状态">目前的状态</a></li><li><a href="#状态标记">状态标记</a></li></ul></nav>
+</div>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

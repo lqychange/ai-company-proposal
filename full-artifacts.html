@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>全文 · 参考样例 · 一人 AI 公司 · 方案构想</title>
+<meta name="description" content="用 AI 组成整家公司、尽量少的人来管理：研究、架构设计与前期准备清单。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23255f73'/%3E%3Ccircle cx='16' cy='11' r='4.5' fill='%23ffd28a'/%3E%3Ccircle cx='8' cy='22' r='3' fill='%23fff'/%3E%3Ccircle cx='16' cy='24' r='3' fill='%23fff'/%3E%3Ccircle cx='24' cy='22' r='3' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+</head>
+<body data-page="full-artifacts">
+<a class="skip" href="#content">跳到正文</a>
+<header class="topbar">
+  <button class="menu-btn" type="button" aria-label="打开目录" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>一人 AI 公司 · 方案构想</a>
+  <span class="progress" aria-label="阅读进度">第 22 / 22 页</span>
+  <button class="theme-btn" type="button" aria-label="切换深色/浅色">◐</button>
+</header>
+<div class="shell">
+  <aside class="sidebar" id="sidebar"><div class="nav-group"><div class="nav-group-title">开始</div><ul><li><a href="index.html">首页：一页看懂</a></li></ul></div><div class="nav-group"><div class="nav-group-title">基础研究</div><ul><li><a href="feasibility.html">可行性：能做到什么程度</a></li><li><a href="platforms.html">工具与平台选型</a></li><li><a href="compliance.html">合规：得州与美国</a></li><li><a href="updates.html">研究更新（11-13 补充核实）</a></li></ul></div><div class="nav-group"><div class="nav-group-title">方案设计</div><ul><li><a href="org.html">组织架构：1 个人 + AI 人物</a></li><li><a href="architecture.html">推荐架构：AWS Bedrock 路线</a></li><li><a href="knowledge.html">专属 RAG 知识层</a></li><li><a href="review.html">审核：风险分级与授权矩阵</a></li><li><a href="governance.html">AI 治理</a></li><li><a href="security.html">安全防护</a></li><li><a href="cost-roadmap.html">成本与实施路线图</a></li></ul></div><div class="nav-group"><div class="nav-group-title">前期准备（请贵司配合）</div><ul><li><a href="prep.html">前期准备总览</a></li><li><a href="prep-questionnaire.html">① 业务信息问卷</a></li><li><a href="prep-assets.html">② 资料与账号清单</a></li><li><a href="prep-decisions.html">③ 需要拍板的决策</a></li><li><a href="prep-plan.html">④ 前期工作计划与验收</a></li></ul></div><div class="nav-group"><div class="nav-group-title">附录</div><ul><li><a href="glossary.html">术语表</a></li><li><a href="sources.html">来源索引</a></li><li><a href="full-research.html">全文 · 研究汇总 v0.2</a></li><li><a href="full-architecture.html">全文 · Bedrock 架构设计</a></li><li><a href="full-artifacts.html" aria-current="page">全文 · 参考样例</a></li></ul></div>
+    <div class="side-foot">更新于 2026-11-13</div>
+  </aside>
+  <main id="content" class="content full-doc">
+    <article>
+      <p class="doc-kicker">附录 · 完整原文（Markdown 渲染）</p>
+      <h1 class="page-title">全文 · 参考样例</h1>
+      <blockquote>
+<p><strong>用途</strong>：主设计里提到的几样关键产物，各给一个能直接拿来改的样例。
+<strong>说明</strong>：</p>
+<ul>
+<li><code>{{...}}</code> 是占位符，由流水线根据人物卡和 <code>thresholds.yaml</code> 渲染。</li>
+<li>标了 ⚠️ 的写法，上线前要在 staging 里实测，或者用 IAM 策略模拟器验证。</li>
+<li>来源编号和主设计文档一致，例如 [A14] 是 AgentCore Policy 实体模型的文档。</li>
+</ul>
+<p><strong>日期</strong>：2026-11-12</p>
+</blockquote>
+<hr>
+<h2 id="1-人物卡-以销售ai为例"><a class="anchor" href="#1-人物卡-以销售ai为例" aria-label="本节链接">#</a>1. 人物卡（以销售AI为例）</h2>
+<p>文件位置：<code>governance/personas/ae.yaml</code>。改这个文件要提 PR；如果是放宽类变更，还有 24 小时冷静期（见主设计 8.2）。</p>
+<pre class="code"><code class="language-yaml">id: ae
+display_name: &quot;Ava（AI 销售助理）&quot;
+# 对外的 AI 身份告知（主设计 8.7）：第一次接触时和邮件签名里都要出现
+disclosure: &quot;I'm Ava, an AI sales assistant at {{company}}. You can ask for a human at any time.&quot;
+zone: agents-core
+mission: 帮合格线索澄清需求，出方案，在价格带以内报价
+kpis:
+  - { name: proposal_to_close_rate, target: &quot;&gt;= 25%&quot; }
+  - { name: owner_edit_rate,        target: &quot;&lt; 5%&quot; }
+
+runtime:
+  framework: strands
+  image: &quot;{{ecr}}/persona-runtime:1.4.2&quot;   # 所有人物共用的外壳镜像
+  endpoints: { prod: v12, canary: v13 }
+  canary_weight: 0.10                      # 由派工 Lambda 分流（Runtime 本身没有金丝雀发布，[A6]）
+  max_lifetime_seconds: 3600
+
+model:
+  primary:  &quot;us.anthropic.claude-sonnet-5-5&quot;   # 以模型卡上的完整 ID 为准，锁定版本
+  fallback: &quot;us.anthropic.claude-haiku-5-5&quot;
+  data_retention_mode_required: none           # 要处理客户机密数据，所以只能用允许零保留的模型（主设计 5.4）
+
+guardrails:
+  role_guardrail: &quot;gr-ae:3&quot;                    # 岗位护栏，叠加在组织基线护栏之上
+
+gateway:
+  client_id_ref: &quot;ssm:/personas/ae/gateway-client-id&quot;   # 在 Cedar 里就是 AgentCore::OAuthUser 的 ID
+  tools:
+    - knowledge___search_company
+    - knowledge___search_governance
+    - knowledge___search_customer               # 租户过滤由拦截器注入，模型指定不了
+    - crm___read_deal
+    - action___propose                          # 只能提议发送报价、发送合同，自己不能发
+    - workitem___submit
+
+memory:
+  strategies: [summarization, user_preference]  # 不启用情节记忆
+  namespace: &quot;/tenant/{tenantId}/persona/ae/&quot;
+
+budget:
+  max_tokens_per_call: 32000
+  max_tool_calls_per_session: 25
+  daily_usd: 40
+
+autonomy:                    # 按&quot;动作类型&quot;分别设定
+  send_followup_template: A2
+  propose_quote_in_band:  A2
+  propose_custom_proposal: A1
+
+escalation:
+  - { when: &quot;客户提到法律行动&quot;,     to: owner }
+  - { when: &quot;复核官连续两次驳回&quot;,   to: owner }
+
+evals: [evals/ae/standard, evals/ae/adversarial, evals/ae/compliance]</code></pre>
+<hr>
+<h2 id="2-阈值的唯一来源"><a class="anchor" href="#2-阈值的唯一来源" aria-label="本节链接">#</a>2. 阈值的唯一来源</h2>
+<p>文件位置：<code>governance/thresholds.yaml</code>。流水线从这一个文件生成三样东西：Cedar 常量、风险引擎配置、K3 规则文档（主设计 6.1）。</p>
+<pre class="code"><code class="language-yaml">version: &quot;2026-11-12.3&quot;          # 写进每条审批记录和审计事件
+
+discount:                        # 小数，0.10 = 10%
+  auto_max: 0.10                 # 不超过这个值：R1，AI 直接做
+  reviewer_max: 0.20             # 不超过这个值：R2，AI 做 + AI 复核
+  owner_max: 0.40                # 不超过这个值：R3，Owner 批准；超过即 R4，禁止
+
+contract_usd:
+  auto_max: 5000                 # 而且必须是标准模板
+  reviewer_max: 25000
+
+refund_cents:                    # 金额一律用整数（美分），Cedar 里就是 Long，可以直接比较
+  reviewer_max: 20000            # $200
+  owner_max: 200000              # $2,000；超过即 R4，只能 Owner 在 Stripe 后台手工处理
+
+outreach:
+  approved_templates: [tpl-intro-v3, tpl-followup-v2]
+  daily_max_per_persona: 150     # 频率限制由拦截器的计数器执行，Cedar 只管单次请求
+
+cooling_off_hours: 24
+approval_expiry_hours: 72</code></pre>
+<hr>
+<h2 id="3-cedar-策略-agentcore-policy"><a class="anchor" href="#3-cedar-策略-agentcore-policy" aria-label="本节链接">#</a>3. Cedar 策略（AgentCore Policy）</h2>
+<p><strong>写法依据</strong>（✅[A13][A14]）</p>
+<ul>
+<li><strong>主体</strong>：<code>AgentCore::OAuthUser::&quot;&lt;JWT sub&gt;&quot;</code>。用 Cognito 客户端凭据模式时，<code>sub</code> 就是这个应用客户端的 ID（📚）。</li>
+<li><strong>动作</strong>：<code>AgentCore::Action::&quot;&lt;目标名&gt;___&lt;工具名&gt;&quot;</code>。不支持通配符，可以用列表。</li>
+<li><strong>资源</strong>：<code>AgentCore::Gateway::&quot;&lt;gateway-arn&gt;&quot;</code>。</li>
+<li><strong>工具参数</strong>：在 <code>context.input</code> 里。Schema 里是 <code>integer</code> 的字段对应 Cedar 的 Long；是 <code>number</code> 的字段要用 <code>decimal()</code> 比较。</li>
+<li><strong>默认拒绝，forbid 优先。</strong></li>
+</ul>
+<p><strong>容易踩的坑</strong>：Cedar 里一条策略的条件如果求值出错（比如访问了不存在的字段），这条策略会被<strong>跳过</strong>。对 forbid 来说，跳过就等于没拦。所以 forbid 里要先用 <code>has</code> 判断字段在不在，缺字段时按&quot;拒绝&quot;处理。</p>
+<pre class="code"><code class="language-cedar">// ① 销售AI：可以查三个知识库（客户知识的租户过滤由拦截器注入）
+permit(
+  principal == AgentCore::OAuthUser::&quot;{{personas.ae.client_id}}&quot;,
+  action in [
+    AgentCore::Action::&quot;knowledge___search_company&quot;,
+    AgentCore::Action::&quot;knowledge___search_governance&quot;,
+    AgentCore::Action::&quot;knowledge___search_customer&quot;
+  ],
+  resource == AgentCore::Gateway::&quot;{{gateway_arn}}&quot;
+);
+
+// ② 销售AI：只能&quot;提议&quot;发送报价和合同，不能自己发
+permit(
+  principal == AgentCore::OAuthUser::&quot;{{personas.ae.client_id}}&quot;,
+  action == AgentCore::Action::&quot;action___propose&quot;,
+  resource == AgentCore::Gateway::&quot;{{gateway_arn}}&quot;
+)
+when {
+  context.input has action_type &amp;&amp;
+  [&quot;quote_send&quot;, &quot;contract_send&quot;].contains(context.input.action_type)
+};
+
+// ③ 高风险工具只有执行器能调用。forbid 优先，任何 permit 都覆盖不了
+forbid(
+  principal,
+  action in [
+    AgentCore::Action::&quot;quote___send&quot;,
+    AgentCore::Action::&quot;contract___send&quot;,
+    AgentCore::Action::&quot;refund___process&quot;,
+    AgentCore::Action::&quot;payment___pay_bill&quot;
+  ],
+  resource == AgentCore::Gateway::&quot;{{gateway_arn}}&quot;
+)
+unless { principal == AgentCore::OAuthUser::&quot;{{executor.client_id}}&quot; };
+
+// ④ 执行器退款：必须带审批 ID，金额不超过 Owner 上限
+permit(
+  principal == AgentCore::OAuthUser::&quot;{{executor.client_id}}&quot;,
+  action == AgentCore::Action::&quot;refund___process&quot;,
+  resource == AgentCore::Gateway::&quot;{{gateway_arn}}&quot;
+)
+when {
+  context.input has approval_id &amp;&amp;
+  context.input has amount_cents &amp;&amp;
+  context.input.amount_cents &lt;= {{thresholds.refund_cents.owner_max}}
+};
+
+// ⑤ R4 硬上限：超过上限，或者缺少金额字段，一律拒绝（连 Owner 批准过的也不行）
+forbid(
+  principal,
+  action == AgentCore::Action::&quot;refund___process&quot;,
+  resource == AgentCore::Gateway::&quot;{{gateway_arn}}&quot;
+)
+when {
+  !(context.input has amount_cents) ||
+  context.input.amount_cents &gt; {{thresholds.refund_cents.owner_max}}
+};
+
+// ⑥ 获客AI：只能用已批准的模板，只能用自己的发件地址
+//    退订名单是动态数据，由工具 Lambda 检查，不放在 Cedar 里
+permit(
+  principal == AgentCore::OAuthUser::&quot;{{personas.sdr.client_id}}&quot;,
+  action == AgentCore::Action::&quot;email___send_outreach&quot;,
+  resource == AgentCore::Gateway::&quot;{{gateway_arn}}&quot;
+)
+when {
+  context.input has template_id &amp;&amp;
+  context.input has from &amp;&amp;
+  {{cedar_set(thresholds.outreach.approved_templates)}}.contains(context.input.template_id) &amp;&amp;   // 渲染为 [&quot;tpl-intro-v3&quot;, &quot;tpl-followup-v2&quot;]
+  context.input.from == &quot;{{personas.sdr.mailbox}}&quot;
+};
+
+// ⑦ 登记新收款方是 R4：通过 Gateway 谁都不能做。只能 Owner 在银行或卡平台后台操作，并走冷静期
+forbid(
+  principal,
+  action == AgentCore::Action::&quot;payment___add_payee&quot;,
+  resource
+);</code></pre>
+<p><strong>可选：用 Dogwood 时序策略加第二把锁</strong>（✅[A16]，写法改编自官方示例）</p>
+<ul>
+<li><strong>规则</strong>：执行器必须在同一个策略会话里、1 小时之内，先调用过 <code>approval___verify</code> 并且返回&quot;已批准&quot;，审批 ID 也要一致，才能退款。</li>
+<li><strong>前提</strong>：<ul>
+<li>请求带上 <code>x-amzn-bedrock-agentcore-policy-session-id</code> 头。</li>
+<li>调用方和 Gateway 在同一个账号、同一个区域。</li>
+<li>会话空闲 24 小时就会过期。</li>
+</ul>
+</li>
+<li><strong>注意</strong>：这条策略要<strong>替换</strong>上面第 ④ 条，不能两条同时存在。几条 permit 之间是&quot;或&quot;的关系，同时存在的话，没有经过时序验证的请求也能被第 ④ 条放行，时序锁就形同虚设。第 ⑤ 条硬上限照样保留。</li>
+<li>⚠️ 一条策略里能不能同时写普通的 <code>when</code> 和 <code>when temporal</code>，要实测。不行的话，就把审批 ID 和金额的检查都放进执行器和拦截器里做。</li>
+</ul>
+<pre class="code"><code class="language-dogwood">permit (
+    principal == AgentCore::OAuthUser::&quot;{{executor.client_id}}&quot;,
+    action == AgentCore::Action::&quot;refund___process&quot;,
+    resource == AgentCore::Gateway::&quot;{{gateway_arn}}&quot;
+)
+when temporal {
+    formerly within 1h AgentCore::Action::&quot;approval___verify&quot;::response{
+        eventResource:     resource,
+        input.approval_id: context.input.approval_id,
+        output.approved:   true
+    }
+};</code></pre>
+<p><strong>策略测试</strong>：每条策略都配&quot;应当允许&quot;和&quot;应当拒绝&quot;两组用例，放在 <code>policies/tests/</code>，流水线里跑。策略还要在 LOG_ONLY 模式下跑过一段时间，确认没有误拒，再切到 ENFORCE（主设计 9.8 规定 ENFORCE 模式要每小时检查一次）。</p>
+<hr>
+<h2 id="4-组织级护栏和-iam"><a class="anchor" href="#4-组织级护栏和-iam" aria-label="本节链接">#</a>4. 组织级护栏和 IAM</h2>
+<h3 id="4-1-g-01-区域白名单-scp-含-us-跨区推理豁免"><a class="anchor" href="#4-1-g-01-区域白名单-scp-含-us-跨区推理豁免" aria-label="本节链接">#</a>4.1 G-01 区域白名单 SCP（含 US 跨区推理豁免）</h3>
+<p><strong>写法依据</strong>（✅[B10]）</p>
+<ul>
+<li>US 地理推理配置文件会把请求路由到 us-east-1、us-east-2、us-west-2。只要有一个目标区域被拒，请求就会失败。</li>
+<li>可以用 <code>bedrock:InferenceProfileArn</code> 豁免这种路由。</li>
+<li>全球配置文件要求放行 <code>aws:RequestedRegion = &quot;unspecified&quot;</code>。本设计故意不放行，以保证数据不出美国。</li>
+</ul>
+<p><strong>这样写能做到</strong></p>
+<ul>
+<li>us-east-1、us-west-2 照常可用。</li>
+<li>us-east-2 只放行经由 <code>us.*</code> 推理配置文件路由过来的 Bedrock 调用。</li>
+<li>其他区域，以及全球推理配置文件，一律拒绝。</li>
+</ul>
+<p><strong>两点说明</strong></p>
+<ul>
+<li>同一个 Deny 语句里的两个条件是&quot;与&quot;的关系。对非 Bedrock 请求来说，<code>bedrock:InferenceProfileArn</code> 这个键不存在，<code>StringNotLike</code> 的结果为真，所以照样会被拒绝。</li>
+<li>⚠️ <code>NotAction</code> 里的全局服务列表，要按 AWS 官方的区域限制 SCP 范例补全。上线前用真实调用验证。</li>
+</ul>
+<pre class="code"><code class="language-json">{
+  &quot;Version&quot;: &quot;2012-10-17&quot;,
+  &quot;Statement&quot;: [
+    {
+      &quot;Sid&quot;: &quot;DenyOutsideApprovedRegions&quot;,
+      &quot;Effect&quot;: &quot;Deny&quot;,
+      &quot;NotAction&quot;: [
+        &quot;iam:*&quot;, &quot;organizations:*&quot;, &quot;sts:*&quot;, &quot;account:*&quot;, &quot;support:*&quot;, &quot;health:*&quot;,
+        &quot;budgets:*&quot;, &quot;ce:*&quot;, &quot;cur:*&quot;, &quot;cloudfront:*&quot;, &quot;route53:*&quot;, &quot;wafv2:*&quot;
+      ],
+      &quot;Resource&quot;: &quot;*&quot;,
+      &quot;Condition&quot;: {
+        &quot;StringNotEquals&quot;: { &quot;aws:RequestedRegion&quot;: [&quot;us-east-1&quot;, &quot;us-west-2&quot;] },
+        &quot;StringNotLike&quot;:   { &quot;bedrock:InferenceProfileArn&quot;: &quot;arn:aws:bedrock:*:*:inference-profile/us.*&quot; }
+      }
+    }
+  ]
+}</code></pre>
+<h3 id="4-2-g-04-g-07-g-08-g-09-scp-片段"><a class="anchor" href="#4-2-g-04-g-07-g-08-g-09-scp-片段" aria-label="本节链接">#</a>4.2 G-04、G-07、G-08、G-09（SCP 片段）</h3>
+<pre class="code"><code class="language-json">[
+  {
+    &quot;Sid&quot;: &quot;G04DenyMantleEndpoint&quot;,
+    &quot;Effect&quot;: &quot;Deny&quot;,
+    &quot;Action&quot;: &quot;bedrock-mantle:*&quot;,
+    &quot;Resource&quot;: &quot;*&quot;
+  },
+  {
+    &quot;Sid&quot;: &quot;G07ProtectGatewayAndPolicy&quot;,
+    &quot;Effect&quot;: &quot;Deny&quot;,
+    &quot;Action&quot;: [
+      &quot;bedrock-agentcore:UpdateGateway&quot;, &quot;bedrock-agentcore:DeleteGateway&quot;,
+      &quot;bedrock-agentcore:CreateGatewayTarget&quot;, &quot;bedrock-agentcore:UpdateGatewayTarget&quot;, &quot;bedrock-agentcore:DeleteGatewayTarget&quot;,
+      &quot;bedrock-agentcore:CreatePolicyEngine&quot;, &quot;bedrock-agentcore:UpdatePolicyEngine&quot;, &quot;bedrock-agentcore:DeletePolicyEngine&quot;,
+      &quot;bedrock-agentcore:CreatePolicy&quot;, &quot;bedrock-agentcore:UpdatePolicy&quot;, &quot;bedrock-agentcore:DeletePolicy&quot;
+    ],
+    &quot;Resource&quot;: &quot;*&quot;,
+    &quot;Condition&quot;: { &quot;ArnNotLike&quot;: { &quot;aws:PrincipalArn&quot;: &quot;arn:aws:iam::*:role/platform-pipeline-deployer&quot; } }
+  },
+  {
+    &quot;Sid&quot;: &quot;G08OnlyDispatcherInvokesRuntimes&quot;,
+    &quot;Effect&quot;: &quot;Deny&quot;,
+    &quot;Action&quot;: &quot;bedrock-agentcore:InvokeAgentRuntime&quot;,
+    &quot;Resource&quot;: &quot;*&quot;,
+    &quot;Condition&quot;: { &quot;ArnNotLike&quot;: { &quot;aws:PrincipalArn&quot;: [
+      &quot;arn:aws:iam::*:role/persona-dispatcher&quot;,
+      &quot;arn:aws:iam::*:role/platform-pipeline-deployer&quot;
+    ] } }
+  },
+  {
+    &quot;Sid&quot;: &quot;G08NoIamWritesExceptPipeline&quot;,
+    &quot;Effect&quot;: &quot;Deny&quot;,
+    &quot;Action&quot;: [&quot;iam:Create*&quot;, &quot;iam:Put*&quot;, &quot;iam:Attach*&quot;, &quot;iam:Update*&quot;, &quot;iam:Delete*&quot;, &quot;iam:PassRole&quot;],
+    &quot;Resource&quot;: &quot;*&quot;,
+    &quot;Condition&quot;: { &quot;ArnNotLike&quot;: { &quot;aws:PrincipalArn&quot;: &quot;arn:aws:iam::*:role/platform-pipeline-deployer&quot; } }
+  },
+  {
+    &quot;Sid&quot;: &quot;G09PersonaCredsOnlyInsideRuntime&quot;,
+    &quot;Effect&quot;: &quot;Deny&quot;,
+    &quot;Action&quot;: &quot;*&quot;,
+    &quot;Resource&quot;: &quot;*&quot;,
+    &quot;Condition&quot;: {
+      &quot;ArnLike&quot;: { &quot;aws:PrincipalArn&quot;: &quot;arn:aws:iam::*:role/persona-*&quot; },
+      &quot;Null&quot;:    { &quot;aws:AgentCoreRuntimeSourceArn&quot;: &quot;true&quot; }
+    }
+  }
+]</code></pre>
+<p><strong>各条说明</strong></p>
+<ul>
+<li><strong>G-04</strong>：禁用 mantle 端点，因为它没有护栏，也没有调用日志（✅[B17]）。用 SCP 禁用这个做法本身是 💡。</li>
+<li><strong>G-07</strong>：防止有人把 Policy 改成 LOG_ONLY，或者摘掉策略引擎（✅[A15]）。⚠️ 策略引擎相关的 IAM 动作名称，要对照 IAM 服务授权参考逐个核实。</li>
+<li><strong>G-08</strong>：直接调用 Runtime 会绕过 Policy（✅[A7]）。这条 SCP 同时阻止了人物之间互相调用，也就是 AgentCorruption 攻击链里的那一步。</li>
+<li><strong>G-09</strong>：条件键 <code>aws:AgentCoreRuntimeSourceArn</code> 是存在的（✅[A3]）。⚠️ 但必须先在 staging 实测：Runtime 里发出的所有 AWS 调用（Bedrock、Memory、STS 等）是不是都带这个键。只要有一类调用不带，这条 SCP 就会把人物整个打断。</li>
+</ul>
+<h3 id="4-3-g-02-组织级护栏-bedrock-策略-策略类型-bedrock_policy"><a class="anchor" href="#4-3-g-02-组织级护栏-bedrock-策略-策略类型-bedrock_policy" aria-label="本节链接">#</a>4.3 G-02 组织级护栏（Bedrock 策略，策略类型 <code>BEDROCK_POLICY</code>）</h3>
+<p><strong>写法依据</strong>（✅[B7]）</p>
+<ul>
+<li>护栏要建在<strong>管理账号</strong>里，每个区域一份，并且要发布数字版本。</li>
+<li>要给护栏加一条资源策略：用 <code>aws:PrincipalOrgID</code> 允许组织内调用 <code>bedrock:ApplyGuardrail</code>。</li>
+<li>成员账号的角色需要有 <code>bedrock:ApplyGuardrail</code> 权限。</li>
+<li><strong>组织级护栏里不能包含自动推理策略</strong>，否则运行时会失败。</li>
+<li>多个挂载点按&quot;声明式继承&quot;合成<strong>一份</strong>生效策略，不是取并集。可以用 <code>DescribeEffectivePolicy</code> 查看最终结果。</li>
+</ul>
+<p><strong>挂法</strong></p>
+<ul>
+<li>Workloads OU：默认只检测打了标记的内容（<code>selective</code>），这样成本可控（主设计第12节）。</li>
+<li>agents-edge 账号：单独挂一份，把 <code>messages</code> 改成 <code>comprehensive</code>（全量检测）。</li>
+<li>us-west-2：同样配置一份，供 DR 使用。</li>
+</ul>
+<pre class="code"><code class="language-json">{
+  &quot;bedrock&quot;: {
+    &quot;guardrail_inference&quot;: {
+      &quot;us-east-1&quot;: {
+        &quot;config_1&quot;: {
+          &quot;identifier&quot;: { &quot;@@assign&quot;: &quot;arn:aws:bedrock:us-east-1:{{mgmt_account_id}}:guardrail/{{org_guardrail_id}}:{{version}}&quot; },
+          &quot;selective_content_guarding&quot;: {
+            &quot;system&quot;:   { &quot;@@assign&quot;: &quot;selective&quot; },
+            &quot;messages&quot;: { &quot;@@assign&quot;: &quot;selective&quot; }
+          },
+          &quot;model_enforcement&quot;: {
+            &quot;included_models&quot;: { &quot;@@assign&quot;: [&quot;ALL&quot;] },
+            &quot;excluded_models&quot;: { &quot;@@assign&quot;: [&quot;amazon.titan-embed-text-v2:0&quot;] }
+          }
+        }
+      }
+    }
+  }
+}</code></pre>
+<h3 id="4-4-人物执行角色-身份策略片段"><a class="anchor" href="#4-4-人物执行角色-身份策略片段" aria-label="本节链接">#</a>4.4 人物执行角色（身份策略片段）</h3>
+<pre class="code"><code class="language-json">[
+  {
+    &quot;Sid&quot;: &quot;InvokeOnlyWithRoleGuardrail&quot;,
+    &quot;Effect&quot;: &quot;Allow&quot;,
+    &quot;Action&quot;: [&quot;bedrock:InvokeModel&quot;, &quot;bedrock:InvokeModelWithResponseStream&quot;],
+    &quot;Resource&quot;: [
+      &quot;arn:aws:bedrock:*::foundation-model/*&quot;,
+      &quot;arn:aws:bedrock:us-east-1:{{account_id}}:inference-profile/us.*&quot;
+    ],
+    &quot;Condition&quot;: { &quot;StringEquals&quot;: { &quot;bedrock:GuardrailIdentifier&quot;: &quot;arn:aws:bedrock:us-east-1:{{account_id}}:guardrail/{{gr_ae}}:3&quot; } }
+  },
+  {
+    &quot;Sid&quot;: &quot;OwnMemoryNamespaceOnly&quot;,
+    &quot;Effect&quot;: &quot;Allow&quot;,
+    &quot;Action&quot;: [&quot;bedrock-agentcore:CreateEvent&quot;, &quot;bedrock-agentcore:ListEvents&quot;, &quot;bedrock-agentcore:RetrieveMemoryRecords&quot;],
+    &quot;Resource&quot;: &quot;arn:aws:bedrock-agentcore:us-east-1:{{account_id}}:memory/{{memory_id}}&quot;,
+    &quot;Condition&quot;: { &quot;StringLike&quot;: { &quot;bedrock-agentcore:namespacePath&quot;: &quot;/tenant/*/persona/ae/*&quot; } }
+  },
+  {
+    &quot;Sid&quot;: &quot;OwnGatewayCredentialOnly&quot;,
+    &quot;Effect&quot;: &quot;Allow&quot;,
+    &quot;Action&quot;: &quot;bedrock-agentcore:GetResourceOauth2Token&quot;,
+    &quot;Resource&quot;: [
+      &quot;arn:aws:bedrock-agentcore:us-east-1:{{account_id}}:workload-identity-directory/default/workload-identity/{{ae_workload_identity}}&quot;,
+      &quot;arn:aws:bedrock-agentcore:us-east-1:{{account_id}}:token-vault/default/oauth2credentialprovider/{{ae_gateway_client}}&quot;
+    ]
+  }
+]</code></pre>
+<p><strong>各条说明</strong></p>
+<ul>
+<li><strong>第一条</strong>：<code>bedrock:GuardrailIdentifier</code> 覆盖 Converse 和 InvokeModel 两组接口（✅[B8]）。但调用方可以通过输入标记，绕过对提示词一侧的检测；回复一侧始终会被检测。所以它只是第二层，第一层是组织级护栏。</li>
+<li><strong>第二条</strong>：<code>bedrock-agentcore:namespacePath</code> 这个条件键是存在的（✅[A18]）。⚠️ 它和每个 Memory 动作是否兼容，要实测。</li>
+<li><strong>第三条</strong>：凭据访问可以按工作负载身份限定（✅[A17]）。⚠️ 资源 ARN 的具体格式要以 IAM 服务授权参考为准。</li>
+<li><strong>刻意没写的</strong>：不授予 <code>secretsmanager:GetSecretValue</code>、<code>bedrock-agentcore:InvokeAgentRuntime</code> 和任何 <code>*</code>。AgentCorruption 用到的默认角色，恰好就有这些权限（✅[A25]）。</li>
+</ul>
+<hr>
+<h2 id="5-审批记录和执行器校验"><a class="anchor" href="#5-审批记录和执行器校验" aria-label="本节链接">#</a>5. 审批记录和执行器校验</h2>
+<p><strong>审批记录</strong>（存在平台账号的 DynamoDB；同时把脱敏后的摘要写进审计账本）</p>
+<pre class="code"><code class="language-json">{
+  &quot;approval_id&quot;: &quot;apr_01JCX7Q2M5&quot;,
+  &quot;proposal_id&quot;: &quot;prp_01JCX7P9A1&quot;,
+  &quot;work_item_id&quot;: &quot;wi_01JCX7N0ZK&quot;,
+  &quot;tenant_id&quot;: &quot;t_acme&quot;,
+  &quot;proposer_persona&quot;: &quot;ae&quot;,
+  &quot;tool&quot;: &quot;quote___send&quot;,
+  &quot;payload_sha256&quot;: &quot;9f2c4b…e1&quot;,
+  &quot;risk_tier&quot;: &quot;R3&quot;,
+  &quot;rule_version&quot;: &quot;thresholds@2026-11-12.3&quot;,
+  &quot;reviewer&quot;: { &quot;persona&quot;: &quot;reviewer&quot;, &quot;model_family&quot;: &quot;amazon-nova&quot;, &quot;verdict&quot;: &quot;pass&quot;, &quot;notes_ref&quot;: &quot;s3://…/review.json&quot; },
+  &quot;approver&quot;: { &quot;type&quot;: &quot;owner&quot;, &quot;auth&quot;: &quot;passkey&quot;, &quot;at&quot;: &quot;2026-11-12T15:02:11Z&quot; },
+  &quot;expires_at&quot;: &quot;2026-11-15T15:02:11Z&quot;,
+  &quot;status&quot;: &quot;approved&quot;,
+  &quot;used&quot;: false
+}</code></pre>
+<p><strong>执行器的核心逻辑</strong>（伪代码）</p>
+<p>载荷用 RFC 8785（JSON 规范化）序列化后再算哈希，保证同一份载荷每次算出的哈希都一样。</p>
+<pre class="code"><code class="language-python">def execute(approval_id: str, payload: dict) -&gt; dict:
+    rec = approvals.get(approval_id)
+    if rec is None or rec[&quot;status&quot;] != &quot;approved&quot;:
+        raise Denied(&quot;not approved&quot;)
+    if utcnow() &gt; parse_time(rec[&quot;expires_at&quot;]):
+        raise Denied(&quot;approval expired&quot;)
+    if sha256(jcs_canonicalize(payload)) != rec[&quot;payload_sha256&quot;]:
+        raise Denied(&quot;payload differs from what was approved&quot;)
+    # 条件写入：只有 used 还是 false 时才能改成 true，保证一个审批只能用一次
+    approvals.mark_used(approval_id, condition=&quot;used = :false&quot;)
+    ledger.append(event=&quot;execute&quot;, approval_id=approval_id, tool=rec[&quot;tool&quot;],
+                  payload_sha256=rec[&quot;payload_sha256&quot;], rule_version=rec[&quot;rule_version&quot;])
+    return gateway.call_tool(rec[&quot;tool&quot;], payload,
+                             headers={&quot;x-approval-id&quot;: approval_id})  # 请求拦截器会再核对一遍</code></pre>
+<hr>
+<h2 id="6-step-functions-r3-审批片段"><a class="anchor" href="#6-step-functions-r3-审批片段" aria-label="本节链接">#</a>6. Step Functions：R3 审批片段</h2>
+<p><strong>依据</strong>：<code>.waitForTaskToken</code> 只在标准工作流里可用，专门用于人工审批这类场景（✅[S1]）。</p>
+<p><strong>流程</strong></p>
+<ul>
+<li><code>approval-request</code> Lambda 做两件事：<ol>
+<li>把任务令牌存进 DynamoDB。令牌<strong>不发给人物，也不发给 Owner</strong>。</li>
+<li>生成一张审批卡片。</li>
+</ol>
+</li>
+<li>Owner 在控制台操作后，控制台后端调用：<ul>
+<li>批准：<code>SendTaskSuccess</code>。</li>
+<li>驳回：<code>SendTaskFailure</code>，错误码填 <code>Rejected</code>。</li>
+</ul>
+</li>
+<li>72 小时没人处理就超时，自动驳回，<strong>不会默认放行</strong>。</li>
+</ul>
+<pre class="code"><code class="language-json">{
+  &quot;Comment&quot;: &quot;R3 审批：挂起等 Owner，72 小时超时自动驳回&quot;,
+  &quot;StartAt&quot;: &quot;RequestOwnerApproval&quot;,
+  &quot;States&quot;: {
+    &quot;RequestOwnerApproval&quot;: {
+      &quot;Type&quot;: &quot;Task&quot;,
+      &quot;Resource&quot;: &quot;arn:aws:states:::lambda:invoke.waitForTaskToken&quot;,
+      &quot;Parameters&quot;: {
+        &quot;FunctionName&quot;: &quot;approval-request&quot;,
+        &quot;Payload&quot;: {
+          &quot;taskToken.$&quot;: &quot;$$.Task.Token&quot;,
+          &quot;proposalId.$&quot;: &quot;$.proposalId&quot;,
+          &quot;riskTier&quot;: &quot;R3&quot;
+        }
+      },
+      &quot;TimeoutSeconds&quot;: 259200,
+      &quot;Catch&quot;: [
+        { &quot;ErrorEquals&quot;: [&quot;States.Timeout&quot;], &quot;ResultPath&quot;: &quot;$.error&quot;, &quot;Next&quot;: &quot;AutoReject&quot; },
+        { &quot;ErrorEquals&quot;: [&quot;Rejected&quot;],       &quot;ResultPath&quot;: &quot;$.error&quot;, &quot;Next&quot;: &quot;NotifyRejected&quot; }
+      ],
+      &quot;ResultPath&quot;: &quot;$.approval&quot;,
+      &quot;Next&quot;: &quot;Execute&quot;
+    },
+    &quot;Execute&quot;: {
+      &quot;Type&quot;: &quot;Task&quot;,
+      &quot;Resource&quot;: &quot;arn:aws:states:::lambda:invoke&quot;,
+      &quot;Parameters&quot;: { &quot;FunctionName&quot;: &quot;executor&quot;, &quot;Payload.$&quot;: &quot;$&quot; },
+      &quot;End&quot;: true
+    },
+    &quot;AutoReject&quot;: {
+      &quot;Type&quot;: &quot;Task&quot;,
+      &quot;Resource&quot;: &quot;arn:aws:states:::lambda:invoke&quot;,
+      &quot;Parameters&quot;: { &quot;FunctionName&quot;: &quot;approval-expire&quot;, &quot;Payload.$&quot;: &quot;$&quot; },
+      &quot;End&quot;: true
+    },
+    &quot;NotifyRejected&quot;: {
+      &quot;Type&quot;: &quot;Task&quot;,
+      &quot;Resource&quot;: &quot;arn:aws:states:::lambda:invoke&quot;,
+      &quot;Parameters&quot;: { &quot;FunctionName&quot;: &quot;notify-rejected&quot;, &quot;Payload.$&quot;: &quot;$&quot; },
+      &quot;End&quot;: true
+    }
+  }
+}</code></pre>
+<hr>
+<h2 id="7-隔离读信员的输出-schema"><a class="anchor" href="#7-隔离读信员的输出-schema" aria-label="本节链接">#</a>7. 隔离读信员的输出 Schema</h2>
+<p><strong>设计要点</strong></p>
+<ul>
+<li>读外部内容的人物只能输出这个结构，意图只能从枚举值里选。</li>
+<li>任何字段都没有能直接驱动工具的自由文本。</li>
+</ul>
+<p><strong>路由规则</strong>（由骨架执行，不由模型决定）</p>
+<ul>
+<li>意图是 <code>legal_threat</code> 或 <code>complaint</code>，或者请求里包含 <code>refund</code>、<code>delete_my_data</code>：进 R3 队列，同时通知合规官AI。</li>
+<li>以下任一情况转人工队列：<ul>
+<li><code>injection_suspected = true</code></li>
+<li><code>confidence &lt; 0.7</code></li>
+<li><code>sender.auth = fail</code></li>
+</ul>
+</li>
+</ul>
+<pre class="code"><code class="language-json">{
+  &quot;$schema&quot;: &quot;https://json-schema.org/draft/2020-12/schema&quot;,
+  &quot;title&quot;: &quot;InboundMessageExtraction&quot;,
+  &quot;type&quot;: &quot;object&quot;,
+  &quot;additionalProperties&quot;: false,
+  &quot;required&quot;: [&quot;message_id&quot;, &quot;sender&quot;, &quot;intent&quot;, &quot;requested_actions&quot;, &quot;injection_suspected&quot;, &quot;confidence&quot;],
+  &quot;properties&quot;: {
+    &quot;message_id&quot;: { &quot;type&quot;: &quot;string&quot; },
+    &quot;sender&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;additionalProperties&quot;: false,
+      &quot;required&quot;: [&quot;email&quot;, &quot;auth&quot;],
+      &quot;properties&quot;: {
+        &quot;email&quot;: { &quot;type&quot;: &quot;string&quot;, &quot;format&quot;: &quot;email&quot; },
+        &quot;auth&quot;:  { &quot;enum&quot;: [&quot;pass&quot;, &quot;fail&quot;, &quot;none&quot;] }
+      }
+    },
+    &quot;intent&quot;: {
+      &quot;enum&quot;: [&quot;new_inquiry&quot;, &quot;reply_to_quote&quot;, &quot;support_request&quot;, &quot;billing_question&quot;,
+               &quot;unsubscribe&quot;, &quot;complaint&quot;, &quot;legal_threat&quot;, &quot;spam&quot;, &quot;other&quot;]
+    },
+    &quot;entities&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;additionalProperties&quot;: false,
+      &quot;properties&quot;: {
+        &quot;company&quot;:    { &quot;type&quot;: &quot;string&quot;, &quot;maxLength&quot;: 200 },
+        &quot;budget_usd&quot;: { &quot;type&quot;: &quot;number&quot;, &quot;minimum&quot;: 0 },
+        &quot;deadline&quot;:   { &quot;type&quot;: &quot;string&quot;, &quot;format&quot;: &quot;date&quot; }
+      }
+    },
+    &quot;requested_actions&quot;: {
+      &quot;type&quot;: &quot;array&quot;,
+      &quot;maxItems&quot;: 5,
+      &quot;items&quot;: { &quot;enum&quot;: [&quot;send_info&quot;, &quot;schedule_meeting&quot;, &quot;send_quote&quot;, &quot;change_contract&quot;,
+                          &quot;refund&quot;, &quot;cancel&quot;, &quot;delete_my_data&quot;] }
+    },
+    &quot;summary&quot;:             { &quot;type&quot;: &quot;string&quot;, &quot;maxLength&quot;: 600 },
+    &quot;injection_suspected&quot;: { &quot;type&quot;: &quot;boolean&quot; },
+    &quot;confidence&quot;:          { &quot;type&quot;: &quot;number&quot;, &quot;minimum&quot;: 0, &quot;maximum&quot;: 1 }
+  }
+}</code></pre>
+<p><code>sender.auth</code> 不由模型判断，而是由收信 Lambda 根据 SPF、DKIM、DMARC 的校验结果填写，然后覆盖模型的输出。</p>
+
+    </article>
+    <nav class="pager" aria-label="翻页">
+    <a class="prev" href="full-architecture.html"><span>上一页</span><strong>全文 · Bedrock 架构设计</strong></a>
+    <span></span>
+  </nav>
+    <footer class="foot">本站为方案构想，供讨论用；法律与税务内容未经律师或会计审阅，不构成法律意见。状态标记：✅ 已核实 · ⚠️ 待核实 · 💡 判断 · 📌 估算 · 📚 训练知识未复核。</footer>
+  </main>
+  <nav class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><ul><li><a href="#1-人物卡-以销售ai为例">1. 人物卡（以销售AI为例）</a></li><li><a href="#2-阈值的唯一来源">2. 阈值的唯一来源</a></li><li><a href="#3-cedar-策略-agentcore-policy">3. Cedar 策略（AgentCore Policy）</a></li><li><a href="#4-组织级护栏和-iam">4. 组织级护栏和 IAM</a></li><li><a href="#5-审批记录和执行器校验">5. 审批记录和执行器校验</a></li><li><a href="#6-step-functions-r3-审批片段">6. Step Functions：R3 审批片段</a></li><li><a href="#7-隔离读信员的输出-schema">7. 隔离读信员的输出 Schema</a></li></ul></nav>
+</div>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

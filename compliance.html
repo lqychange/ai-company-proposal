@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>合规：得州与美国 · 一人 AI 公司 · 方案构想</title>
+<meta name="description" content="用 AI 组成整家公司、尽量少的人来管理：研究、架构设计与前期准备清单。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23255f73'/%3E%3Ccircle cx='16' cy='11' r='4.5' fill='%23ffd28a'/%3E%3Ccircle cx='8' cy='22' r='3' fill='%23fff'/%3E%3Ccircle cx='16' cy='24' r='3' fill='%23fff'/%3E%3Ccircle cx='24' cy='22' r='3' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+</head>
+<body data-page="compliance">
+<a class="skip" href="#content">跳到正文</a>
+<header class="topbar">
+  <button class="menu-btn" type="button" aria-label="打开目录" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>一人 AI 公司 · 方案构想</a>
+  <span class="progress" aria-label="阅读进度">第 4 / 22 页</span>
+  <button class="theme-btn" type="button" aria-label="切换深色/浅色">◐</button>
+</header>
+<div class="shell">
+  <aside class="sidebar" id="sidebar"><div class="nav-group"><div class="nav-group-title">开始</div><ul><li><a href="index.html">首页：一页看懂</a></li></ul></div><div class="nav-group"><div class="nav-group-title">基础研究</div><ul><li><a href="feasibility.html">可行性：能做到什么程度</a></li><li><a href="platforms.html">工具与平台选型</a></li><li><a href="compliance.html" aria-current="page">合规：得州与美国</a></li><li><a href="updates.html">研究更新（11-13 补充核实）</a></li></ul></div><div class="nav-group"><div class="nav-group-title">方案设计</div><ul><li><a href="org.html">组织架构：1 个人 + AI 人物</a></li><li><a href="architecture.html">推荐架构：AWS Bedrock 路线</a></li><li><a href="knowledge.html">专属 RAG 知识层</a></li><li><a href="review.html">审核：风险分级与授权矩阵</a></li><li><a href="governance.html">AI 治理</a></li><li><a href="security.html">安全防护</a></li><li><a href="cost-roadmap.html">成本与实施路线图</a></li></ul></div><div class="nav-group"><div class="nav-group-title">前期准备（请贵司配合）</div><ul><li><a href="prep.html">前期准备总览</a></li><li><a href="prep-questionnaire.html">① 业务信息问卷</a></li><li><a href="prep-assets.html">② 资料与账号清单</a></li><li><a href="prep-decisions.html">③ 需要拍板的决策</a></li><li><a href="prep-plan.html">④ 前期工作计划与验收</a></li></ul></div><div class="nav-group"><div class="nav-group-title">附录</div><ul><li><a href="glossary.html">术语表</a></li><li><a href="sources.html">来源索引</a></li><li><a href="full-research.html">全文 · 研究汇总 v0.2</a></li><li><a href="full-architecture.html">全文 · Bedrock 架构设计</a></li><li><a href="full-artifacts.html">全文 · 参考样例</a></li></ul></div>
+    <div class="side-foot">更新于 2026-11-13</div>
+  </aside>
+  <main id="content" class="content">
+    <article>
+      
+      <h1 class="page-title">合规：得州与美国</h1>
+      <blockquote>
+<p><strong>一句话</strong>：得州的特点是<strong>规则少、执法严</strong>。TRAIGA 对私营 B2B 公司的负担很轻，但消费者保护法（DTPA）、电话推销法和生物识别法会直接改变销售话术、外联渠道和语音设计。</p>
+<p>本页按&quot;被 AI 化的公司在得州注册和运营、客户以美国企业为主&quot;来分析。如果贵司的情况不同，请在 <a href="prep-questionnaire.html">业务信息问卷</a> 里说明。<strong>本页不构成法律意见</strong>，上线前请得州执业律师审阅。</p>
+</blockquote>
+<h2 id="一张表看懂对设计的影响"><a class="anchor" href="#一张表看懂对设计的影响" aria-label="本节链接">#</a>一张表看懂对设计的影响</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>法规</th>
+<th>管什么</th>
+<th>对设计的影响</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>TRAIGA</strong>（得州 AI 法，2026-01-01 生效）</td>
+<td>以&quot;故意&quot;为标准的几类禁止行为；只有州总检察长能执法</td>
+<td>按 NIST AI RMF 做治理（可作为免责依据）；准备好 8 类调查材料</td>
+</tr>
+<tr>
+<td><strong>DTPA</strong>（得州消费者保护法）</td>
+<td>误导性宣传；资产不到 2,500 万美元的企业也能起诉</td>
+<td>预先批准的话术库；护栏拦截&quot;保证&quot;&quot;100%&quot;&quot;完全无人&quot;这类说法</td>
+</tr>
+<tr>
+<td><strong>电话推销法</strong>（第 302 章）+ <strong>SB 140</strong></td>
+<td>电话和短信推销要登记、交保证金</td>
+<td>第一阶段不做电话和短信外联</td>
+</tr>
+<tr>
+<td><strong>TCPA</strong>（联邦）</td>
+<td>AI 语音属于&quot;人工语音&quot;，打手机要事先书面同意</td>
+<td>不做 AI 陌生外呼</td>
+</tr>
+<tr>
+<td><strong>CUBI</strong>（生物识别法）</td>
+<td>声纹属于生物识别信息</td>
+<td>克隆任何人的声音都签书面同意；不用声纹验证身份</td>
+</tr>
+<tr>
+<td><strong>TDPSA</strong>（隐私法）</td>
+<td>小企业基本豁免；B2B 联系人大多不在范围</td>
+<td>现在就建好数据清单、删除和导出入口</td>
+</tr>
+<tr>
+<td><strong>UETA</strong>（电子交易法）</td>
+<td>电子代理可以订立合同</td>
+<td>AI 答应的条件公司必须履行，所以授权矩阵和规则网关是法律需要；签约流程必须有确认和更正步骤</td>
+</tr>
+<tr>
+<td><strong>CAN-SPAM</strong> + 邮箱服务商规则</td>
+<td>商业邮件</td>
+<td>真实发件人、退订链接、SPF/DKIM/DMARC；投诉率低于 0.1%，绝不超过 0.3%</td>
+</tr>
+</tbody></table>
+</div>
+<h2 id="traiga-hb-149"><a class="anchor" href="#traiga-hb-149" aria-label="本节链接">#</a>TRAIGA（HB 149）</h2>
+<ul>
+<li><strong>适用对象</strong>：在得州推广、做广告或开展业务的人；产品或服务被得州居民使用的人；在得州开发或部署 AI 系统的人。</li>
+<li><strong>&quot;消费者&quot;不包括商业或雇佣场景中的个人</strong>，所以 B2B 场景负担较轻。</li>
+<li><strong>告知义务</strong>：只有政府机构和医疗服务必须告知对方在和 AI 打交道。私营非医疗公司没有这项法定义务——但本方案仍然<strong>主动告知</strong>，原因见下文 DTPA 和其他州的规定。</li>
+<li><strong>对私营公司的禁止事项</strong>（都以&quot;故意&quot;为标准）：诱导自残、伤害或犯罪；唯一意图是侵犯宪法权利；故意违法歧视；涉及未成年人的性内容和深度伪造。</li>
+<li><strong>执法</strong>：只有州总检察长能执法，个人不能依这部法起诉。总检察长可以发&quot;民事调查要求&quot;，要求提供 8 类材料：①用途和场景 ②训练数据类型 ③输入数据类别 ④输出 ⑤评估指标 ⑥已知局限 ⑦上线后的监控和保护措施 ⑧其他相关文件。<strong>本方案的治理仓库就是按这 8 类来组织的。</strong></li>
+<li><strong>整改期</strong>：收到书面通知后有 60 天整改期。</li>
+<li><strong>罚款</strong>：可整改的每次 $10,000–12,000；不可整改的每次 $80,000–200,000；持续违规每天 $2,000–40,000。</li>
+<li><strong>免责</strong>：通过红队测试，或者在实质遵循 <strong>NIST AI RMF</strong> 的前提下通过内部审查自己发现的违规，可以免责。</li>
+<li><strong>监管沙盒</strong>：由州信息资源部（DIR）主办，最长 36 个月。截至目前没有找到公开的申请入口 ⚠️，也没有查到依 TRAIGA 提起的执法案例。</li>
+</ul>
+<h2 id="dtpa-真正要小心的地方"><a class="anchor" href="#dtpa-真正要小心的地方" aria-label="本节链接">#</a>DTPA：真正要小心的地方</h2>
+<ul>
+<li><strong>企业客户也能起诉</strong>：资产不到 2,500 万美元的企业也算&quot;消费者&quot;（§17.45(4)）。</li>
+<li><strong>不适用</strong>：书面合同超过 $10 万且对方有独立律师；交易超过 $50 万。</li>
+<li><strong>执法案例</strong>：2026-10-23，州总检察长依据 DTPA 起诉 OpenAI，理由是把 ChatGPT 宣传成&quot;安全可靠&quot;，却没有充分披露风险。</li>
+<li><strong>设计上的应对</strong>：<ul>
+<li>建一份<strong>已批准宣传用语库</strong>，营销和销售 AI 只能说库里的内容，复核官逐条核对。</li>
+<li>护栏拦截&quot;保证&quot;&quot;100%&quot;&quot;完全无人工&quot;这类说法。</li>
+<li>方案和合同里写明 AI 的局限。</li>
+<li>所有对外对话存档。</li>
+</ul>
+</li>
+</ul>
+<h2 id="电话-短信和语音"><a class="anchor" href="#电话-短信和语音" aria-label="本节链接">#</a>电话、短信和语音</h2>
+<ul>
+<li><strong>登记</strong>（§302.101）：从得州打出、或打给得州买家的推销电话，要先在州务卿处登记，每个营业地点单独登记。登记费 $200，另交 $10,000 保证金。</li>
+<li><strong>&quot;买家&quot;包括企业</strong>；豁免很窄。向老客户推销的豁免要求用同一个名称经营满 2 年，新公司用不上。</li>
+<li><strong>SB 140</strong>（2025-09-01 生效）：把短信和彩信也算进&quot;电话推销&quot;，违规算 DTPA 违规，个人可以起诉。&quot;其他传输&quot;是否涵盖电子邮件，存在解释空间 ⚠️。</li>
+<li><strong>TCPA 在得州的诉讼</strong>：每次违规 $500，故意违规最高 $1,500。</li>
+<li><strong>结论</strong>：第一阶段只做邮件和官网聊天；语音 Agent 以后只接客户打进来的电话，或做对方预约、同意过的回访。</li>
+</ul>
+<h2 id="其他州和联邦"><a class="anchor" href="#其他州和联邦" aria-label="本节链接">#</a>其他州和联邦</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>范围</th>
+<th>要点</th>
+<th>什么时候适用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>联邦行政令</strong>（2025-12-11，&quot;确保 AI 国家政策框架&quot;）✅</td>
+<td>司法部成立 AI 诉讼工作组，挑战&quot;过度&quot;的州 AI 法；商务部列出有冲突的州法；联邦资金可能附加条件。儿童安全、数据中心、州政府采购等领域除外</td>
+<td><strong>行政令本身不能废止州法</strong>。在法院禁止或国会立法之前，州法照常适用</td>
+</tr>
+<tr>
+<td>国会</td>
+<td>还没有通过统一的、优先于州法的 AI 立法；11 月 3 日中期选举后民主党控制两院 💡 短期出台的可能性更低</td>
+<td>—</td>
+</tr>
+<tr>
+<td>科罗拉多 SB 26-189</td>
+<td>在&quot;重大决定&quot;中使用自动化决策技术：事先告知、不利结果 30 天内解释、人工复核。<strong>广告、营销、客服分流、工作流工具不在范围内</strong></td>
+<td>2027-01-01 起，有科罗拉多客户时</td>
+</tr>
+<tr>
+<td>科罗拉多 HB 26-1263</td>
+<td>面向消费者的聊天机器人要说明自己是 AI</td>
+<td>2027-01-01 起</td>
+</tr>
+<tr>
+<td>加州</td>
+<td>BOT 法：销售场景要说明对方是机器人（📚）；CCPA 自动化决策规则 2027-01-01 起适用于&quot;重大决定&quot;</td>
+<td>有加州客户时</td>
+</tr>
+<tr>
+<td>欧盟 AI 法案第 50 条</td>
+<td>告诉用户在和 AI 打交道；标注深度伪造和部分 AI 生成内容</td>
+<td>2026-08-02 起，有欧盟客户时</td>
+</tr>
+</tbody></table>
+</div>
+<h2 id="税和必须由人办的事"><a class="anchor" href="#税和必须由人办的事" aria-label="本节链接">#</a>税和必须由人办的事</h2>
+<p><strong>必须由人（Owner）办的事</strong>：</p>
+<ol>
+<li>在州务卿处注册 LLC（备案费 $300 📚），指定注册代理人。</li>
+<li>申请联邦税号（EIN）；开银行账户和 Stripe 账户，需要本人实名。</li>
+<li>如果卖应税服务，在州审计长处开销售税账户；每年报特许税信息报告（收入不超过 $265 万不用交特许税）。</li>
+<li>如果打电话或发短信获客，办理电话推销登记。</li>
+<li>购买科技职业责任险（E&amp;O）和网络安全险。</li>
+</ol>
+<p><strong>销售税</strong>：信息服务和数据处理服务按价格的 80% 征税，州税率 6.25%，地方最多再加 2%，实际约 5%–6.6%。SaaS 一般被当作数据处理服务（📚）。两个影响：买 SaaS 和云服务大多要多付这笔税；如果贵司卖的是 SaaS 或数据报告，向得州客户销售时要代收销售税。</p>
+<h2 id="时间点"><a class="anchor" href="#时间点" aria-label="本节链接">#</a>时间点</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>时间</th>
+<th>事件</th>
+<th>影响（💡）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>2026-11-03</td>
+<td>选举：民主党人 <strong>Nathan Johnson</strong> 当选州总检察长（约 52.4% 对 46%）；<strong>James Talarico</strong> 击败 Ken Paxton 当选联邦参议员 ✅</td>
+<td>执法重点可能变化。Johnson 竞选时承诺上任 30 天内审查消费者保护、竞争和就业法律中的 AI 漏洞，并让消费者保护部门每半年发布技术风险报告 ✅</td>
+</tr>
+<tr>
+<td>2026 年底前</td>
+<td>Paxton 仍任总检察长，执法积极</td>
+<td>宣传话术现在就要收紧</td>
+</tr>
+<tr>
+<td>2027-01</td>
+<td>Johnson 就任</td>
+<td>可能更关注职场 AI 和对消费者的披露</td>
+</tr>
+<tr>
+<td>2027-01-01</td>
+<td>科罗拉多、加州的新规生效</td>
+<td>只在有这两州客户时适用</td>
+</tr>
+<tr>
+<td>2027-01-12</td>
+<td>第 90 届州议会开幕</td>
+<td>可能修改 TRAIGA 或出台新的 AI 法；预提交法案还没查到 ⚠️</td>
+</tr>
+</tbody></table>
+</div>
+<p>更多细节和法条出处见 <a href="full-research.html">全文 · 研究汇总</a> 第 7、9 节。</p>
+
+    </article>
+    <nav class="pager" aria-label="翻页">
+    <a class="prev" href="platforms.html"><span>上一页</span><strong>工具与平台选型</strong></a>
+    <a class="next" href="updates.html"><span>下一页</span><strong>研究更新（11-13 补充核实）</strong></a>
+  </nav>
+    <footer class="foot">本站为方案构想，供讨论用；法律与税务内容未经律师或会计审阅，不构成法律意见。状态标记：✅ 已核实 · ⚠️ 待核实 · 💡 判断 · 📌 估算 · 📚 训练知识未复核。</footer>
+  </main>
+  <nav class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><ul><li><a href="#一张表看懂对设计的影响">一张表看懂对设计的影响</a></li><li><a href="#traiga-hb-149">TRAIGA（HB 149）</a></li><li><a href="#dtpa-真正要小心的地方">DTPA：真正要小心的地方</a></li><li><a href="#电话-短信和语音">电话、短信和语音</a></li><li><a href="#其他州和联邦">其他州和联邦</a></li><li><a href="#税和必须由人办的事">税和必须由人办的事</a></li><li><a href="#时间点">时间点</a></li></ul></nav>
+</div>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

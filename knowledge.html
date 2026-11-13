@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>专属 RAG 知识层 · 一人 AI 公司 · 方案构想</title>
+<meta name="description" content="用 AI 组成整家公司、尽量少的人来管理：研究、架构设计与前期准备清单。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23255f73'/%3E%3Ccircle cx='16' cy='11' r='4.5' fill='%23ffd28a'/%3E%3Ccircle cx='8' cy='22' r='3' fill='%23fff'/%3E%3Ccircle cx='16' cy='24' r='3' fill='%23fff'/%3E%3Ccircle cx='24' cy='22' r='3' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+</head>
+<body data-page="knowledge">
+<a class="skip" href="#content">跳到正文</a>
+<header class="topbar">
+  <button class="menu-btn" type="button" aria-label="打开目录" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>一人 AI 公司 · 方案构想</a>
+  <span class="progress" aria-label="阅读进度">第 8 / 22 页</span>
+  <button class="theme-btn" type="button" aria-label="切换深色/浅色">◐</button>
+</header>
+<div class="shell">
+  <aside class="sidebar" id="sidebar"><div class="nav-group"><div class="nav-group-title">开始</div><ul><li><a href="index.html">首页：一页看懂</a></li></ul></div><div class="nav-group"><div class="nav-group-title">基础研究</div><ul><li><a href="feasibility.html">可行性：能做到什么程度</a></li><li><a href="platforms.html">工具与平台选型</a></li><li><a href="compliance.html">合规：得州与美国</a></li><li><a href="updates.html">研究更新（11-13 补充核实）</a></li></ul></div><div class="nav-group"><div class="nav-group-title">方案设计</div><ul><li><a href="org.html">组织架构：1 个人 + AI 人物</a></li><li><a href="architecture.html">推荐架构：AWS Bedrock 路线</a></li><li><a href="knowledge.html" aria-current="page">专属 RAG 知识层</a></li><li><a href="review.html">审核：风险分级与授权矩阵</a></li><li><a href="governance.html">AI 治理</a></li><li><a href="security.html">安全防护</a></li><li><a href="cost-roadmap.html">成本与实施路线图</a></li></ul></div><div class="nav-group"><div class="nav-group-title">前期准备（请贵司配合）</div><ul><li><a href="prep.html">前期准备总览</a></li><li><a href="prep-questionnaire.html">① 业务信息问卷</a></li><li><a href="prep-assets.html">② 资料与账号清单</a></li><li><a href="prep-decisions.html">③ 需要拍板的决策</a></li><li><a href="prep-plan.html">④ 前期工作计划与验收</a></li></ul></div><div class="nav-group"><div class="nav-group-title">附录</div><ul><li><a href="glossary.html">术语表</a></li><li><a href="sources.html">来源索引</a></li><li><a href="full-research.html">全文 · 研究汇总 v0.2</a></li><li><a href="full-architecture.html">全文 · Bedrock 架构设计</a></li><li><a href="full-artifacts.html">全文 · 参考样例</a></li></ul></div>
+    <div class="side-foot">更新于 2026-11-13</div>
+  </aside>
+  <main id="content" class="content">
+    <article>
+      
+      <h1 class="page-title">专属 RAG 知识层</h1>
+      <blockquote>
+<p><strong>一句话</strong>：知识层是公司的&quot;大脑&quot;，必须放在贵司自己的云账号里，以服务的形式提供给所有 AI 人物。<strong>RAG 告诉 AI 规则是什么，Policy 决定 AI 能不能做。</strong></p>
+</blockquote>
+<h2 id="为什么第一天就要建"><a class="anchor" href="#为什么第一天就要建" aria-label="本节链接">#</a>为什么第一天就要建</h2>
+<ol>
+<li><strong>每个决定都依赖它</strong>：产品、价格、条款手册、SOP、案例、品牌语气、客户历史。</li>
+<li><strong>能迁移</strong>：知识锁在某个 Agent 产品里，换平台就等于&quot;失忆&quot;。</li>
+<li><strong>能隔离权限</strong>：销售 AI 看不到财务明细；A 客户的资料不会出现在 B 客户的方案里。</li>
+<li><strong>能追责</strong>：每个回答都带出处，出了错能查到是哪份文档导致的。</li>
+</ol>
+<h2 id="知识分域"><a class="anchor" href="#知识分域" aria-label="本节链接">#</a>知识分域</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>域</th>
+<th>内容举例</th>
+<th>谁能读</th>
+<th>怎么更新</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>K1 公开知识</td>
+<td>服务目录、公开价格、FAQ、已授权的案例</td>
+<td>所有人物</td>
+<td>知识管理员提议 → 复核官 → 自动发布，抽查</td>
+</tr>
+<tr>
+<td>K2 运营知识</td>
+<td>SOP、话术、异议处理、交付标准、品牌语气</td>
+<td>按岗位</td>
+<td>知识管理员提议 → Owner 批量批准</td>
+</tr>
+<tr>
+<td>K3 规则知识</td>
+<td>定价规则、折扣带、条款手册、退款政策、红线</td>
+<td>销售、合同、财务、复核、合规</td>
+<td><strong>只有 Owner 能改</strong>，由阈值文件自动生成</td>
+</tr>
+<tr>
+<td>K4 客户知识</td>
+<td>客户资料、需求、会议纪要、交付物</td>
+<td>只有正在处理该客户工作单的人物</td>
+<td>入库时按客户打标签</td>
+</tr>
+<tr>
+<td>K5 治理知识</td>
+<td>AI 政策、法规摘要、<strong>已批准的宣传用语库</strong></td>
+<td>复核、合规、内审；业务人物只读用语库</td>
+<td>Owner、合规官</td>
+</tr>
+<tr>
+<td>不入库：业务数据</td>
+<td>CRM、订单、发票、签约状态</td>
+<td>用工具实时查，避免拿到过期数据</td>
+<td>—</td>
+</tr>
+<tr>
+<td>不入库：记忆</td>
+<td>互动摘要、偏好</td>
+<td>AgentCore Memory，按&quot;客户 × 人物&quot;隔离</td>
+<td>—</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>阈值只定义一次</strong>：折扣上限、合同金额、退款额度这些数字，只写在 <code>thresholds.yaml</code> 一个文件里。流水线用它同时生成 Cedar 策略常量、风险引擎配置、给 AI 读的 K3 规则文档，所以三者永远不会互相矛盾。</p>
+<h2 id="架构"><a class="anchor" href="#架构" aria-label="本节链接">#</a>架构</h2>
+<div class="diagram"><pre class="mermaid">flowchart LR
+    subgraph SRC[&quot;来源&quot;]
+        direction TB
+        S1[&quot;公司文档&lt;br/&gt;SOP · 话术 · 案例&quot;]:::src
+        S2[&quot;thresholds.yaml&lt;br/&gt;阈值唯一来源&quot;]:::src
+        S3[&quot;客户资料&lt;br/&gt;附件 · 需求 · 交付物&quot;]:::src
+    end
+    subgraph PIPE[&quot;入库流水线&quot;]
+        direction TB
+        C1[&quot;① 恶意软件扫描&quot;]:::pipe
+        C2[&quot;② 个人信息识别 · 定分级&quot;]:::pipe
+        C3[&quot;③ 注入扫描&lt;br/&gt;隐藏文字检查&quot;]:::pipe
+        C4[&quot;④ 打元数据&lt;br/&gt;域 · 分级 · 客户 · 版本 · 生效日&quot;]:::pipe
+        C5{&quot;⑤ 按域审批&quot;}:::gate
+        C6[&quot;⑥ 发布 · 同步知识库&quot;]:::pipe
+        C7[&quot;⑦ 检索回归评估&quot;]:::pipe
+        C1 --&gt; C2 --&gt; C3 --&gt; C4 --&gt; C5 --&gt; C6 --&gt; C7
+    end
+    subgraph IDX[&quot;托管知识库&quot;]
+        direction TB
+        KB1[(&quot;KB-公司&lt;br/&gt;K1 · K2&quot;)]:::kb
+        KB2[(&quot;KB-规则与治理&lt;br/&gt;K3 · K5&quot;)]:::kb
+        KB3[(&quot;KB-客户&lt;br/&gt;K4 · 按客户元数据&quot;)]:::kb
+    end
+    subgraph RET[&quot;检索路径&quot;]
+        direction TB
+        P[&quot;AI 人物&quot;]:::persona
+        G[&quot;网关&lt;br/&gt;人物身份认证&quot;]:::cp
+        I[&quot;拦截器 + Policy&lt;br/&gt;注入客户和分级过滤&quot;]:::cp
+        L[&quot;检索工具&lt;br/&gt;逐条复核 · 带出处返回&quot;]:::cp
+        P --&gt; G --&gt; I --&gt; L
+    end
+    S1 &amp; S2 &amp; S3 --&gt; C1
+    C6 --&gt; KB1 &amp; KB2 &amp; KB3
+    L --&gt; KB1 &amp; KB2 &amp; KB3
+    classDef src fill:#eceff1,stroke:#546e7a,color:#263238,stroke-width:1px;
+    classDef pipe fill:#fffde7,stroke:#f9a825,color:#f57f17,stroke-width:2px;
+    classDef gate fill:#fff3e0,stroke:#e65100,color:#bf360c,stroke-width:3px;
+    classDef kb fill:#e8eaf6,stroke:#283593,color:#1a237e,stroke-width:2px;
+    classDef persona fill:#e3f2fd,stroke:#1565c0,color:#0d47a1,stroke-width:2px;
+    classDef cp fill:#ffebee,stroke:#c62828,color:#b71c1c,stroke-width:2px;</pre></div>
+<h2 id="关键设计"><a class="anchor" href="#关键设计" aria-label="本节链接">#</a>关键设计</h2>
+<ol>
+<li><strong>用 Bedrock 托管知识库</strong>：永远是混合检索（关键词 + 语义），内置解析、嵌入和重排；索引每 GB 每月 $5、检索每千次 $1 ✅。不用运维向量库，最适合一人公司。遇到瓶颈再换 Aurora pgvector，接口不变。</li>
+<li><strong>三个知识库，各对应一个检索工具</strong>：这样 Cedar 在&quot;动作&quot;层就能管住&quot;哪个人物能查哪个知识域&quot;。</li>
+<li><strong>只检索，不让知识库代为生成</strong>：返回分数和出处，由人物生成回答，再用护栏的&quot;上下文溯源检查&quot;核对回答和片段是否一致。</li>
+<li><strong>客户隔离四层</strong>：<ul>
+<li>服务端从工作单令牌里取出客户 ID 注入过滤条件，<strong>模型指定不了客户</strong>（AWS 2026-11-12 的博客也明确推荐这种做法 ✅）。</li>
+<li>返回前逐条复核每个片段的客户标签，有任何不符就整批丢弃并告警。</li>
+<li>每周用 A 客户的身份去查 B 客户的内容，泄漏率必须是 0。</li>
+<li>合同要求更强隔离的客户，单独一个知识库。</li>
+</ul>
+</li>
+<li><strong>检索结果也是不可信的</strong>：护栏不扫描检索出来的片段 ✅。所以入库时做注入扫描、返回时打攻击分数、使用时当作数据而不是指令。</li>
+<li><strong>新鲜度</strong>：每份文档带版本、生效日期和状态；只检索&quot;有效&quot;状态；知识管理员每周出一份过期和冲突文档报告。</li>
+<li><strong>人和 AI 共用一套知识</strong>：AWS Quick 可以直接接 Bedrock 知识库，Owner 想用对话方式查公司知识时可以选配。</li>
+</ol>
+<h2 id="质量怎么衡量"><a class="anchor" href="#质量怎么衡量" aria-label="本节链接">#</a>质量怎么衡量</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>指标</th>
+<th>含义</th>
+<th>门槛（💡）</th>
+<th>频率</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>召回率</td>
+<td>标准问题集中，正确片段出现在前 k 条的比例</td>
+<td>≥ 90%</td>
+<td>每次知识变更 + 每周</td>
+</tr>
+<tr>
+<td>溯源率</td>
+<td>回答里的事实都能在片段中找到</td>
+<td>≥ 95%</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>引用准确率</td>
+<td>引用的出处确实支撑这个说法</td>
+<td>≥ 95%</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>拒答正确率</td>
+<td>知识库里没有答案时，能回答&quot;不知道&quot;</td>
+<td>≥ 90%</td>
+<td>每周</td>
+</tr>
+<tr>
+<td>跨客户泄漏</td>
+<td>用 A 客户的身份检索到 B 客户的内容</td>
+<td><strong>0</strong></td>
+<td>每周 + 每次权限变更</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>蜜罐文档</strong>：在知识库里埋几份内容独特的文档，一旦出现在对外内容里，说明发生了越权检索或数据外泄，立即告警。</p>
+<h2 id="贵司需要准备的知识"><a class="anchor" href="#贵司需要准备的知识" aria-label="本节链接">#</a>贵司需要准备的知识</h2>
+<p>知识层的质量直接决定 AI 的表现，这部分<strong>只能由贵司提供</strong>。清单见 <a href="prep-assets.html">② 资料与账号清单</a>，最关键的是：服务目录与报价规则、SOP、合同模板与条款底线、FAQ 与异议处理、品牌语气、3–5 个真实案例。</p>
+
+    </article>
+    <nav class="pager" aria-label="翻页">
+    <a class="prev" href="architecture.html"><span>上一页</span><strong>推荐架构：AWS Bedrock 路线</strong></a>
+    <a class="next" href="review.html"><span>下一页</span><strong>审核：风险分级与授权矩阵</strong></a>
+  </nav>
+    <footer class="foot">本站为方案构想，供讨论用；法律与税务内容未经律师或会计审阅，不构成法律意见。状态标记：✅ 已核实 · ⚠️ 待核实 · 💡 判断 · 📌 估算 · 📚 训练知识未复核。</footer>
+  </main>
+  <nav class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><ul><li><a href="#为什么第一天就要建">为什么第一天就要建</a></li><li><a href="#知识分域">知识分域</a></li><li><a href="#架构">架构</a></li><li><a href="#关键设计">关键设计</a></li><li><a href="#质量怎么衡量">质量怎么衡量</a></li><li><a href="#贵司需要准备的知识">贵司需要准备的知识</a></li></ul></nav>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

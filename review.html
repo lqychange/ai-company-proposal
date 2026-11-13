@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>审核：风险分级与授权矩阵 · 一人 AI 公司 · 方案构想</title>
+<meta name="description" content="用 AI 组成整家公司、尽量少的人来管理：研究、架构设计与前期准备清单。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23255f73'/%3E%3Ccircle cx='16' cy='11' r='4.5' fill='%23ffd28a'/%3E%3Ccircle cx='8' cy='22' r='3' fill='%23fff'/%3E%3Ccircle cx='16' cy='24' r='3' fill='%23fff'/%3E%3Ccircle cx='24' cy='22' r='3' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+</head>
+<body data-page="review">
+<a class="skip" href="#content">跳到正文</a>
+<header class="topbar">
+  <button class="menu-btn" type="button" aria-label="打开目录" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>一人 AI 公司 · 方案构想</a>
+  <span class="progress" aria-label="阅读进度">第 9 / 22 页</span>
+  <button class="theme-btn" type="button" aria-label="切换深色/浅色">◐</button>
+</header>
+<div class="shell">
+  <aside class="sidebar" id="sidebar"><div class="nav-group"><div class="nav-group-title">开始</div><ul><li><a href="index.html">首页：一页看懂</a></li></ul></div><div class="nav-group"><div class="nav-group-title">基础研究</div><ul><li><a href="feasibility.html">可行性：能做到什么程度</a></li><li><a href="platforms.html">工具与平台选型</a></li><li><a href="compliance.html">合规：得州与美国</a></li><li><a href="updates.html">研究更新（11-13 补充核实）</a></li></ul></div><div class="nav-group"><div class="nav-group-title">方案设计</div><ul><li><a href="org.html">组织架构：1 个人 + AI 人物</a></li><li><a href="architecture.html">推荐架构：AWS Bedrock 路线</a></li><li><a href="knowledge.html">专属 RAG 知识层</a></li><li><a href="review.html" aria-current="page">审核：风险分级与授权矩阵</a></li><li><a href="governance.html">AI 治理</a></li><li><a href="security.html">安全防护</a></li><li><a href="cost-roadmap.html">成本与实施路线图</a></li></ul></div><div class="nav-group"><div class="nav-group-title">前期准备（请贵司配合）</div><ul><li><a href="prep.html">前期准备总览</a></li><li><a href="prep-questionnaire.html">① 业务信息问卷</a></li><li><a href="prep-assets.html">② 资料与账号清单</a></li><li><a href="prep-decisions.html">③ 需要拍板的决策</a></li><li><a href="prep-plan.html">④ 前期工作计划与验收</a></li></ul></div><div class="nav-group"><div class="nav-group-title">附录</div><ul><li><a href="glossary.html">术语表</a></li><li><a href="sources.html">来源索引</a></li><li><a href="full-research.html">全文 · 研究汇总 v0.2</a></li><li><a href="full-architecture.html">全文 · Bedrock 架构设计</a></li><li><a href="full-artifacts.html">全文 · 参考样例</a></li></ul></div>
+    <div class="side-foot">更新于 2026-11-13</div>
+  </aside>
+  <main id="content" class="content">
+    <article>
+      
+      <h1 class="page-title">审核：风险分级与授权矩阵</h1>
+      <blockquote>
+<p><strong>一句话</strong>：每个动作先按风险定级（R0–R4）；对外、花钱或改规则的动作，执行前依次通过<strong>四道闸</strong>——自检 → 规则 → 护栏 → 独立复核；R3 还要 Owner 批准；R4 连 Owner 也批不了。</p>
+</blockquote>
+<h2 id="审核指四件事"><a class="anchor" href="#审核指四件事" aria-label="本节链接">#</a>&quot;审核&quot;指四件事</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>什么时候</th>
+<th>谁来做</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>执行前审批</td>
+<td>动作执行之前</td>
+<td>风险引擎、复核官AI、Owner</td>
+</tr>
+<tr>
+<td>内容审核</td>
+<td>模型输入输出时，以及工具执行前</td>
+<td>Bedrock Guardrails：内容过滤、提示词攻击、屏蔽话题、敏感信息、上下文溯源、自动推理检查</td>
+</tr>
+<tr>
+<td>质量审核</td>
+<td>交付物完成后</td>
+<td>质检AI（做的和查的分开）</td>
+</tr>
+<tr>
+<td>事后审计</td>
+<td>每天、每周</td>
+<td>内审AI、Owner、外部律师和 CPA</td>
+</tr>
+</tbody></table>
+</div>
+<h2 id="动作风险分级"><a class="anchor" href="#动作风险分级" aria-label="本节链接">#</a>动作风险分级</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>等级</th>
+<th>定义</th>
+<th>例子</th>
+<th>默认处理</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>R0</td>
+<td>只读，或只写内部草稿</td>
+<td>查知识、读 CRM、写内部备忘</td>
+<td>直接执行</td>
+</tr>
+<tr>
+<td>R1</td>
+<td>对外，但风险低、能撤回、在模板范围内</td>
+<td>模板内的跟进邮件、FAQ 回复、约会议</td>
+<td>直接执行；工具侧做规则和护栏检查，抽查 5%</td>
+</tr>
+<tr>
+<td>R2</td>
+<td>对外，有一定影响</td>
+<td>定制方案、10–20% 的折扣、新的外联序列、公开发布</td>
+<td>人物只能&quot;提议&quot;；复核官AI通过后由执行器执行</td>
+</tr>
+<tr>
+<td>R3</td>
+<td>影响大或不可撤回</td>
+<td>非标合同条款、超额退款、改价目表、回应法律威胁、对外付款</td>
+<td>复核官AI + <strong>Owner 批准</strong>，再由执行器执行</td>
+</tr>
+<tr>
+<td>R4</td>
+<td>禁止</td>
+<td>冒充真人、承认法律责任、修改自己的权限、向新收款方付款、删除审计记录</td>
+<td><strong>规则直接拒绝</strong>，连 Owner 批准也不行；只能走冷静期修改规则</td>
+</tr>
+</tbody></table>
+</div>
+<h2 id="授权矩阵-示例阈值"><a class="anchor" href="#授权矩阵-示例阈值" aria-label="本节链接">#</a>授权矩阵（示例阈值）</h2>
+<div class="callout"><p><strong>这些数字需要贵司来定。</strong>下面是起步时的建议值，偏保守。请在 <a href="prep-decisions.html">③ 需要拍板的决策</a> 的工作表里填写贵司的数字。</p></div>
+
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>动作</th>
+<th>AI 直接做</th>
+<th>AI 做 + AI 复核</th>
+<th>要 Owner 批准</th>
+<th>禁止</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>报价折扣</td>
+<td>≤ 10%</td>
+<td>10–20%</td>
+<td>20–40%</td>
+<td>&gt; 40%</td>
+</tr>
+<tr>
+<td>合同</td>
+<td>标准模板，且金额 &lt; $5k</td>
+<td>标准模板，$5k–$25k</td>
+<td>任何非标条款；金额 &gt; $25k</td>
+<td>无限责任、独家条款</td>
+</tr>
+<tr>
+<td>退款</td>
+<td>—</td>
+<td>≤ $200</td>
+<td>$200–$2,000</td>
+<td>&gt; $2,000：只能 Owner 在 Stripe 后台手工处理</td>
+</tr>
+<tr>
+<td>外联邮件</td>
+<td>已批准的模板</td>
+<td>新模板、新序列</td>
+<td>新的目标行业或新渠道</td>
+<td>发给退订名单或不在 CRM 里的人</td>
+</tr>
+<tr>
+<td>公开内容</td>
+<td>—</td>
+<td>常规博客、社交媒体</td>
+<td>敏感话题、和竞品对比</td>
+<td>未经授权的客户案例</td>
+</tr>
+<tr>
+<td>广告预算</td>
+<td>日预算以内的调整</td>
+<td>预算以内的新广告组</td>
+<td>提高预算</td>
+<td>—</td>
+</tr>
+<tr>
+<td>付款</td>
+<td>—</td>
+<td>—</td>
+<td>已登记供应商的账单</td>
+<td>付给新收款方</td>
+</tr>
+<tr>
+<td>数据删除请求</td>
+<td>—</td>
+<td>合规官AI核对申请人身份</td>
+<td>执行删除</td>
+<td>—</td>
+</tr>
+</tbody></table>
+</div>
+<h2 id="四道闸"><a class="anchor" href="#四道闸" aria-label="本节链接">#</a>四道闸</h2>
+<div class="diagram"><pre class="mermaid">flowchart TB
+    A[&quot;AI 人物提出动作&lt;br/&gt;工具 · 参数 · 理由 · 出处&quot;]:::persona
+    G1[&quot;闸 1 · 自检&lt;br/&gt;格式 · 岗位清单&quot;]:::g
+    G2[&quot;闸 2 · 规则（确定性）&lt;br/&gt;能否提议 · 定 R 等级 · 额度和频率&quot;]:::g
+    G3[&quot;闸 3 · 护栏&lt;br/&gt;敏感信息 · 屏蔽话题 · 溯源 · 自动推理检查&quot;]:::g
+    G4[&quot;闸 4 · 独立复核&lt;br/&gt;不同账号 · 不同模型家族 · 看原始出处&quot;]:::g
+    H{&quot;是 R3 吗？&quot;}:::gate
+    OWN[&quot;Owner 审批&lt;br/&gt;批准 · 修改后批准 · 驳回&quot;]:::human
+    EX[&quot;执行器&lt;br/&gt;载荷哈希必须等于批准时的哈希&quot;]:::exec
+    POL[&quot;网关 Policy 终检&lt;br/&gt;执行器身份 · 硬上限&quot;]:::exec
+    LOG[(&quot;审计账本&quot;)]:::log
+    REJ[&quot;退回 · 升级&quot;]:::rej
+    DENY[&quot;R4：直接拒绝&quot;]:::rej
+    A --&gt; G1 --&gt; G2
+    G2 --&gt;|&quot;R4&quot;| DENY
+    G2 --&gt;|&quot;R2 / R3&quot;| G3 --&gt; G4 --&gt; H
+    H --&gt;|&quot;否（R2）&quot;| EX
+    H --&gt;|&quot;是&quot;| OWN --&gt; EX
+    EX --&gt; POL --&gt; LOG
+    G1 &amp; G3 &amp; G4 -.-&gt;|&quot;不通过&quot;| REJ
+    classDef persona fill:#e3f2fd,stroke:#1565c0,color:#0d47a1,stroke-width:2px;
+    classDef g fill:#fffde7,stroke:#f9a825,color:#f57f17,stroke-width:2px;
+    classDef gate fill:#fff3e0,stroke:#e65100,color:#bf360c,stroke-width:2px;
+    classDef human fill:#fff3e0,stroke:#e65100,color:#bf360c,stroke-width:3px;
+    classDef exec fill:#ffebee,stroke:#c62828,color:#b71c1c,stroke-width:3px;
+    classDef log fill:#eceff1,stroke:#455a64,color:#263238,stroke-width:2px;
+    classDef rej fill:#fafafa,stroke:#9e9e9e,color:#424242,stroke-width:1px,stroke-dasharray:4 3;</pre></div>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>闸</th>
+<th>谁来查</th>
+<th>查什么</th>
+<th>不通过时</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1 自检</td>
+<td>人物外壳代码</td>
+<td>输出格式正确；岗位清单逐项打勾（有出处吗？有 AI 身份说明吗？）</td>
+<td>最多重试 2 次，然后升级</td>
+</tr>
+<tr>
+<td>2 规则</td>
+<td>风险引擎 + Cedar（确定性）</td>
+<td>能不能提议这个动作；算出 R 等级；检查额度和频率</td>
+<td>R4 直接拒绝；超频排队</td>
+</tr>
+<tr>
+<td>3 护栏</td>
+<td>Guardrails</td>
+<td>敏感信息、屏蔽话题；回答和出处是否一致；价格和退款说法是否符合写成规则的政策</td>
+<td>拦截并记录</td>
+</tr>
+<tr>
+<td>4 复核</td>
+<td>复核官AI</td>
+<td>事实和出处是否一致；承诺是否在授权范围内；语气是否符合品牌；是否出自已批准的用语库</td>
+<td>驳回附理由；驳回两次升级给 Owner</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>复核官的独立性要满足五条</strong>：不同账号；不同模型家族；直接看原始出处，不只听制作者的说法；制作者交过来的内容只当数据；每月由 Owner 给 20 条复核结论打标签，一致率低于 95% 时复核官本身要整改。</p>
+<h2 id="ai-提议-系统执行"><a class="anchor" href="#ai-提议-系统执行" aria-label="本节链接">#</a>AI 提议、系统执行</h2>
+<ul>
+<li><strong>人物在规则里根本没有高风险工具的权限</strong>。发送报价、发起合同、退款、公开发布、付款，只有执行器能调用；人物只能调用&quot;提议&quot;。</li>
+<li><strong>执行器的流程</strong>：审批记录里保存载荷的哈希、批准人、规则版本、过期时间、&quot;只能用一次&quot;标记；执行前重新计算哈希，必须一致；网关再做最后一道检查。</li>
+<li><strong>好处</strong>：不会出现&quot;批的是 A，做的是 B&quot;；人物就算被注入了指令，也够不着高风险工具。</li>
+</ul>
+<h2 id="owner-的审批体验"><a class="anchor" href="#owner-的审批体验" aria-label="本节链接">#</a>Owner 的审批体验</h2>
+<ul>
+<li><strong>审批卡片</strong>：要做什么（原文和与模板的差异）、为什么（理由和出处）、风险等级、复核官意见、能不能撤回、花多少钱、什么时候过期。</li>
+<li><strong>按钮</strong>：批准、修改后批准、驳回，以及&quot;批准并提议改规则&quot;——以后同类事情就不用再批。</li>
+<li><strong>节奏</strong>：每天两个固定时段批量处理（例如 9:00 和 16:00）；只有阻塞客户的 R3 才实时推送。</li>
+<li><strong>过期</strong>：72 小时没处理自动驳回，同时告诉客户&quot;需要更多时间&quot;。<strong>永远不会默认放行。</strong></li>
+<li><strong>防审批疲劳</strong>：某类审批连续 200 次以上、通过率超过 98% 时，系统提议降低审批级别；平均审批用时少于 5 秒时提醒&quot;可能在走过场&quot;。</li>
+<li><strong>渠道安全</strong>：只能在登录后的控制台审批（通行密钥登录）；<strong>不接受回复邮件审批</strong>，因为邮件可以伪造。</li>
+</ul>
+<h2 id="事后审计与抽样"><a class="anchor" href="#事后审计与抽样" aria-label="本节链接">#</a>事后审计与抽样</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>抽查对象</th>
+<th>比例（💡）</th>
+<th>谁来查</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>R1 动作</td>
+<td>5%</td>
+<td>复核官AI</td>
+</tr>
+<tr>
+<td>R2 动作</td>
+<td>10%</td>
+<td>内审AI</td>
+</tr>
+<tr>
+<td>R3 动作</td>
+<td>100% 留档，Owner 每周看汇总</td>
+<td>Owner</td>
+</tr>
+<tr>
+<td>人物新版本上线后的前 50 个动作</td>
+<td>100%</td>
+<td>复核官AI</td>
+</tr>
+<tr>
+<td>长期记忆记录</td>
+<td>每周 50 条</td>
+<td>内审AI</td>
+</tr>
+<tr>
+<td>复核官的结论</td>
+<td>每月 20 条</td>
+<td>Owner（校准用）</td>
+</tr>
+</tbody></table>
+</div>
+<p>内审AI每周给 Owner 一份报告：自动化率和例外数量、驳回原因前五名、护栏拦截和规则拒绝次数、成本和事件。发现的问题会变成评估集里的新用例、规则变更或知识库修订。</p>
+
+    </article>
+    <nav class="pager" aria-label="翻页">
+    <a class="prev" href="knowledge.html"><span>上一页</span><strong>专属 RAG 知识层</strong></a>
+    <a class="next" href="governance.html"><span>下一页</span><strong>AI 治理</strong></a>
+  </nav>
+    <footer class="foot">本站为方案构想，供讨论用；法律与税务内容未经律师或会计审阅，不构成法律意见。状态标记：✅ 已核实 · ⚠️ 待核实 · 💡 判断 · 📌 估算 · 📚 训练知识未复核。</footer>
+  </main>
+  <nav class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><ul><li><a href="#审核指四件事">&amp;quot;审核&amp;quot;指四件事</a></li><li><a href="#动作风险分级">动作风险分级</a></li><li><a href="#授权矩阵-示例阈值">授权矩阵（示例阈值）</a></li><li><a href="#四道闸">四道闸</a></li><li><a href="#ai-提议-系统执行">AI 提议、系统执行</a></li><li><a href="#owner-的审批体验">Owner 的审批体验</a></li><li><a href="#事后审计与抽样">事后审计与抽样</a></li></ul></nav>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

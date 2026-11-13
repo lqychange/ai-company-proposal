@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>来源索引 · 一人 AI 公司 · 方案构想</title>
+<meta name="description" content="用 AI 组成整家公司、尽量少的人来管理：研究、架构设计与前期准备清单。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23255f73'/%3E%3Ccircle cx='16' cy='11' r='4.5' fill='%23ffd28a'/%3E%3Ccircle cx='8' cy='22' r='3' fill='%23fff'/%3E%3Ccircle cx='16' cy='24' r='3' fill='%23fff'/%3E%3Ccircle cx='24' cy='22' r='3' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+</head>
+<body data-page="sources">
+<a class="skip" href="#content">跳到正文</a>
+<header class="topbar">
+  <button class="menu-btn" type="button" aria-label="打开目录" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>一人 AI 公司 · 方案构想</a>
+  <span class="progress" aria-label="阅读进度">第 19 / 22 页</span>
+  <button class="theme-btn" type="button" aria-label="切换深色/浅色">◐</button>
+</header>
+<div class="shell">
+  <aside class="sidebar" id="sidebar"><div class="nav-group"><div class="nav-group-title">开始</div><ul><li><a href="index.html">首页：一页看懂</a></li></ul></div><div class="nav-group"><div class="nav-group-title">基础研究</div><ul><li><a href="feasibility.html">可行性：能做到什么程度</a></li><li><a href="platforms.html">工具与平台选型</a></li><li><a href="compliance.html">合规：得州与美国</a></li><li><a href="updates.html">研究更新（11-13 补充核实）</a></li></ul></div><div class="nav-group"><div class="nav-group-title">方案设计</div><ul><li><a href="org.html">组织架构：1 个人 + AI 人物</a></li><li><a href="architecture.html">推荐架构：AWS Bedrock 路线</a></li><li><a href="knowledge.html">专属 RAG 知识层</a></li><li><a href="review.html">审核：风险分级与授权矩阵</a></li><li><a href="governance.html">AI 治理</a></li><li><a href="security.html">安全防护</a></li><li><a href="cost-roadmap.html">成本与实施路线图</a></li></ul></div><div class="nav-group"><div class="nav-group-title">前期准备（请贵司配合）</div><ul><li><a href="prep.html">前期准备总览</a></li><li><a href="prep-questionnaire.html">① 业务信息问卷</a></li><li><a href="prep-assets.html">② 资料与账号清单</a></li><li><a href="prep-decisions.html">③ 需要拍板的决策</a></li><li><a href="prep-plan.html">④ 前期工作计划与验收</a></li></ul></div><div class="nav-group"><div class="nav-group-title">附录</div><ul><li><a href="glossary.html">术语表</a></li><li><a href="sources.html" aria-current="page">来源索引</a></li><li><a href="full-research.html">全文 · 研究汇总 v0.2</a></li><li><a href="full-architecture.html">全文 · Bedrock 架构设计</a></li><li><a href="full-artifacts.html">全文 · 参考样例</a></li></ul></div>
+    <div class="side-foot">更新于 2026-11-13</div>
+  </aside>
+  <main id="content" class="content">
+    <article>
+      
+      <h1 class="page-title">来源索引</h1>
+      <blockquote>
+<p>下面是本站主要事实的出处。完整的来源列表（含 AWS 文档编号 [A2]–[A27]、[B1]–[B23]）见 <a href="full-research.html">全文 · 研究汇总</a> 第 13 节和 <a href="full-architecture.html">全文 · Bedrock 架构设计</a> 文末。内容为归纳改写，具体数值和行为以链接里的当前官方文档为准。</p>
+</blockquote>
+<h2 id="2026-11-13-补充核实"><a class="anchor" href="#2026-11-13-补充核实" aria-label="本节链接">#</a>2026-11-13 补充核实</h2>
+<p><strong>模型厂商</strong></p>
+<ul>
+<li>Anthropic 定价：<a href="https://platform.claude.com/docs/en/about-claude/pricing" target="_blank" rel="noopener">https://platform.claude.com/docs/en/about-claude/pricing</a></li>
+<li>Claude Compliance API 覆盖 Cowork 和 Claude Code：<a href="https://claude.com/blog/compliance-api-cowork-and-claude-code" target="_blank" rel="noopener">https://claude.com/blog/compliance-api-cowork-and-claude-code</a></li>
+<li>Harmonic《Securing Claude Cowork》：<a href="https://harmonic.security/resources/securing-claude-cowork-a-security-practitioners-guide" target="_blank" rel="noopener">https://harmonic.security/resources/securing-claude-cowork-a-security-practitioners-guide</a></li>
+<li>Anthropic ISO 42001：<a href="https://www.anthropic.com/news/anthropic-achieves-iso-42001-certification-for-responsible-ai" target="_blank" rel="noopener">https://www.anthropic.com/news/anthropic-achieves-iso-42001-certification-for-responsible-ai</a></li>
+<li>Anthropic 认证说明：<a href="https://support.anthropic.com/en/articles/10015870-what-certifications-has-anthropic-obtained" target="_blank" rel="noopener">https://support.anthropic.com/en/articles/10015870-what-certifications-has-anthropic-obtained</a></li>
+<li>OpenAI Dots 价格解读：<a href="https://www.eesel.ai/blog/openai-dots-pricing" target="_blank" rel="noopener">https://www.eesel.ai/blog/openai-dots-pricing</a> · <a href="https://aibusiness.com/generative-ai/new-premium-tier-for-chatgpt-business" target="_blank" rel="noopener">https://aibusiness.com/generative-ai/new-premium-tier-for-chatgpt-business</a></li>
+<li>OpenAI Agent Builder 关停迁移：<a href="https://mcp.directory/blog/openai-agentkit-deprecation-2026" target="_blank" rel="noopener">https://mcp.directory/blog/openai-agentkit-deprecation-2026</a> · <a href="https://www.spotdev.co.uk/blog/agent-builder-wind-down-what-to-do" target="_blank" rel="noopener">https://www.spotdev.co.uk/blog/agent-builder-wind-down-what-to-do</a></li>
+<li>OpenAI Frontier：<a href="https://www.eesel.ai/blog/openai-frontier" target="_blank" rel="noopener">https://www.eesel.ai/blog/openai-frontier</a> · <a href="https://www.datacamp.com/blog/openai-frontier" target="_blank" rel="noopener">https://www.datacamp.com/blog/openai-frontier</a></li>
+</ul>
+<p><strong>云平台与安全</strong></p>
+<ul>
+<li>AgentCorruption 后续：<a href="https://darkreading.com/cloud-security/agentcorruption-aws-environments-at-risk-single-prompt" target="_blank" rel="noopener">https://darkreading.com/cloud-security/agentcorruption-aws-environments-at-risk-single-prompt</a> · <a href="https://www.csoonline.com/article/4232054/awss-repeated-problems-with-ai-agent-controls-illustrates-the-autonomous-agent-dilemma.html" target="_blank" rel="noopener">https://www.csoonline.com/article/4232054/awss-repeated-problems-with-ai-agent-controls-illustrates-the-autonomous-agent-dilemma.html</a> · <a href="https://letsdatascience.com/news/aws-patches-bedrock-agentcore-agentcorruption-flaws-4ccd777f" target="_blank" rel="noopener">https://letsdatascience.com/news/aws-patches-bedrock-agentcore-agentcorruption-flaws-4ccd777f</a></li>
+<li>Paperclip 安全公告：<a href="https://github.com/paperclipai/paperclip/security/advisories" target="_blank" rel="noopener">https://github.com/paperclipai/paperclip/security/advisories</a></li>
+<li>微软 Ignite 2026 · Agent 365 预告：<a href="https://techcommunity.microsoft.com/blog/agent-365-blog/microsoft-ignite-2026-your-guide-to-agent-365/4571750" target="_blank" rel="noopener">https://techcommunity.microsoft.com/blog/agent-365-blog/microsoft-ignite-2026-your-guide-to-agent-365/4571750</a></li>
+<li>AWS re:Invent 2026 日期：<a href="https://www.cxtoday.com/events/aws-reinvent-2026/" target="_blank" rel="noopener">https://www.cxtoday.com/events/aws-reinvent-2026/</a></li>
+<li>OWASP Agent 十大风险：<a href="https://genai.owasp.org/2025/12/09/owasp-genai-security-project-releases-top-10-risks-and-mitigations-for-agentic-ai-security/" target="_blank" rel="noopener">https://genai.owasp.org/2025/12/09/owasp-genai-security-project-releases-top-10-risks-and-mitigations-for-agentic-ai-security/</a> · <a href="https://www.giskard.ai/knowledge/owasp-top-10-for-agentic-application-2026" target="_blank" rel="noopener">https://www.giskard.ai/knowledge/owasp-top-10-for-agentic-application-2026</a></li>
+<li>NIST Agent 标准倡议与 COSAiS：<a href="https://labs.cloudsecurityalliance.org/research/csa-research-note-nist-ai-agent-standards-initiative-2026040/" target="_blank" rel="noopener">https://labs.cloudsecurityalliance.org/research/csa-research-note-nist-ai-agent-standards-initiative-2026040/</a></li>
+</ul>
+<p><strong>法规与选举</strong></p>
+<ul>
+<li>2025-12-11 行政令：<a href="https://news.bloomberglaw.com/litigation/trump-signs-order-seeking-to-limit-state-level-ai-regulation" target="_blank" rel="noopener">https://news.bloomberglaw.com/litigation/trump-signs-order-seeking-to-limit-state-level-ai-regulation</a> · <a href="https://www.zwillgen.com/artificial-intelligence/trump-executive-order-targets-state-ai-laws/" target="_blank" rel="noopener">https://www.zwillgen.com/artificial-intelligence/trump-executive-order-targets-state-ai-laws/</a> · <a href="https://www.jdsupra.com/legalnews/ai-executive-order-opens-door-to-6808201/" target="_blank" rel="noopener">https://www.jdsupra.com/legalnews/ai-executive-order-opens-door-to-6808201/</a></li>
+<li>得州联邦参议员选举：<a href="https://www.ksat.com/news/texas/2026/11/04/james-talarico-defeats-ken-paxton-giving-democrats-their-first-us-senate-win-in-texas-since-1988/" target="_blank" rel="noopener">https://www.ksat.com/news/texas/2026/11/04/james-talarico-defeats-ken-paxton-giving-democrats-their-first-us-senate-win-in-texas-since-1988/</a></li>
+<li>得州总检察长选举：<a href="https://www.kut.org/text/texas/2026-11-03/texas-nov-midterm-statewide-election-results" target="_blank" rel="noopener">https://www.kut.org/text/texas/2026-11-03/texas-nov-midterm-statewide-election-results</a></li>
+<li>Nathan Johnson 的 AI 主张：<a href="https://axios.com/2026/08/21/texas-ag-democratic-nominee-ai-audit-plan" target="_blank" rel="noopener">https://axios.com/2026/08/21/texas-ag-democratic-nominee-ai-audit-plan</a> · <a href="https://www.fisherphillips.com/en/insights/insights/texas-ag-candidate-wants-to-reshape-workplace-ai-rules" target="_blank" rel="noopener">https://www.fisherphillips.com/en/insights/insights/texas-ag-candidate-wants-to-reshape-workplace-ai-rules</a></li>
+<li>DIR 沙盒状态：<a href="https://practiceguides.chambers.com/practice-guides/artificial-intelligence-2026/usa-texas/trends-and-developments" target="_blank" rel="noopener">https://practiceguides.chambers.com/practice-guides/artificial-intelligence-2026/usa-texas/trends-and-developments</a></li>
+<li>总检察长 TRAIGA 投诉页：<a href="https://www.texasattorneygeneral.gov/consumer-protection/file-consumer-complaint/consumer-ai-rights" target="_blank" rel="noopener">https://www.texasattorneygeneral.gov/consumer-protection/file-consumer-complaint/consumer-ai-rights</a></li>
+</ul>
+<p><strong>工具与保险</strong></p>
+<ul>
+<li>批量发信规则：<a href="https://redsift.com/guides/bulk-email-sender-requirements" target="_blank" rel="noopener">https://redsift.com/guides/bulk-email-sender-requirements</a></li>
+<li>Langfuse 价格：<a href="https://langfuse.com/pricing" target="_blank" rel="noopener">https://langfuse.com/pricing</a></li>
+<li>Stripe Tax 价格：<a href="https://stripe.com/tax/pricing" target="_blank" rel="noopener">https://stripe.com/tax/pricing</a></li>
+<li>保险：<a href="https://www.vouch.us/blog/how-much-should-you-pay-for-tech-e-o-insurance" target="_blank" rel="noopener">https://www.vouch.us/blog/how-much-should-you-pay-for-tech-e-o-insurance</a> · <a href="https://www.vouch.us/blog/how-much-does-business-insurance-cost-for-ai-companies" target="_blank" rel="noopener">https://www.vouch.us/blog/how-much-does-business-insurance-cost-for-ai-companies</a> · <a href="https://www.corgi.insure/blog/insurance-coverage-for-machine-learning-startups-and-how-it-is-provided" target="_blank" rel="noopener">https://www.corgi.insure/blog/insurance-coverage-for-machine-learning-startups-and-how-it-is-provided</a></li>
+</ul>
+<h2 id="2026-11-11-11-12-研究的主要来源"><a class="anchor" href="#2026-11-11-11-12-研究的主要来源" aria-label="本节链接">#</a>2026-11-11 / 11-12 研究的主要来源</h2>
+<p><strong>得州法条</strong></p>
+<ul>
+<li>TRAIGA 原文：<a href="https://capitol.texas.gov/tlodocs/89R/billtext/html/HB00149F.htm" target="_blank" rel="noopener">https://capitol.texas.gov/tlodocs/89R/billtext/html/HB00149F.htm</a></li>
+<li>SB 140 原文：<a href="https://capitol.texas.gov/tlodocs/89R/billtext/html/SB00140F.htm" target="_blank" rel="noopener">https://capitol.texas.gov/tlodocs/89R/billtext/html/SB00140F.htm</a></li>
+<li>法条镜像（第 302、305、322、503、509 章，DTPA §17.45、§17.49，税法 §151.351）：<a href="https://texas.public.law/" target="_blank" rel="noopener">https://texas.public.law/</a></li>
+<li>总检察长起诉 OpenAI：<a href="https://www.texasattorneygeneral.gov/news/releases/attorney-general-ken-paxton-sues-openai-and-ceo-sam-altman-lying-users-and-harming-texans" target="_blank" rel="noopener">https://www.texasattorneygeneral.gov/news/releases/attorney-general-ken-paxton-sues-openai-and-ceo-sam-altman-lying-users-and-harming-texans</a></li>
+<li>特许税：<a href="https://comptroller.texas.gov/taxes/franchise/" target="_blank" rel="noopener">https://comptroller.texas.gov/taxes/franchise/</a></li>
+</ul>
+<p><strong>云平台</strong></p>
+<ul>
+<li>AWS AgentCore：<a href="https://aws.amazon.com/bedrock/agentcore/" target="_blank" rel="noopener">https://aws.amazon.com/bedrock/agentcore/</a> · 开发者指南 <a href="https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/" target="_blank" rel="noopener">https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/</a></li>
+<li>AgentCore 价格：<a href="https://aws.amazon.com/bedrock/agentcore/pricing/" target="_blank" rel="noopener">https://aws.amazon.com/bedrock/agentcore/pricing/</a></li>
+<li>Bedrock Guardrails：<a href="https://aws.amazon.com/bedrock/guardrails/" target="_blank" rel="noopener">https://aws.amazon.com/bedrock/guardrails/</a> · Bedrock 价格 <a href="https://aws.amazon.com/bedrock/pricing/" target="_blank" rel="noopener">https://aws.amazon.com/bedrock/pricing/</a></li>
+<li>AgentCorruption 原文：<a href="https://labs.zenity.io/post/agentcorruption-how-a-single-prompt-collapsed-the-entire-cloud-security-model" target="_blank" rel="noopener">https://labs.zenity.io/post/agentcorruption-how-a-single-prompt-collapsed-the-entire-cloud-security-model</a></li>
+<li>AWS Quick：<a href="https://aws.amazon.com/quick/pricing/" target="_blank" rel="noopener">https://aws.amazon.com/quick/pricing/</a> · <a href="https://docs.aws.amazon.com/quick/latest/userguide/what-is.html" target="_blank" rel="noopener">https://docs.aws.amazon.com/quick/latest/userguide/what-is.html</a></li>
+<li>Microsoft Foundry：<a href="https://learn.microsoft.com/en-us/azure/foundry/agents/overview" target="_blank" rel="noopener">https://learn.microsoft.com/en-us/azure/foundry/agents/overview</a> · Agent 365 <a href="https://www.microsoft.com/en-us/microsoft-agent-365" target="_blank" rel="noopener">https://www.microsoft.com/en-us/microsoft-agent-365</a></li>
+<li>Google Gemini Enterprise Agent Platform：<a href="https://cloud.google.com/products/gemini-enterprise-agent-platform" target="_blank" rel="noopener">https://cloud.google.com/products/gemini-enterprise-agent-platform</a></li>
+</ul>
+<p><strong>标准与治理</strong></p>
+<ul>
+<li>NIST Agent 身份管理设计原则：<a href="https://www.nist.gov/blogs/cybersecurity-insights/design-tenets-agent-identity-management-systems" target="_blank" rel="noopener">https://www.nist.gov/blogs/cybersecurity-insights/design-tenets-agent-identity-management-systems</a></li>
+<li>欧盟数字综合法案（AI 部分）：<a href="https://www.jdsupra.com/legalnews/eu-digital-omnibus-on-ai-enters-into-8118098/" target="_blank" rel="noopener">https://www.jdsupra.com/legalnews/eu-digital-omnibus-on-ai-enters-into-8118098/</a></li>
+<li>科罗拉多 SB 26-189：<a href="https://leg.colorado.gov/bills/sb26-189" target="_blank" rel="noopener">https://leg.colorado.gov/bills/sb26-189</a></li>
+<li>美国各州 AI 法汇总：<a href="https://securityboulevard.com/2026/11/us-state-ai-laws-in-force-what-an-enterprise-deployer-actually-owes/" target="_blank" rel="noopener">https://securityboulevard.com/2026/11/us-state-ai-laws-in-force-what-an-enterprise-deployer-actually-owes/</a></li>
+</ul>
+<p><strong>开源与协议</strong></p>
+<ul>
+<li>Paperclip：<a href="https://github.com/paperclipai/paperclip" target="_blank" rel="noopener">https://github.com/paperclipai/paperclip</a></li>
+<li>MCP 2026-07-28 变更：<a href="https://modelcontextprotocol.io/specification/2026-07-28/changelog" target="_blank" rel="noopener">https://modelcontextprotocol.io/specification/2026-07-28/changelog</a></li>
+<li>A2A：<a href="https://a2a-protocol.org/latest/" target="_blank" rel="noopener">https://a2a-protocol.org/latest/</a></li>
+</ul>
+
+    </article>
+    <nav class="pager" aria-label="翻页">
+    <a class="prev" href="glossary.html"><span>上一页</span><strong>术语表</strong></a>
+    <a class="next" href="full-research.html"><span>下一页</span><strong>全文 · 研究汇总 v0.2</strong></a>
+  </nav>
+    <footer class="foot">本站为方案构想，供讨论用；法律与税务内容未经律师或会计审阅，不构成法律意见。状态标记：✅ 已核实 · ⚠️ 待核实 · 💡 判断 · 📌 估算 · 📚 训练知识未复核。</footer>
+  </main>
+  <nav class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><ul><li><a href="#2026-11-13-补充核实">2026-11-13 补充核实</a></li><li><a href="#2026-11-11-11-12-研究的主要来源">2026-11-11 / 11-12 研究的主要来源</a></li></ul></nav>
+</div>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>工具与平台选型 · 一人 AI 公司 · 方案构想</title>
+<meta name="description" content="用 AI 组成整家公司、尽量少的人来管理：研究、架构设计与前期准备清单。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23255f73'/%3E%3Ccircle cx='16' cy='11' r='4.5' fill='%23ffd28a'/%3E%3Ccircle cx='8' cy='22' r='3' fill='%23fff'/%3E%3Ccircle cx='16' cy='24' r='3' fill='%23fff'/%3E%3Ccircle cx='24' cy='22' r='3' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+</head>
+<body data-page="platforms">
+<a class="skip" href="#content">跳到正文</a>
+<header class="topbar">
+  <button class="menu-btn" type="button" aria-label="打开目录" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>一人 AI 公司 · 方案构想</a>
+  <span class="progress" aria-label="阅读进度">第 3 / 22 页</span>
+  <button class="theme-btn" type="button" aria-label="切换深色/浅色">◐</button>
+</header>
+<div class="shell">
+  <aside class="sidebar" id="sidebar"><div class="nav-group"><div class="nav-group-title">开始</div><ul><li><a href="index.html">首页：一页看懂</a></li></ul></div><div class="nav-group"><div class="nav-group-title">基础研究</div><ul><li><a href="feasibility.html">可行性：能做到什么程度</a></li><li><a href="platforms.html" aria-current="page">工具与平台选型</a></li><li><a href="compliance.html">合规：得州与美国</a></li><li><a href="updates.html">研究更新（11-13 补充核实）</a></li></ul></div><div class="nav-group"><div class="nav-group-title">方案设计</div><ul><li><a href="org.html">组织架构：1 个人 + AI 人物</a></li><li><a href="architecture.html">推荐架构：AWS Bedrock 路线</a></li><li><a href="knowledge.html">专属 RAG 知识层</a></li><li><a href="review.html">审核：风险分级与授权矩阵</a></li><li><a href="governance.html">AI 治理</a></li><li><a href="security.html">安全防护</a></li><li><a href="cost-roadmap.html">成本与实施路线图</a></li></ul></div><div class="nav-group"><div class="nav-group-title">前期准备（请贵司配合）</div><ul><li><a href="prep.html">前期准备总览</a></li><li><a href="prep-questionnaire.html">① 业务信息问卷</a></li><li><a href="prep-assets.html">② 资料与账号清单</a></li><li><a href="prep-decisions.html">③ 需要拍板的决策</a></li><li><a href="prep-plan.html">④ 前期工作计划与验收</a></li></ul></div><div class="nav-group"><div class="nav-group-title">附录</div><ul><li><a href="glossary.html">术语表</a></li><li><a href="sources.html">来源索引</a></li><li><a href="full-research.html">全文 · 研究汇总 v0.2</a></li><li><a href="full-architecture.html">全文 · Bedrock 架构设计</a></li><li><a href="full-artifacts.html">全文 · 参考样例</a></li></ul></div>
+    <div class="side-foot">更新于 2026-11-13</div>
+  </aside>
+  <main id="content" class="content">
+    <article>
+      
+      <h1 class="page-title">工具与平台选型</h1>
+      <blockquote>
+<p><strong>一句话</strong>：2026 年的平台变化太快，选型的关键不是挑&quot;最强的产品&quot;，而是让每一层都能换。默认推荐 <strong>AWS Bedrock + AgentCore</strong>；如果贵司已经深度使用微软 365 或 Google Workspace，换成对应的云平台。</p>
+</blockquote>
+<h2 id="四条实施路线"><a class="anchor" href="#四条实施路线" aria-label="本节链接">#</a>四条实施路线</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>A 低代码拼装</th>
+<th>B 企业平台</th>
+<th>C 写代码自研多 Agent</th>
+<th>D 订阅&quot;AI 员工&quot; + 自建骨架</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>代表</td>
+<td>n8n/Make/Zapier + Dify/Coze + 各类 SaaS</td>
+<td>Salesforce Agentforce、Microsoft Copilot Studio、HubSpot Breeze</td>
+<td>LangGraph、Strands、OpenAI Agents SDK、Claude Agent SDK、Google ADK + MCP（跑在云托管服务上）</td>
+<td>OpenAI Dots、Grok Bot、Claude Cowork 等，加上自建的流程骨架</td>
+</tr>
+<tr>
+<td>上线</td>
+<td>4–8 周</td>
+<td>2–4 个月</td>
+<td>3–6 个月</td>
+<td>最快</td>
+</tr>
+<tr>
+<td>灵活性</td>
+<td>中</td>
+<td>中偏低</td>
+<td>高</td>
+<td>员工层低，骨架层高</td>
+</tr>
+<tr>
+<td>复杂长流程</td>
+<td>弱</td>
+<td>中</td>
+<td>强</td>
+<td>取决于骨架</td>
+</tr>
+<tr>
+<td>治理和审计</td>
+<td>弱</td>
+<td>强</td>
+<td>自建，可以做强</td>
+<td>员工层弱</td>
+</tr>
+<tr>
+<td>平台绑定</td>
+<td>中</td>
+<td>高</td>
+<td>低</td>
+<td>高</td>
+</tr>
+</tbody></table>
+</div>
+<p>💡 贵司希望<strong>一步到位</strong>，所以推荐以 <strong>C 为主、跑在云平台的托管服务上</strong>，D 只当受控的&quot;员工工位&quot;。</p>
+<h2 id="总览评分-💡"><a class="anchor" href="#总览评分-💡" aria-label="本节链接">#</a>总览评分（💡）</h2>
+<p>●=自带且完整，◐=部分支持或需要配合，○=基本没有，?=没能核实</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>类别</th>
+<th>工具</th>
+<th>可编辑</th>
+<th>定制</th>
+<th>扩展</th>
+<th>专属 RAG</th>
+<th>治理</th>
+<th>安全</th>
+<th>平台绑定</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>常驻型 Agent</td>
+<td>OpenAI Dots</td>
+<td>○</td>
+<td>◐</td>
+<td>◐</td>
+<td>○</td>
+<td>◐</td>
+<td>◐</td>
+<td>高</td>
+</tr>
+<tr>
+<td></td>
+<td>Meta Muse</td>
+<td>○</td>
+<td>○</td>
+<td>◐</td>
+<td>○</td>
+<td>○</td>
+<td>○</td>
+<td>高</td>
+</tr>
+<tr>
+<td></td>
+<td>Claude Cowork / Duet</td>
+<td>◐</td>
+<td>◐</td>
+<td>◐</td>
+<td>◐</td>
+<td>◐</td>
+<td>◐</td>
+<td>中</td>
+</tr>
+<tr>
+<td></td>
+<td>Grok Bot</td>
+<td>○</td>
+<td>○</td>
+<td>◐</td>
+<td>○</td>
+<td>○</td>
+<td>○</td>
+<td>高</td>
+</tr>
+<tr>
+<td>云平台</td>
+<td><strong>AWS Bedrock + AgentCore</strong></td>
+<td>●</td>
+<td>●</td>
+<td>●</td>
+<td>●</td>
+<td>●</td>
+<td>●</td>
+<td>低到中</td>
+</tr>
+<tr>
+<td></td>
+<td>Microsoft Foundry + Agent 365</td>
+<td>●</td>
+<td>●</td>
+<td>●</td>
+<td>●</td>
+<td>●</td>
+<td>●</td>
+<td>中</td>
+</tr>
+<tr>
+<td></td>
+<td>Google Gemini Enterprise Agent Platform</td>
+<td>●</td>
+<td>●</td>
+<td>●</td>
+<td>●</td>
+<td>●</td>
+<td>●</td>
+<td>中</td>
+</tr>
+<tr>
+<td></td>
+<td>AWS Quick</td>
+<td>●</td>
+<td>◐</td>
+<td>◐</td>
+<td>●</td>
+<td>●/◐</td>
+<td>●</td>
+<td>中</td>
+</tr>
+<tr>
+<td>模型厂商</td>
+<td>OpenAI Frontier / Agents SDK</td>
+<td>◐</td>
+<td>◐</td>
+<td>●</td>
+<td>?</td>
+<td>◐</td>
+<td>?</td>
+<td>高</td>
+</tr>
+<tr>
+<td></td>
+<td>Anthropic Claude 平台</td>
+<td>●</td>
+<td>●</td>
+<td>●</td>
+<td>◐</td>
+<td>◐</td>
+<td>◐</td>
+<td>低</td>
+</tr>
+<tr>
+<td>业务套件</td>
+<td>Salesforce Agentforce 360</td>
+<td>◐</td>
+<td>◐</td>
+<td>●（限 Salesforce 内）</td>
+<td>●</td>
+<td>●</td>
+<td>●</td>
+<td>很高</td>
+</tr>
+<tr>
+<td>开源管理层</td>
+<td>Paperclip</td>
+<td>●</td>
+<td>●</td>
+<td>◐</td>
+<td>○</td>
+<td>◐</td>
+<td>○（加固后 ◐）</td>
+<td>很低</td>
+</tr>
+<tr>
+<td>开源框架</td>
+<td>LangGraph / Strands / 微软 Agent Framework / ADK</td>
+<td>●</td>
+<td>●</td>
+<td>●</td>
+<td>需自建</td>
+<td>需自建</td>
+<td>需自建</td>
+<td>很低</td>
+</tr>
+<tr>
+<td>低代码</td>
+<td>n8n / Dify</td>
+<td>◐</td>
+<td>◐</td>
+<td>◐</td>
+<td>◐</td>
+<td>◐</td>
+<td>◐</td>
+<td>中（许可证有限制）</td>
+</tr>
+</tbody></table>
+</div>
+<h2 id="各类工具的定位"><a class="anchor" href="#各类工具的定位" aria-label="本节链接">#</a>各类工具的定位</h2>
+<h3 id="常驻型-agent-dots-muse-cowork-duet-grok-bot-只当受控工位"><a class="anchor" href="#常驻型-agent-dots-muse-cowork-duet-grok-bot-只当受控工位" aria-label="本节链接">#</a>常驻型 Agent（Dots、Muse、Cowork/Duet、Grok Bot）：只当受控工位</h3>
+<ul>
+<li><strong>共同问题</strong>：没有可以单独控制的知识层；治理和审计偏弱。Gartner 的评价是&quot;自主性跑在了治理前面&quot;。</li>
+<li><strong>2026 年的真实事件</strong>：Dots 连续处理 10 个任务时 19.7% 出现中度越权，第三方测试发现它会批准自己被标记的动作；Muse 被发现能看到其他用户的信息；Grok Bot 同一账号下所有 bot 共用一台电脑和凭据池，官方文档原话是&quot;不要把不同的 Bot 当作安全边界&quot;。</li>
+<li><strong>用法</strong>：给 AI 开独立账号和邮箱；银行、支付、域名的双重验证不交给 AI；花钱只用有额度上限的虚拟卡；对外发送、花钱、修改 CRM 关键字段都要审批。</li>
+<li><strong>新进展（✅ 11-13 核实）</strong>：Claude 的 Compliance API 从 2026-08-26 起覆盖 Cowork 的会话记录（仅 Enterprise 计划），弥补了早期&quot;Cowork 不进审计日志&quot;的缺口。OpenAI 的 Business Premium 席位约每人每月 $125（月付）或 $100（年付），含第一个 dot。</li>
+</ul>
+<h3 id="paperclip-可以当ai-公司管理后台-但要先加固"><a class="anchor" href="#paperclip-可以当ai-公司管理后台-但要先加固" aria-label="本节链接">#</a>Paperclip：可以当&quot;AI 公司管理后台&quot;，但要先加固</h3>
+<ul>
+<li><strong>是什么</strong>：开源（MIT）的 Node.js 服务 + React 界面，把一群 AI Agent 组织成一家公司：组织架构、岗位、预算、审批、任务看板、活动日志。11.3 万星，每 1–2 周发一版（最新 v2026.1106.0）。</li>
+<li><strong>问题</strong>：2026 年共 12 个安全公告（5 个严重级）；默认部署模式不需要登录；Claude 和 Codex 适配器默认跳过权限确认；<strong>它的审批只管经过它网关的调用</strong>，Agent 自己的命令行和已登录账号不受管。截至 11-13，DNS 重绑定远程执行（GHSA-x8hx-rhr2-9rf7）和 Codex 继承 Gmail 发信（GHSA-gqqj-85qm-8qhf）两个公告仍未标注修复版本（✅ GitHub）。</li>
+<li><strong>定位</strong>：低风险岗位（调研、内容、内部报告）可以直接用；高风险岗位只能调用受控工具。第一期<strong>不作为默认组件</strong>，可以做 2–4 周的并行概念验证。</li>
+</ul>
+<h3 id="aws-quick-人类驾驶舱和后台流程"><a class="anchor" href="#aws-quick-人类驾驶舱和后台流程" aria-label="本节链接">#</a>AWS Quick：人类驾驶舱和后台流程</h3>
+<ul>
+<li><strong>适合</strong>：Owner 的看板、对话式查询、人工审批任务中心、后台流程自动化（开票、对账、催款、合同归档）、内部知识入口。它能直接接自建的 Bedrock 知识库，<strong>人和 AI 共用一套知识</strong>。</li>
+<li><strong>不适合</strong>：面向客户的前台、外联、Agent 组织编排。定时或 API 触发的自动化以&quot;服务级身份&quot;运行，网页端没有逐个动作的确认。</li>
+<li><strong>费用</strong>：1 名用户 Enterprise 档约每月 $290，含 18 个 Agent 小时，超出每小时 $3。</li>
+</ul>
+<h3 id="sagemaker-第一年用不上"><a class="anchor" href="#sagemaker-第一年用不上" aria-label="本节链接">#</a>SageMaker：第一年用不上</h3>
+<p>新公司没有历史数据。积累 6–12 个月数据后，可以用来做线索评分、流失预测，或把高频任务微调成小模型降成本。</p>
+<h2 id="底座怎么选"><a class="anchor" href="#底座怎么选" aria-label="本节链接">#</a>底座怎么选</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>贵司现状</th>
+<th>推荐底座</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>没有现成的办公生态（新公司默认）</td>
+<td><strong>AWS Bedrock + AgentCore</strong>：模块最灵活，纯按用量付费，模型选择最多，绑定最低；还能顺带用 AWS Quick</td>
+</tr>
+<tr>
+<td>已经在用微软 365 / Teams</td>
+<td>Microsoft Foundry + Agent 365 + Microsoft Agent Framework</td>
+</tr>
+<tr>
+<td>已经在用 Google Workspace</td>
+<td>Gemini Enterprise Agent Platform + ADK</td>
+</tr>
+<tr>
+<td>销售和客服完全建在 Salesforce 上</td>
+<td>前台用 Agentforce 360，后台用云平台</td>
+</tr>
+<tr>
+<td>在中国大陆运营</td>
+<td>阿里云百炼、火山引擎 HiAgent 或腾讯云 ADP，加已备案的模型</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>为什么默认 AWS</strong>（💡）：</p>
+<ul>
+<li>AgentCore 的 13 项服务在 us-east-1、us-east-2、us-west-2 全部可用 ✅；按用量计费，没有预付和最低消费 ✅。</li>
+<li>Bedrock 上的模型最多：Anthropic、OpenAI、Meta、Mistral、Qwen、DeepSeek、Amazon Nova 等 ✅。复核者可以用和制作者不同的模型家族。</li>
+<li>Guardrails、Policy（Cedar）、Registry、Evaluations 这些治理和安全组件是原生的。</li>
+<li><strong>但要注意 AgentCorruption</strong>：2026 年 10 月 Zenity 披露，一条提示就能接管同账号同区域的所有 AgentCore Agent。AWS 认为这是&quot;已记录的预期行为&quot;，不承认是漏洞；据 Zenity 说，AWS 已把新 Agent 改为 IMDSv2，并收紧了默认执行角色（收紧时间各方说法不一 ⚠️）。本方案用<strong>多账号隔离 + 最小权限</strong>来应对，见 <a href="architecture.html">推荐架构</a>。</li>
+</ul>
+<h2 id="不被平台绑住的四条规则"><a class="anchor" href="#不被平台绑住的四条规则" aria-label="本节链接">#</a>不被平台绑住的四条规则</h2>
+<ol>
+<li><strong>四样资产放在自己手里</strong>：流程定义（Git 里的状态机）、知识与数据（自己账号里的 S3 和知识库）、规则与权限（Git 里的 Cedar 策略）、评估与日志（自己账号里的审计账本）。</li>
+<li><strong>所有工具都放在 MCP 后面，并锁定协议版本</strong>。MCP 在 2026-07-28 发布的稳定版不向下兼容 ✅。</li>
+<li><strong>多模型路由</strong>：通过网关调用模型，换模型时只改配置并重跑评估集。</li>
+<li><strong>平台变化是常态</strong>：OpenAI Agent Builder 在 2026-11-30 关停，导出时不转换流程图，迁移路径是 Agents SDK 或 ChatGPT Workspace Agents ✅；Coze 企业版 11-30 停售；GPT-6.1 Astra 因安全指标退步被搁置。</li>
+</ol>
+<h2 id="一页参考价"><a class="anchor" href="#一页参考价" aria-label="本节链接">#</a>一页参考价</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>项</th>
+<th>价格</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Claude Fable 5.2</td>
+<td>每百万 token 输入 $8 / 输出 $40</td>
+<td>✅ Anthropic 官网</td>
+</tr>
+<tr>
+<td>Claude Opus 5.5</td>
+<td>$4 / $20</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Claude Sonnet 5.5</td>
+<td>$2 / $10</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Claude Haiku 5.5</td>
+<td>$0.10 / $0.50（提示不超过 10 万 token）；超过时 $0.50 / $2.50</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>美国境内推理</td>
+<td>约 +10%（Bedrock US 地理配置文件；Claude API 的 <code>inference_geo: &quot;us&quot;</code> 为 1.1 倍）</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>AgentCore Gateway</td>
+<td>每千次调用 $0.005</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Bedrock 托管知识库</td>
+<td>索引每 GB 每月 $5；检索每千次 $1</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Langfuse（可选的观测工具）</td>
+<td>Core $29/月、Pro $199/月、Enterprise $2,499/月；可免费自部署</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Stripe Tax</td>
+<td>按用量 0.5%/笔（无代码）或 $0.50/笔（API）；套餐 $90/月起</td>
+<td>✅</td>
+</tr>
+</tbody></table>
+</div>
+<p>更完整的横向研究（含 Microsoft、Google、Salesforce、开源框架和中国方案的细节）见 <a href="full-research.html">全文 · 研究汇总</a> 第 5 节。</p>
+
+    </article>
+    <nav class="pager" aria-label="翻页">
+    <a class="prev" href="feasibility.html"><span>上一页</span><strong>可行性：能做到什么程度</strong></a>
+    <a class="next" href="compliance.html"><span>下一页</span><strong>合规：得州与美国</strong></a>
+  </nav>
+    <footer class="foot">本站为方案构想，供讨论用；法律与税务内容未经律师或会计审阅，不构成法律意见。状态标记：✅ 已核实 · ⚠️ 待核实 · 💡 判断 · 📌 估算 · 📚 训练知识未复核。</footer>
+  </main>
+  <nav class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><ul><li><a href="#四条实施路线">四条实施路线</a></li><li><a href="#总览评分-💡">总览评分（💡）</a></li><li><a href="#各类工具的定位">各类工具的定位</a></li><li><a href="#底座怎么选">底座怎么选</a></li><li><a href="#不被平台绑住的四条规则">不被平台绑住的四条规则</a></li><li><a href="#一页参考价">一页参考价</a></li></ul></nav>
+</div>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>组织架构：1 个人 + AI 人物 · 一人 AI 公司 · 方案构想</title>
+<meta name="description" content="用 AI 组成整家公司、尽量少的人来管理：研究、架构设计与前期准备清单。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23255f73'/%3E%3Ccircle cx='16' cy='11' r='4.5' fill='%23ffd28a'/%3E%3Ccircle cx='8' cy='22' r='3' fill='%23fff'/%3E%3Ccircle cx='16' cy='24' r='3' fill='%23fff'/%3E%3Ccircle cx='24' cy='22' r='3' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+</head>
+<body data-page="org">
+<a class="skip" href="#content">跳到正文</a>
+<header class="topbar">
+  <button class="menu-btn" type="button" aria-label="打开目录" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>一人 AI 公司 · 方案构想</a>
+  <span class="progress" aria-label="阅读进度">第 6 / 22 页</span>
+  <button class="theme-btn" type="button" aria-label="切换深色/浅色">◐</button>
+</header>
+<div class="shell">
+  <aside class="sidebar" id="sidebar"><div class="nav-group"><div class="nav-group-title">开始</div><ul><li><a href="index.html">首页：一页看懂</a></li></ul></div><div class="nav-group"><div class="nav-group-title">基础研究</div><ul><li><a href="feasibility.html">可行性：能做到什么程度</a></li><li><a href="platforms.html">工具与平台选型</a></li><li><a href="compliance.html">合规：得州与美国</a></li><li><a href="updates.html">研究更新（11-13 补充核实）</a></li></ul></div><div class="nav-group"><div class="nav-group-title">方案设计</div><ul><li><a href="org.html" aria-current="page">组织架构：1 个人 + AI 人物</a></li><li><a href="architecture.html">推荐架构：AWS Bedrock 路线</a></li><li><a href="knowledge.html">专属 RAG 知识层</a></li><li><a href="review.html">审核：风险分级与授权矩阵</a></li><li><a href="governance.html">AI 治理</a></li><li><a href="security.html">安全防护</a></li><li><a href="cost-roadmap.html">成本与实施路线图</a></li></ul></div><div class="nav-group"><div class="nav-group-title">前期准备（请贵司配合）</div><ul><li><a href="prep.html">前期准备总览</a></li><li><a href="prep-questionnaire.html">① 业务信息问卷</a></li><li><a href="prep-assets.html">② 资料与账号清单</a></li><li><a href="prep-decisions.html">③ 需要拍板的决策</a></li><li><a href="prep-plan.html">④ 前期工作计划与验收</a></li></ul></div><div class="nav-group"><div class="nav-group-title">附录</div><ul><li><a href="glossary.html">术语表</a></li><li><a href="sources.html">来源索引</a></li><li><a href="full-research.html">全文 · 研究汇总 v0.2</a></li><li><a href="full-architecture.html">全文 · Bedrock 架构设计</a></li><li><a href="full-artifacts.html">全文 · 参考样例</a></li></ul></div>
+    <div class="side-foot">更新于 2026-11-13</div>
+  </aside>
+  <main id="content" class="content">
+    <article>
+      
+      <h1 class="page-title">组织架构：1 个人 + AI 人物</h1>
+      <blockquote>
+<p><strong>一句话</strong>：按传统公司的部门和&quot;三道防线&quot;来组织 AI。每个 AI 人物都是一名<strong>受治理的数字员工</strong>——有岗位说明书、独立身份、权限、预算和 KPI，也有上岗、晋升、停职、退役的流程——而不只是一段聊天提示词。</p>
+</blockquote>
+<h2 id="组织图"><a class="anchor" href="#组织图" aria-label="本节链接">#</a>组织图</h2>
+<div class="diagram"><pre class="mermaid">flowchart TB
+    OWNER[&quot;👤 Owner（唯一的人）&lt;br/&gt;定目标 · 定红线 · 批 R3 · 处理例外&quot;]:::human
+    EXT[&quot;外部专业人士（按需）&lt;br/&gt;得州律师 · CPA&quot;]:::ext
+
+    subgraph LINE1[&quot;第一道线 · 业务 AI 人物&quot;]
+        direction TB
+        COS[&quot;幕僚长AI&lt;br/&gt;拆目标 · 派工 · 盯KPI · 日报&quot;]:::core
+        MKT[&quot;市场AI&quot;]:::edge
+        SDR[&quot;获客AI&quot;]:::edge
+        FRONT[&quot;前台AI&lt;br/&gt;官网聊天&quot;]:::edge
+        AE[&quot;销售AI&quot;]:::core
+        LEGAL[&quot;合同AI&quot;]:::core
+        PM[&quot;项目AI&quot;]:::core
+        PRD[&quot;生产AI ×N&quot;]:::core
+        QA[&quot;质检AI&quot;]:::core
+        CS[&quot;客户成功AI&quot;]:::core
+        FIN[&quot;财务AI&quot;]:::core
+    end
+
+    subgraph SUPPORT[&quot;支撑人物&quot;]
+        direction TB
+        INTAKE[&quot;隔离读信员AI&lt;br/&gt;没有任何工具&quot;]:::edge
+        CUR[&quot;知识管理员AI&quot;]:::core
+    end
+
+    subgraph LINE2[&quot;第二道线 · 独立控制（直接向 Owner 汇报）&quot;]
+        direction TB
+        REV[&quot;复核官AI&quot;]:::assure
+        CMP[&quot;合规官AI&quot;]:::assure
+        SEN[&quot;安全哨兵AI&quot;]:::assure
+    end
+
+    subgraph LINE3[&quot;第三道线 · 审计&quot;]
+        AUD[&quot;内审AI&quot;]:::assure
+    end
+
+    OWNER --&gt; COS
+    COS --&gt; MKT &amp; SDR &amp; FRONT &amp; AE &amp; LEGAL &amp; PM &amp; CS &amp; FIN &amp; CUR
+    PM --&gt; PRD &amp; QA
+    OWNER --&gt; REV &amp; CMP &amp; SEN &amp; AUD
+    REV -.-&gt;|&quot;复核 / 驳回&quot;| LINE1
+    AUD -.-&gt;|&quot;抽样审计&quot;| LINE1
+    AUD -.-&gt;|&quot;周报&quot;| OWNER
+    EXT -.-&gt;|&quot;季度复核&quot;| OWNER
+
+    classDef human fill:#fff3e0,stroke:#e65100,color:#bf360c,stroke-width:3px;
+    classDef ext fill:#eceff1,stroke:#546e7a,color:#263238,stroke-width:1px,stroke-dasharray:4 3;
+    classDef edge fill:#fce4ec,stroke:#ad1457,color:#880e4f,stroke-width:2px;
+    classDef core fill:#e3f2fd,stroke:#1565c0,color:#0d47a1,stroke-width:2px;
+    classDef assure fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20,stroke-width:2px;</pre></div>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>颜色</th>
+<th>区</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>粉色</td>
+<td>边缘区</td>
+<td>直接接触原始外部内容（邮件、网页、官网聊天），只有低风险工具，手里没有机密数据</td>
+</tr>
+<tr>
+<td>蓝色</td>
+<td>核心区</td>
+<td>有业务工具，但只接收结构化的工作单，不直接读外部原文</td>
+</tr>
+<tr>
+<td>绿色</td>
+<td>保障区</td>
+<td>负责独立复核、合规、安全和审计</td>
+</tr>
+</tbody></table>
+</div>
+<p>三个区放在三个不同的 AWS 账号里，原因见 <a href="architecture.html">推荐架构</a>。</p>
+<p><strong>两条组织规则</strong></p>
+<ol>
+<li><strong>幕僚长 AI 只管派工和盯 KPI</strong>，不能给任何人物加权限、改规则或批准高风险动作。管理者人物最容易被利用来提权。</li>
+<li><strong>第二、三道线独立于第一道线</strong>：直接向 Owner 汇报，不接受幕僚长调度，和被复核的人物不在同一个账号、不用同一个模型家族。</li>
+</ol>
+<h2 id="人物清单"><a class="anchor" href="#人物清单" aria-label="本节链接">#</a>人物清单</h2>
+<p>所有人物上线时都从 A0（影子运行）开始；&quot;目标&quot;是成熟后的自主度。</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>人物</th>
+<th>主要职责</th>
+<th>明确不能做</th>
+<th>目标</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>幕僚长AI</td>
+<td>拆目标、派工、盯 KPI、写日报周报、整理审批包</td>
+<td>授权、改规则、对外发信</td>
+<td>A2</td>
+</tr>
+<tr>
+<td>市场AI</td>
+<td>写内容、做 SEO、在日预算内调广告</td>
+<td>直接发布敏感话题；超预算</td>
+<td>A2</td>
+</tr>
+<tr>
+<td>获客AI</td>
+<td>研究潜在客户、按批准模板外联、筛选线索、约会议</td>
+<td>给 CRM 名单以外或已退订的人发信</td>
+<td>A3（仅模板外联）</td>
+</tr>
+<tr>
+<td>前台AI</td>
+<td>官网聊天、回答公开问题、转交线索</td>
+<td>报公开价以外的价格；承诺交付</td>
+<td>A2</td>
+</tr>
+<tr>
+<td>隔离读信员AI</td>
+<td>把外部邮件和附件转成结构化字段</td>
+<td>任何工具调用</td>
+<td>A3</td>
+</tr>
+<tr>
+<td>销售AI</td>
+<td>澄清需求、出方案、在价格带内报价和谈判</td>
+<td>自己发出 R2 及以上的报价</td>
+<td>A2</td>
+</tr>
+<tr>
+<td>合同AI</td>
+<td>按标准模板生成合同、比对客户的改动</td>
+<td>接受任何非标条款</td>
+<td>A2</td>
+</tr>
+<tr>
+<td>项目AI</td>
+<td>排期、拆任务、跟进交付</td>
+<td>变更范围或价格</td>
+<td>A2</td>
+</tr>
+<tr>
+<td>生产AI ×N</td>
+<td>按业务线产出交付物</td>
+<td>读其他客户的资料</td>
+<td>A2</td>
+</tr>
+<tr>
+<td>质检AI</td>
+<td>按验收标准检查交付物，不合格就打回</td>
+<td>自己改交付物再自己放行</td>
+<td>A2</td>
+</tr>
+<tr>
+<td>客户成功AI</td>
+<td>支持、回访、续约提醒、增购建议</td>
+<td>直接退款；改合同</td>
+<td>A2</td>
+</tr>
+<tr>
+<td>财务AI</td>
+<td>开票、对账、催款、算销售税</td>
+<td>对外付款；改收款账户</td>
+<td>A2</td>
+</tr>
+<tr>
+<td>知识管理员AI</td>
+<td>维护知识库、找出过期和冲突的文档</td>
+<td>发布规则类知识</td>
+<td>A2</td>
+</tr>
+<tr>
+<td>复核官AI</td>
+<td>独立复核 R2 及以上动作，抽查 R1</td>
+<td>修改提议；执行动作</td>
+<td>—</td>
+</tr>
+<tr>
+<td>合规官AI</td>
+<td>检查话术、AI 身份告知、退订和隐私请求</td>
+<td>批准自己写的说明</td>
+<td>—</td>
+</tr>
+<tr>
+<td>安全哨兵AI</td>
+<td>分诊告警，按剧本收紧控制</td>
+<td>放宽任何控制</td>
+<td>—</td>
+</tr>
+<tr>
+<td>内审AI</td>
+<td>抽样审计、写周报</td>
+<td>任何写操作</td>
+<td>—</td>
+</tr>
+</tbody></table>
+</div>
+<blockquote>
+<p>这是一份<strong>通用模板</strong>。实际的人物清单取决于贵司卖什么、怎么交付：比如做内容代运营，&quot;生产AI&quot;会拆成选题、写作、设计、发布几个；做数据报告，会有数据采集、分析、可视化。请在 <a href="prep-decisions.html">③ 需要拍板的决策</a> 里勾选需要的岗位。</p>
+</blockquote>
+<h2 id="一个人物-一组受治理的资源"><a class="anchor" href="#一个人物-一组受治理的资源" aria-label="本节链接">#</a>一个人物 = 一组受治理的资源</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>组成</th>
+<th>落在哪里</th>
+<th>谁能改</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>岗位说明书（人物卡）</td>
+<td>Git 里的 YAML 文件</td>
+<td>提变更，由 Owner 批准</td>
+</tr>
+<tr>
+<td>运行体</td>
+<td>AgentCore Runtime 上的一个 Agent，版本不可变，有正式和灰度两个端点</td>
+<td>只有发布流水线</td>
+</tr>
+<tr>
+<td>身份</td>
+<td>独立的执行角色和网关身份，<strong>从不共用凭据</strong></td>
+<td>只有发布流水线</td>
+</tr>
+<tr>
+<td>权限</td>
+<td>以这个人物为主体的 Cedar 策略</td>
+<td>Owner 批准；放宽类有 24 小时冷静期</td>
+</tr>
+<tr>
+<td>知识域</td>
+<td>能查哪几个知识库</td>
+<td>Owner 批准</td>
+</tr>
+<tr>
+<td>记忆</td>
+<td>按&quot;客户 × 人物&quot;隔离的命名空间</td>
+<td>人物运行时写入，内审抽查</td>
+</tr>
+<tr>
+<td>模型</td>
+<td>锁定的模型版本 + 一个降级模型</td>
+<td>流水线 + 评估门禁</td>
+</tr>
+<tr>
+<td>预算</td>
+<td>每天的 token 和金额上限，超了自动熔断</td>
+<td>Owner</td>
+</tr>
+<tr>
+<td>考核</td>
+<td>评估集和 KPI</td>
+<td>Owner、内审AI</td>
+</tr>
+</tbody></table>
+</div>
+<p>人物卡的完整样例见 <a href="full-artifacts.html">全文 · 参考样例</a> 第 1 节。</p>
+<h2 id="owner-只做这些事"><a class="anchor" href="#owner-只做这些事" aria-label="本节链接">#</a>Owner 只做这些事</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>类别</th>
+<th>内容</th>
+<th>频率</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>法律和金融身份</td>
+<td>公司注册、EIN、银行、Stripe 实名、报税、保险</td>
+<td>一次性或每年</td>
+</tr>
+<tr>
+<td>定方向</td>
+<td>目标、预算、红线、授权矩阵阈值</td>
+<td>每季度</td>
+</tr>
+<tr>
+<td>审批</td>
+<td>R3 动作；放宽类规则变更；新增人物和工具；自主度晋升</td>
+<td>每天两个固定时段</td>
+</tr>
+<tr>
+<td>例外</td>
+<td>投诉、法律威胁、超限退款、复核两次不通过的事项</td>
+<td>按需</td>
+</tr>
+<tr>
+<td>监督</td>
+<td>读内审周报；每月给 20 条复核结论打标签，校准复核官</td>
+<td>每周约 30 分钟</td>
+</tr>
+<tr>
+<td>应急</td>
+<td>熔断；破窗操作</td>
+<td>按需</td>
+</tr>
+</tbody></table>
+</div>
+<h2 id="owner-不在时"><a class="anchor" href="#owner-不在时" aria-label="本节链接">#</a>Owner 不在时</h2>
+<p>唯一的人是最大的单点。审批疲劳、出差生病、被钓鱼，都会直接变成公司风险。</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>模式</th>
+<th>触发条件</th>
+<th>系统行为</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>正常</td>
+<td>—</td>
+<td>按授权矩阵运行</td>
+</tr>
+<tr>
+<td>离开</td>
+<td>Owner 提前设置，例如出差 7 天以内</td>
+<td>R3 排队；客户收到&quot;预计某日答复&quot;；暂停新的外联；日常照常</td>
+</tr>
+<tr>
+<td>安全模式</td>
+<td>48 小时没有&quot;心跳&quot;</td>
+<td>不签新合同；停止外联；所有对外动作都要人批；老客户的支持和交付继续；通知紧急联系人</td>
+</tr>
+<tr>
+<td>冻结</td>
+<td>Owner 或紧急联系人手动触发，或发生严重安全事件</td>
+<td>所有对外动作暂停，只发自动答复</td>
+</tr>
+</tbody></table>
+</div>
+<ul>
+<li><strong>紧急联系人</strong>（可选）只能看只读驾驶舱、只能按&quot;冻结&quot;，<strong>不能批准任何事</strong>。</li>
+<li>公司运营协议里要写明 Owner 失能时谁有权处理公司事务（⚠️ 需要律师确认）。</li>
+</ul>
+
+    </article>
+    <nav class="pager" aria-label="翻页">
+    <a class="prev" href="updates.html"><span>上一页</span><strong>研究更新（11-13 补充核实）</strong></a>
+    <a class="next" href="architecture.html"><span>下一页</span><strong>推荐架构：AWS Bedrock 路线</strong></a>
+  </nav>
+    <footer class="foot">本站为方案构想，供讨论用；法律与税务内容未经律师或会计审阅，不构成法律意见。状态标记：✅ 已核实 · ⚠️ 待核实 · 💡 判断 · 📌 估算 · 📚 训练知识未复核。</footer>
+  </main>
+  <nav class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><ul><li><a href="#组织图">组织图</a></li><li><a href="#人物清单">人物清单</a></li><li><a href="#一个人物-一组受治理的资源">一个人物 = 一组受治理的资源</a></li><li><a href="#owner-只做这些事">Owner 只做这些事</a></li><li><a href="#owner-不在时">Owner 不在时</a></li></ul></nav>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

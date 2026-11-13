@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>③ 需要拍板的决策 · 一人 AI 公司 · 方案构想</title>
+<meta name="description" content="用 AI 组成整家公司、尽量少的人来管理：研究、架构设计与前期准备清单。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23255f73'/%3E%3Ccircle cx='16' cy='11' r='4.5' fill='%23ffd28a'/%3E%3Ccircle cx='8' cy='22' r='3' fill='%23fff'/%3E%3Ccircle cx='16' cy='24' r='3' fill='%23fff'/%3E%3Ccircle cx='24' cy='22' r='3' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+</head>
+<body data-page="prep-decisions">
+<a class="skip" href="#content">跳到正文</a>
+<header class="topbar">
+  <button class="menu-btn" type="button" aria-label="打开目录" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>一人 AI 公司 · 方案构想</a>
+  <span class="progress" aria-label="阅读进度">第 16 / 22 页</span>
+  <button class="theme-btn" type="button" aria-label="切换深色/浅色">◐</button>
+</header>
+<div class="shell">
+  <aside class="sidebar" id="sidebar"><div class="nav-group"><div class="nav-group-title">开始</div><ul><li><a href="index.html">首页：一页看懂</a></li></ul></div><div class="nav-group"><div class="nav-group-title">基础研究</div><ul><li><a href="feasibility.html">可行性：能做到什么程度</a></li><li><a href="platforms.html">工具与平台选型</a></li><li><a href="compliance.html">合规：得州与美国</a></li><li><a href="updates.html">研究更新（11-13 补充核实）</a></li></ul></div><div class="nav-group"><div class="nav-group-title">方案设计</div><ul><li><a href="org.html">组织架构：1 个人 + AI 人物</a></li><li><a href="architecture.html">推荐架构：AWS Bedrock 路线</a></li><li><a href="knowledge.html">专属 RAG 知识层</a></li><li><a href="review.html">审核：风险分级与授权矩阵</a></li><li><a href="governance.html">AI 治理</a></li><li><a href="security.html">安全防护</a></li><li><a href="cost-roadmap.html">成本与实施路线图</a></li></ul></div><div class="nav-group"><div class="nav-group-title">前期准备（请贵司配合）</div><ul><li><a href="prep.html">前期准备总览</a></li><li><a href="prep-questionnaire.html">① 业务信息问卷</a></li><li><a href="prep-assets.html">② 资料与账号清单</a></li><li><a href="prep-decisions.html" aria-current="page">③ 需要拍板的决策</a></li><li><a href="prep-plan.html">④ 前期工作计划与验收</a></li></ul></div><div class="nav-group"><div class="nav-group-title">附录</div><ul><li><a href="glossary.html">术语表</a></li><li><a href="sources.html">来源索引</a></li><li><a href="full-research.html">全文 · 研究汇总 v0.2</a></li><li><a href="full-architecture.html">全文 · Bedrock 架构设计</a></li><li><a href="full-artifacts.html">全文 · 参考样例</a></li></ul></div>
+    <div class="side-foot">更新于 2026-11-13</div>
+  </aside>
+  <main id="content" class="content">
+    <article>
+      
+      <h1 class="page-title">③ 需要拍板的决策</h1>
+      <p><button class="print-btn" type="button" data-print>🖨 打印或另存为 PDF</button></p>
+
+<blockquote>
+<p><strong>怎么用</strong>：下表是需要贵司拍板的事，每一项都附了我们的建议。<strong>单向门</strong>是一旦定了很难回头的决定，请优先、慎重地定；<strong>双向门</strong>以后可以低成本调整，先按建议走也没关系。下半页是三张工作表：授权矩阵、红线、岗位选择。</p>
+</blockquote>
+<h2 id="决策清单"><a class="anchor" href="#决策清单" aria-label="本节链接">#</a>决策清单</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>决策</th>
+<th>选项</th>
+<th>我们的建议</th>
+<th>门类型</th>
+<th>什么时候要</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><strong>底座</strong></td>
+<td>AWS / 微软 / Google</td>
+<td>没有现成办公生态就选 <strong>AWS</strong>；已深度用微软 365 或 Google Workspace 就选对应平台。12 月上旬（Ignite 和 re:Invent 之后）签约</td>
+<td>双向（但换底座代价中等）</td>
+<td>定稿设计前</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>第一期覆盖哪些流程</strong></td>
+<td>全流程 / 先后台 / 先获客到成交</td>
+<td>一步到位搭架构，但业务按&quot;获客到报价 → 合同收款交付 → 客户成功&quot;分期放权</td>
+<td>双向</td>
+<td>定稿设计前</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>获客渠道</strong></td>
+<td>只做邮件和官网 / 加电话短信 / 加 AI 语音</td>
+<td><strong>第一阶段只做邮件和官网聊天</strong>。电话短信要先办得州登记并建同意管理</td>
+<td>双向</td>
+<td>定稿设计前</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>授权矩阵阈值</strong></td>
+<td>见下方工作表</td>
+<td>起步偏保守，用数据逐步放宽</td>
+<td>双向（放宽有冷静期）</td>
+<td>定稿设计前</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>红线（R4）</strong></td>
+<td>见下方工作表</td>
+<td>至少包括冒充真人、承认法律责任、修改自身权限、付款给新收款方、删除审计记录</td>
+<td>双向（但放宽要走冷静期）</td>
+<td>定稿设计前</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>AI 岗位清单</strong></td>
+<td>见下方工作表</td>
+<td>第一期 10–14 个岗位</td>
+<td>双向</td>
+<td>定稿设计前</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>AWS 账号数量</strong></td>
+<td>8 个 / 精简到 5–6 个</td>
+<td><strong>8 个</strong>。如要精简，可以先不建 staging，但红队测试就只能在生产账号做；platform 和三个人物账号不建议合并</td>
+<td><strong>单向</strong></td>
+<td>第 0 阶段前</td>
+</tr>
+<tr>
+<td>8</td>
+<td><strong>数据驻留</strong></td>
+<td>只在美国 / 允许全球路由</td>
+<td><strong>只在美国</strong>。全球路由约便宜 10%，但数据可能出境</td>
+<td>双向</td>
+<td>第 0 阶段前</td>
+</tr>
+<tr>
+<td>9</td>
+<td><strong>记录保留年限</strong></td>
+<td>由律师定</td>
+<td>审计账本建议 7 年；<strong>一旦锁定不能缩短</strong>，所以先问律师</td>
+<td><strong>单向</strong></td>
+<td>第 0 阶段前</td>
+</tr>
+<tr>
+<td>10</td>
+<td><strong>审批渠道</strong></td>
+<td>自建控制台 / Slack / AWS Quick</td>
+<td><strong>自建控制台</strong>（通行密钥登录，手机可用）。不接受邮件回复审批</td>
+<td>双向</td>
+<td>第 1 阶段前</td>
+</tr>
+<tr>
+<td>11</td>
+<td><strong>CRM</strong></td>
+<td>HubSpot / Salesforce / Attio / 其他</td>
+<td>没有偏好就用 HubSpot；已经全面用 Salesforce 再考虑 Agentforce</td>
+<td>双向（迁移有成本）</td>
+<td>第 1 阶段前</td>
+</tr>
+<tr>
+<td>12</td>
+<td><strong>旗舰模型（Claude Fable）用不用</strong></td>
+<td>用 / 不用 / 只用于无客户数据的任务</td>
+<td>只用于不含客户机密的任务（它在 Bedrock 上强制 30 天数据保留）</td>
+<td>双向</td>
+<td>第 1 阶段前</td>
+</tr>
+<tr>
+<td>13</td>
+<td><strong>管理后台要不要用 Paperclip</strong></td>
+<td>不用 / 做概念验证 / 正式采用</td>
+<td><strong>第一期不用</strong>；可以并行 2–4 周概念验证</td>
+<td>双向</td>
+<td>随时</td>
+</tr>
+<tr>
+<td>14</td>
+<td><strong>AI 身份告知的写法</strong></td>
+<td>起名字 / 不起名字；怎么说明是 AI</td>
+<td>可以起名字，但第一次接触和邮件签名里都说明是 AI，并能随时转真人</td>
+<td>双向</td>
+<td>第 2 阶段前</td>
+</tr>
+<tr>
+<td>15</td>
+<td><strong>紧急联系人</strong></td>
+<td>有 / 没有</td>
+<td>建议有一位，只给冻结权限</td>
+<td>双向</td>
+<td>第 1 阶段前</td>
+</tr>
+<tr>
+<td>16</td>
+<td><strong>合同交付指标怎么写</strong></td>
+<td>&quot;100% 无人&quot; / &quot;核心流程自动化率 ≥ X%，例外 Y 小时内处理&quot;</td>
+<td><strong>后者</strong>。前者做不到，在得州还有误导性宣传风险</td>
+<td>双向</td>
+<td>签约时</td>
+</tr>
+<tr>
+<td>17</td>
+<td><strong>是否打算复制给更多公司</strong></td>
+<td>只做一家 / 将来复制</td>
+<td>如果将来要复制，第一期就按模板化设计，成本略增</td>
+<td><strong>单向</strong>（事后改多租户代价高）</td>
+<td>定稿设计前</td>
+</tr>
+</tbody></table>
+</div>
+<h2 id="工作表一-授权矩阵"><a class="anchor" href="#工作表一-授权矩阵" aria-label="本节链接">#</a>工作表一：授权矩阵</h2>
+<p>请在空白处填写贵司的数字；括号里是我们的起步建议。<strong>金额都按美元。</strong></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>动作</th>
+<th>AI 直接做</th>
+<th>AI 做 + AI 复核</th>
+<th>要 Owner 批准</th>
+<th>禁止</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>报价折扣</td>
+<td>≤ ____%（10%）</td>
+<td><strong><strong>%–</strong></strong>%（10–20%）</td>
+<td><strong><strong>%–</strong></strong>%（20–40%）</td>
+<td>&gt; ____%（40%）</td>
+</tr>
+<tr>
+<td>合同金额（标准模板）</td>
+<td>&lt; $______（$5k）</td>
+<td>$<strong><strong><strong>–$</strong></strong></strong>（$5k–25k）</td>
+<td>&gt; $______（$25k）；任何非标条款</td>
+<td>无限责任、独家条款、________</td>
+</tr>
+<tr>
+<td>退款</td>
+<td>______（不允许）</td>
+<td>≤ $______（$200）</td>
+<td>$<strong><strong><strong>–$</strong></strong></strong>（$200–2,000）</td>
+<td>&gt; $______（$2,000，只能 Owner 在 Stripe 后台手工处理）</td>
+</tr>
+<tr>
+<td>外联邮件</td>
+<td>已批准的模板</td>
+<td>新模板、新序列</td>
+<td>新行业或新渠道</td>
+<td>发给退订名单或不在 CRM 里的人</td>
+</tr>
+<tr>
+<td>外联每天上限（每个 AI）</td>
+<td>______ 封（150）</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>公开发布内容</td>
+<td>______（不允许）</td>
+<td>常规博客、社交媒体</td>
+<td>敏感话题、和竞品对比</td>
+<td>未经授权的客户案例</td>
+</tr>
+<tr>
+<td>广告预算</td>
+<td>日预算 $______ 以内调整</td>
+<td>预算内新广告组</td>
+<td>提高预算</td>
+<td>—</td>
+</tr>
+<tr>
+<td>付款给供应商</td>
+<td>—</td>
+<td>—</td>
+<td>已登记供应商的账单</td>
+<td>付给新收款方</td>
+</tr>
+<tr>
+<td>其他：____________</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>另外两个数字</strong>：</p>
+<ul>
+<li>放宽规则后的冷静期：______ 小时（建议 24）</li>
+<li>审批多久没处理就自动驳回：______ 小时（建议 72）</li>
+</ul>
+<h2 id="工作表二-红线与必须由人批准的事"><a class="anchor" href="#工作表二-红线与必须由人批准的事" aria-label="本节链接">#</a>工作表二：红线与必须由人批准的事</h2>
+<p><strong>R4 硬红线</strong>（连 Owner 也批不了，只能走冷静期修改规则）。请勾选同意的，并补充：</p>
+<ul>
+<li><input disabled="" type="checkbox"> 冒充真人，或否认自己是 AI</li>
+<li><input disabled="" type="checkbox"> 代表公司承认法律责任或做出法律上的让步</li>
+<li><input disabled="" type="checkbox"> 修改自己或其他 AI 的权限、规则、提示词</li>
+<li><input disabled="" type="checkbox"> 向从未登记过的收款方付款</li>
+<li><input disabled="" type="checkbox"> 删除或修改审计记录</li>
+<li><input disabled="" type="checkbox"> 对外承诺&quot;保证&quot;&quot;100%&quot;之类无法证实的效果</li>
+<li><input disabled="" type="checkbox"> 把一个客户的资料提供给另一个客户</li>
+<li><input disabled="" type="checkbox"> 使用未经授权的客户案例或客户标志</li>
+<li><input disabled="" type="checkbox"> 补充：________________________________</li>
+<li><input disabled="" type="checkbox"> 补充：________________________________</li>
+</ul>
+<p><strong>R3 必须由 Owner 批准</strong>（请勾选，并补充）：</p>
+<ul>
+<li><input disabled="" type="checkbox"> 任何非标准合同条款</li>
+<li><input disabled="" type="checkbox"> 超过阈值的折扣、合同金额或退款（见工作表一）</li>
+<li><input disabled="" type="checkbox"> 回应律师函、法律威胁或监管部门</li>
+<li><input disabled="" type="checkbox"> 修改价目表或服务目录</li>
+<li><input disabled="" type="checkbox"> 接受新的目标行业或新的获客渠道</li>
+<li><input disabled="" type="checkbox"> 新增 AI 岗位、新增工具、提高任何 AI 的自主度</li>
+<li><input disabled="" type="checkbox"> 补充：________________________________</li>
+</ul>
+<h2 id="工作表三-岗位选择"><a class="anchor" href="#工作表三-岗位选择" aria-label="本节链接">#</a>工作表三：岗位选择</h2>
+<p>请勾选第一期需要的岗位（不确定的可以先不勾，研讨会上再定）。带 ★ 的是治理和安全必需的，建议保留。</p>
+<p><strong>第一道线 · 业务</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> 幕僚长AI：拆目标、派工、盯 KPI、写日报周报</li>
+<li><input disabled="" type="checkbox"> 市场AI：写内容、做 SEO、管广告</li>
+<li><input disabled="" type="checkbox"> 获客AI：研究潜在客户、模板外联、约会议</li>
+<li><input disabled="" type="checkbox"> 前台AI：官网聊天、回答公开问题</li>
+<li><input disabled="" type="checkbox"> 销售AI：澄清需求、出方案、报价</li>
+<li><input disabled="" type="checkbox"> 合同AI：按模板生成合同、比对改动</li>
+<li><input disabled="" type="checkbox"> 项目AI：排期、拆任务、跟进交付</li>
+<li><input disabled="" type="checkbox"> 生产AI：按业务线产出交付物（需要几个？______ 个，分别做什么：________________）</li>
+<li><input disabled="" type="checkbox"> 质检AI：按验收标准检查交付物</li>
+<li><input disabled="" type="checkbox"> 客户成功AI：支持、回访、续约、增购</li>
+<li><input disabled="" type="checkbox"> 财务AI：开票、对账、催款、算销售税</li>
+</ul>
+<p><strong>支撑</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> ★ 隔离读信员AI：把外部邮件和附件转成结构化数据（防提示词注入的关键）</li>
+<li><input disabled="" type="checkbox"> 知识管理员AI：维护知识库、找出过期和冲突的文档</li>
+</ul>
+<p><strong>第二、三道线 · 独立控制和审计</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> ★ 复核官AI</li>
+<li><input disabled="" type="checkbox"> ★ 合规官AI</li>
+<li><input disabled="" type="checkbox"> ★ 安全哨兵AI</li>
+<li><input disabled="" type="checkbox"> ★ 内审AI</li>
+</ul>
+<p><strong>贵司特有的岗位</strong>（例如数据分析、设计、翻译、招聘……）：</p>
+<ul>
+<li><input disabled="" type="checkbox"> <hr>
+</li>
+<li><input disabled="" type="checkbox"> <hr>
+</li>
+</ul>
+
+    </article>
+    <nav class="pager" aria-label="翻页">
+    <a class="prev" href="prep-assets.html"><span>上一页</span><strong>② 资料与账号清单</strong></a>
+    <a class="next" href="prep-plan.html"><span>下一页</span><strong>④ 前期工作计划与验收</strong></a>
+  </nav>
+    <footer class="foot">本站为方案构想，供讨论用；法律与税务内容未经律师或会计审阅，不构成法律意见。状态标记：✅ 已核实 · ⚠️ 待核实 · 💡 判断 · 📌 估算 · 📚 训练知识未复核。</footer>
+  </main>
+  <nav class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><ul><li><a href="#决策清单">决策清单</a></li><li><a href="#工作表一-授权矩阵">工作表一：授权矩阵</a></li><li><a href="#工作表二-红线与必须由人批准的事">工作表二：红线与必须由人批准的事</a></li><li><a href="#工作表三-岗位选择">工作表三：岗位选择</a></li></ul></nav>
+</div>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

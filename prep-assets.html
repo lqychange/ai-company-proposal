@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>② 资料与账号清单 · 一人 AI 公司 · 方案构想</title>
+<meta name="description" content="用 AI 组成整家公司、尽量少的人来管理：研究、架构设计与前期准备清单。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23255f73'/%3E%3Ccircle cx='16' cy='11' r='4.5' fill='%23ffd28a'/%3E%3Ccircle cx='8' cy='22' r='3' fill='%23fff'/%3E%3Ccircle cx='16' cy='24' r='3' fill='%23fff'/%3E%3Ccircle cx='24' cy='22' r='3' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+</head>
+<body data-page="prep-assets">
+<a class="skip" href="#content">跳到正文</a>
+<header class="topbar">
+  <button class="menu-btn" type="button" aria-label="打开目录" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>一人 AI 公司 · 方案构想</a>
+  <span class="progress" aria-label="阅读进度">第 15 / 22 页</span>
+  <button class="theme-btn" type="button" aria-label="切换深色/浅色">◐</button>
+</header>
+<div class="shell">
+  <aside class="sidebar" id="sidebar"><div class="nav-group"><div class="nav-group-title">开始</div><ul><li><a href="index.html">首页：一页看懂</a></li></ul></div><div class="nav-group"><div class="nav-group-title">基础研究</div><ul><li><a href="feasibility.html">可行性：能做到什么程度</a></li><li><a href="platforms.html">工具与平台选型</a></li><li><a href="compliance.html">合规：得州与美国</a></li><li><a href="updates.html">研究更新（11-13 补充核实）</a></li></ul></div><div class="nav-group"><div class="nav-group-title">方案设计</div><ul><li><a href="org.html">组织架构：1 个人 + AI 人物</a></li><li><a href="architecture.html">推荐架构：AWS Bedrock 路线</a></li><li><a href="knowledge.html">专属 RAG 知识层</a></li><li><a href="review.html">审核：风险分级与授权矩阵</a></li><li><a href="governance.html">AI 治理</a></li><li><a href="security.html">安全防护</a></li><li><a href="cost-roadmap.html">成本与实施路线图</a></li></ul></div><div class="nav-group"><div class="nav-group-title">前期准备（请贵司配合）</div><ul><li><a href="prep.html">前期准备总览</a></li><li><a href="prep-questionnaire.html">① 业务信息问卷</a></li><li><a href="prep-assets.html" aria-current="page">② 资料与账号清单</a></li><li><a href="prep-decisions.html">③ 需要拍板的决策</a></li><li><a href="prep-plan.html">④ 前期工作计划与验收</a></li></ul></div><div class="nav-group"><div class="nav-group-title">附录</div><ul><li><a href="glossary.html">术语表</a></li><li><a href="sources.html">来源索引</a></li><li><a href="full-research.html">全文 · 研究汇总 v0.2</a></li><li><a href="full-architecture.html">全文 · Bedrock 架构设计</a></li><li><a href="full-artifacts.html">全文 · 参考样例</a></li></ul></div>
+    <div class="side-foot">更新于 2026-11-13</div>
+  </aside>
+  <main id="content" class="content">
+    <article>
+      
+      <h1 class="page-title">② 资料与账号清单</h1>
+      <p><button class="print-btn" type="button" data-print>🖨 打印或另存为 PDF</button></p>
+
+<blockquote>
+<p><strong>用法</strong>：每一项前面的方框可以直接勾选，进度保存在您这台电脑的浏览器里（换电脑或清缓存会丢失）。</p>
+<p><strong>优先级</strong>：<span class="pill warm">P0</span> 定稿设计前需要；<span class="pill">P1</span> 搭建第 0–1 阶段需要；<span class="pill">P2</span> 上线前需要即可。</p>
+</blockquote>
+<h2 id="1-业务知识资料-进知识库"><a class="anchor" href="#1-业务知识资料-进知识库" aria-label="本节链接">#</a>1. 业务知识资料（进知识库）</h2>
+<p>这些资料决定 AI 说的话对不对。有多少给多少，草稿、旧版、零散的笔记都可以，我们会帮忙整理。</p>
+<ul>
+<li><input disabled="" type="checkbox"> <span class="pill warm">P0</span> <strong>服务目录与价格表</strong>：每项服务的名称、包含什么、不包含什么、价格、交付周期、可选附加项。</li>
+<li><input disabled="" type="checkbox"> <span class="pill warm">P0</span> <strong>定价与折扣规则</strong>：什么情况能打折、最多打几折、年付或批量怎么算。</li>
+<li><input disabled="" type="checkbox"> <span class="pill warm">P0</span> <strong>交付流程（SOP）</strong>：从签约到验收的每一步，谁做、用什么工具、产出什么。可以是文字、流程图或录屏讲解。</li>
+<li><input disabled="" type="checkbox"> <span class="pill warm">P0</span> <strong>验收标准</strong>：交付物怎样算合格，最好有一份检查清单。</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P1</span> <strong>合同模板</strong>：主服务协议、工作说明书（SOW）、订单表。</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P1</span> <strong>条款谈判手册</strong>：哪些条款可以让步、让到什么程度、哪些绝对不能改（如责任上限、知识产权归属）。</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P1</span> <strong>常见问题（FAQ）与异议处理</strong>：客户最常问什么、最常拒绝的理由、怎么回应。</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P1</span> <strong>品牌语气指南</strong>：用词偏好、禁用词、参考文案，以及 2–3 封您认为写得好的邮件。</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P1</span> <strong>客户案例</strong>：3–5 个，<strong>须取得客户书面授权才能对外使用</strong>。</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P1</span> <strong>退款、售后与服务承诺（SLA）政策</strong>。</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P2</span> <strong>竞品对比</strong>：主要竞争对手、我们的差异（只用可以证实的说法）。</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P2</span> <strong>邮件模板</strong>：外联、跟进、催款、续约提醒等现有模板。</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P2</span> <strong>已批准的宣传用语</strong>：对外可以说的能力和效果。这份清单会成为&quot;已批准宣传用语库&quot;，是防误导性宣传的主要手段。</li>
+</ul>
+<h2 id="2-测试样例-做评估集"><a class="anchor" href="#2-测试样例-做评估集" aria-label="本节链接">#</a>2. 测试样例（做评估集）</h2>
+<p>每个 AI 岗位上线前都要先&quot;考试&quot;。考题来自贵司的真实业务，越真实越好。<strong>请去掉或替换客户的姓名、邮箱和电话。</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> <span class="pill warm">P0</span> <strong>10–20 段客户对话</strong>（邮件往来或聊天记录），涵盖询价、谈判、投诉、续约。</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P1</span> <strong>扩充到 30–50 段</strong>，并标注&quot;这段处理得好 / 不好，为什么&quot;。</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P1</span> <strong>10–20 个刁钻案例</strong>：要求大幅折扣、威胁差评或法律行动、要求做不在服务范围内的事、索要其他客户信息、发来可疑附件……</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P1</span> <strong>5–10 份过去的报价和方案</strong>，以及最终成交价。</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P1</span> <strong>交付物样本</strong>：好的和需要返工的各几份，附上返工原因。</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P2</span> <strong>常见的客户修改意见</strong>汇总。</li>
+</ul>
+<h2 id="3-必须由人开通的账号"><a class="anchor" href="#3-必须由人开通的账号" aria-label="本节链接">#</a>3. 必须由人开通的账号</h2>
+<blockquote>
+<p><strong>这些账号 AI 不能代开</strong>，需要 Owner 本人实名办理。全部用<strong>公司名义和公司邮箱</strong>开通，不要用个人账号。双重验证优先用硬件安全密钥，<strong>银行、支付、域名账号的双重验证永远不交给 AI</strong>。</p>
+</blockquote>
+<p><strong>法律与金融</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> <span class="pill warm">P0</span> <strong>公司注册</strong>（得州 LLC 在州务卿处备案，📚 约 $300）并指定注册代理人</li>
+<li><input disabled="" type="checkbox"> <span class="pill warm">P0</span> <strong>联邦税号（EIN）</strong></li>
+<li><input disabled="" type="checkbox"> <span class="pill">P1</span> <strong>公司银行账户</strong></li>
+<li><input disabled="" type="checkbox"> <span class="pill">P1</span> <strong>Stripe 账户</strong>（需要本人实名认证）</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P1</span> <strong>虚拟卡平台</strong>（如 Ramp、Brex），用于给 AI 设单笔和每月上限的付款</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P2</span> 如卖应税服务：<strong>得州销售税账户</strong>（由 CPA 判断）</li>
+</ul>
+<p><strong>身份与安全</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> <span class="pill warm">P0</span> <strong>2 把硬件安全密钥</strong>（如 YubiKey，一把日常用、一把备用存放在安全的地方）</li>
+<li><input disabled="" type="checkbox"> <span class="pill warm">P0</span> <strong>公司级密码管理器</strong>（所有凭据统一管理，不存在聊天、邮件或文档里）</li>
+</ul>
+<p><strong>域名与邮箱</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> <span class="pill warm">P0</span> <strong>主域名</strong></li>
+<li><input disabled="" type="checkbox"> <span class="pill">P1</span> <strong>外联专用子域名或独立域名</strong>（外联被拉黑时不影响主域名）</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P1</span> <strong>企业邮箱</strong>（Google Workspace 或微软 365；Owner 的邮箱 + 若干 AI 岗位的发件地址）</li>
+</ul>
+<p><strong>云与业务系统</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> <span class="pill warm">P0</span> <strong>AWS 管理账号</strong>（用公司邮箱注册，root 账号绑定硬件密钥后封存；其他 7 个账号由我们在第 0 阶段用代码创建）</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P1</span> <strong>CRM</strong>（如 HubSpot）</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P1</span> <strong>电子签</strong>（如 DocuSign、PandaDoc）</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P1</span> <strong>记账软件</strong>（如 QuickBooks、Xero）</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P2</span> 交付要用到的外部平台账号（见问卷 E6）</li>
+</ul>
+<h2 id="4-合规与保险"><a class="anchor" href="#4-合规与保险" aria-label="本节链接">#</a>4. 合规与保险</h2>
+<ul>
+<li><input disabled="" type="checkbox"> <span class="pill warm">P0</span> <strong>委托得州执业律师</strong>（审阅范围见下面几项，📌 $5k–15k）</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P1</span> <strong>委托 CPA</strong>：销售税判断、特许税信息报告、记账设置（📌 $1k–3k）</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P1</span> <strong>公司运营协议</strong>里写明 Owner 失能时谁有权处理公司事务</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P1</span> <strong>隐私政策</strong>和<strong>服务条款</strong>（律师审阅）</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P1</span> <strong>数据处理协议（DPA）</strong>：和所有 AI 及 SaaS 供应商签</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P1</span> <strong>AI 身份告知话术</strong>：官网、聊天开头、邮件签名各一版</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P1</span> <strong>营销同意和退订管理</strong>的做法</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P2</span> <strong>保险报价</strong>：科技职业责任险（E&amp;O）+ 网络安全险，📌 合计约 $5k–8k/年。<strong>务必确认保单是否覆盖 AI 造成的错误</strong>——有的保单默认排除 AI，要买附加险</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P2</span> 如果要做电话或短信外联：<strong>得州电话推销登记</strong>（$200 + $10,000 保证金）</li>
+</ul>
+<h2 id="5-人"><a class="anchor" href="#5-人" aria-label="本节链接">#</a>5. 人</h2>
+<ul>
+<li><input disabled="" type="checkbox"> <span class="pill warm">P0</span> 确定 <strong>Owner</strong>（唯一审批人）</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P1</span> 确定 <strong>紧急联系人</strong>（可选；只能冻结，不能批准）</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P1</span> 确定前 6 个月的 <strong>兼职 AI 运营</strong>（可选）</li>
+<li><input disabled="" type="checkbox"> <span class="pill">P1</span> 律师和 CPA 的联系人</li>
+</ul>
+<h2 id="不要做的事"><a class="anchor" href="#不要做的事" aria-label="本节链接">#</a>不要做的事</h2>
+<ul>
+<li><strong>不要</strong>把密码、API 密钥、银行账号放进共享文件夹、邮件或聊天里发给我们。需要授权时，我们会用专门的方式（如在您的云账号里创建有时限的角色）。</li>
+<li><strong>不要</strong>用个人的 ChatGPT、Claude 等账号处理客户资料，这些个人计划的数据条款和企业版不同。</li>
+<li><strong>不要</strong>在设计定稿前购买年付的 SaaS，工具选择可能会根据问卷答案调整。</li>
+<li><strong>不要</strong>对外宣传&quot;100% 由 AI 运营&quot;，在得州可能构成误导性宣传。</li>
+</ul>
+
+    </article>
+    <nav class="pager" aria-label="翻页">
+    <a class="prev" href="prep-questionnaire.html"><span>上一页</span><strong>① 业务信息问卷</strong></a>
+    <a class="next" href="prep-decisions.html"><span>下一页</span><strong>③ 需要拍板的决策</strong></a>
+  </nav>
+    <footer class="foot">本站为方案构想，供讨论用；法律与税务内容未经律师或会计审阅，不构成法律意见。状态标记：✅ 已核实 · ⚠️ 待核实 · 💡 判断 · 📌 估算 · 📚 训练知识未复核。</footer>
+  </main>
+  <nav class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><ul><li><a href="#1-业务知识资料-进知识库">1. 业务知识资料（进知识库）</a></li><li><a href="#2-测试样例-做评估集">2. 测试样例（做评估集）</a></li><li><a href="#3-必须由人开通的账号">3. 必须由人开通的账号</a></li><li><a href="#4-合规与保险">4. 合规与保险</a></li><li><a href="#5-人">5. 人</a></li><li><a href="#不要做的事">不要做的事</a></li></ul></nav>
+</div>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

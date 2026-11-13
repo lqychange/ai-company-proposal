@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>成本与实施路线图 · 一人 AI 公司 · 方案构想</title>
+<meta name="description" content="用 AI 组成整家公司、尽量少的人来管理：研究、架构设计与前期准备清单。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23255f73'/%3E%3Ccircle cx='16' cy='11' r='4.5' fill='%23ffd28a'/%3E%3Ccircle cx='8' cy='22' r='3' fill='%23fff'/%3E%3Ccircle cx='16' cy='24' r='3' fill='%23fff'/%3E%3Ccircle cx='24' cy='22' r='3' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+</head>
+<body data-page="cost-roadmap">
+<a class="skip" href="#content">跳到正文</a>
+<header class="topbar">
+  <button class="menu-btn" type="button" aria-label="打开目录" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>一人 AI 公司 · 方案构想</a>
+  <span class="progress" aria-label="阅读进度">第 12 / 22 页</span>
+  <button class="theme-btn" type="button" aria-label="切换深色/浅色">◐</button>
+</header>
+<div class="shell">
+  <aside class="sidebar" id="sidebar"><div class="nav-group"><div class="nav-group-title">开始</div><ul><li><a href="index.html">首页：一页看懂</a></li></ul></div><div class="nav-group"><div class="nav-group-title">基础研究</div><ul><li><a href="feasibility.html">可行性：能做到什么程度</a></li><li><a href="platforms.html">工具与平台选型</a></li><li><a href="compliance.html">合规：得州与美国</a></li><li><a href="updates.html">研究更新（11-13 补充核实）</a></li></ul></div><div class="nav-group"><div class="nav-group-title">方案设计</div><ul><li><a href="org.html">组织架构：1 个人 + AI 人物</a></li><li><a href="architecture.html">推荐架构：AWS Bedrock 路线</a></li><li><a href="knowledge.html">专属 RAG 知识层</a></li><li><a href="review.html">审核：风险分级与授权矩阵</a></li><li><a href="governance.html">AI 治理</a></li><li><a href="security.html">安全防护</a></li><li><a href="cost-roadmap.html" aria-current="page">成本与实施路线图</a></li></ul></div><div class="nav-group"><div class="nav-group-title">前期准备（请贵司配合）</div><ul><li><a href="prep.html">前期准备总览</a></li><li><a href="prep-questionnaire.html">① 业务信息问卷</a></li><li><a href="prep-assets.html">② 资料与账号清单</a></li><li><a href="prep-decisions.html">③ 需要拍板的决策</a></li><li><a href="prep-plan.html">④ 前期工作计划与验收</a></li></ul></div><div class="nav-group"><div class="nav-group-title">附录</div><ul><li><a href="glossary.html">术语表</a></li><li><a href="sources.html">来源索引</a></li><li><a href="full-research.html">全文 · 研究汇总 v0.2</a></li><li><a href="full-architecture.html">全文 · Bedrock 架构设计</a></li><li><a href="full-artifacts.html">全文 · 参考样例</a></li></ul></div>
+    <div class="side-foot">更新于 2026-11-13</div>
+  </aside>
+  <main id="content" class="content">
+    <article>
+      
+      <h1 class="page-title">成本与实施路线图</h1>
+      <blockquote>
+<p><strong>一句话</strong>：按&quot;一步到位&quot;版估算，搭建费约 <strong>$15–40 万</strong>，每月运营全口径约 <strong>$3,000–20,000</strong>（其中 AWS 部分约 $900–4,000），周期约 <strong>5–7 个月</strong>。同样职能的传统团队（6–8 人）在美国一年约 $60–100 万。所有数字都是 📌 估算，前期准备完成后会出正式报价。</p>
+</blockquote>
+<h2 id="搭建费-几种路线对比"><a class="anchor" href="#搭建费-几种路线对比" aria-label="本节链接">#</a>搭建费：几种路线对比</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>方案</th>
+<th>搭建费</th>
+<th>首年总成本（含监督人员）</th>
+<th>每月运营</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>精益版（低代码，Owner 加 1 名自由职业工程师）</td>
+<td>$1–3 万</td>
+<td>$6–15 万</td>
+<td>$1,000–8,000</td>
+</tr>
+<tr>
+<td>标准版（混合路线，外包工作室或 2–3 人团队）</td>
+<td>$5–15 万</td>
+<td>$15–40 万</td>
+<td>$1,000–8,000</td>
+</tr>
+<tr>
+<td>企业版（Agentforce 或完全自研，合规要求高）</td>
+<td>$20–50 万以上</td>
+<td>$50 万以上</td>
+<td>—</td>
+</tr>
+<tr>
+<td>订阅&quot;AI 员工&quot; + 自建骨架</td>
+<td>$1–4 万</td>
+<td>—</td>
+<td>$1,000–7,000</td>
+</tr>
+<tr>
+<td><strong>一步到位版（推荐的架构）</strong></td>
+<td><strong>$15–40 万</strong></td>
+<td>—</td>
+<td><strong>$3,000–20,000</strong></td>
+</tr>
+</tbody></table>
+</div>
+<p>搭建费区间很宽，主要取决于三件事：<strong>业务有多标准化</strong>（决定生产AI的复杂度）、<strong>要接多少外部系统</strong>、<strong>合规要求多高</strong>。这些都要在 <a href="prep.html">前期准备</a> 里回答。</p>
+<h2 id="aws-部分每月多少钱"><a class="anchor" href="#aws-部分每月多少钱" aria-label="本节链接">#</a>AWS 部分每月多少钱</h2>
+<p><strong>规模假设</strong>：每月 200 条线索、20 个活跃客户、约 5,000 次人物会话、约 5 万次工具调用、约 1.5 亿 token。</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>项</th>
+<th>每月</th>
+<th>依据</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>账号与安全基线（8 个账号）</td>
+<td>$80–200</td>
+<td>Config、GuardDuty、Security Hub、KMS 等（📚）</td>
+</tr>
+<tr>
+<td>网络</td>
+<td>$350–450</td>
+<td>私有接口端点约 $300 ✅ + NAT + DNS 防火墙</td>
+</tr>
+<tr>
+<td>AgentCore Runtime</td>
+<td>$30–100</td>
+<td>按 vCPU 和内存小时计费；等待 I/O 时不收 CPU 费 ✅</td>
+</tr>
+<tr>
+<td>Gateway + Policy</td>
+<td>低于 $5</td>
+<td>每千次调用 $0.005 ✅</td>
+</tr>
+<tr>
+<td>Memory</td>
+<td>$5–20</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Evaluations</td>
+<td>$30–150</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>模型 token</strong></td>
+<td><strong>$300–2,500</strong></td>
+<td><strong>最大的变量</strong>。复核会让用量多出 30–50%；提示词缓存能省下不少</td>
+</tr>
+<tr>
+<td>Guardrails</td>
+<td>$50–400</td>
+<td>按文本单位计费，只在边界上检测才能控制成本 ✅</td>
+</tr>
+<tr>
+<td>知识库</td>
+<td>$25–60</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>骨架与存储</td>
+<td>$20–60</td>
+<td>Step Functions、DynamoDB、S3（📚）</td>
+</tr>
+<tr>
+<td>入口</td>
+<td>$20–40</td>
+<td>WAF、CloudFront、SES、API Gateway（📚）</td>
+</tr>
+<tr>
+<td><strong>AWS 合计</strong></td>
+<td><strong>约 $900–4,000</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>AWS Quick（可选）</td>
+<td>约 $290</td>
+<td>1 名用户 Enterprise 档</td>
+</tr>
+</tbody></table>
+</div>
+<h2 id="其他每月费用"><a class="anchor" href="#其他每月费用" aria-label="本节链接">#</a>其他每月费用</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>项</th>
+<th>每月（📌📚）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CRM</td>
+<td>$50–1,000</td>
+</tr>
+<tr>
+<td>线索数据</td>
+<td>$150–1,000</td>
+</tr>
+<tr>
+<td>外联工具</td>
+<td>$100–500</td>
+</tr>
+<tr>
+<td>电子签</td>
+<td>$50–300</td>
+</tr>
+<tr>
+<td>客服工具</td>
+<td>$100–1,000</td>
+</tr>
+<tr>
+<td>财务、监控等</td>
+<td>$100–1,300</td>
+</tr>
+<tr>
+<td>Stripe 手续费</td>
+<td>每笔约 2.9% + $0.30（📚）；Stripe Tax 0.5%/笔或套餐 $90/月起 ✅</td>
+</tr>
+</tbody></table>
+</div>
+<h2 id="容易漏掉的成本"><a class="anchor" href="#容易漏掉的成本" aria-label="本节链接">#</a>容易漏掉的成本</h2>
+<ul>
+<li><strong>人工监督</strong>：前 6 个月建议 0.5–1 人的&quot;AI 运营&quot;协助 Owner。</li>
+<li><strong>维护费</strong>：每年约为搭建费的 20–40%（模型升级、平台变化、规则调整）。</li>
+<li><strong>保险</strong>：科技 E&amp;O + 网络安全险约 <strong>$5k–8k/年</strong>（11-13 按创业公司中位数上调），而且要确认 AI 相关的承保条款。</li>
+<li><strong>得州合规一次性</strong>：律师审查 $5k–15k；会计设置销售税 $1k–3k；如果做电话外联，登记 $200 + $10,000 保证金。</li>
+<li><strong>销售税</strong>：买软件和云服务多出约 5%–6.6%。</li>
+<li><strong>试错成本</strong>：域名被拉黑、报错价格等。</li>
+</ul>
+<h2 id="实施路线图"><a class="anchor" href="#实施路线图" aria-label="本节链接">#</a>实施路线图</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>时长</th>
+<th>内容</th>
+<th>完成标准</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>前期准备</strong></td>
+<td><strong>3–6 周</strong></td>
+<td><strong>贵司提供业务信息、资料和决策；我们出定稿设计和报价（见 <a href="prep.html">前期准备</a>）</strong></td>
+<td><strong>&quot;可以开工&quot;清单全部打勾</strong></td>
+</tr>
+<tr>
+<td>0 地基</td>
+<td>3–4 周</td>
+<td>8 个账号和组织级护栏；统一登录；日志和安全基线；治理仓库（宪章、阈值、人物卡）；得州法律事务</td>
+<td>规则测试全部通过；审计账本&quot;能写不能删&quot;</td>
+</tr>
+<tr>
+<td>1 控制面和知识</td>
+<td>4–6 周</td>
+<td>网关 + 策略 + 拦截器；执行器和审批服务；Owner 控制台；知识库和入库流水线；隔离读信员、复核官、幕僚长以 A0 上线</td>
+<td>跨客户泄漏为 0；第一轮红队通过</td>
+</tr>
+<tr>
+<td>2 获客到报价</td>
+<td>4–6 周</td>
+<td>获客AI、前台AI、销售AI 从 A0 升到 A1；状态机前半段</td>
+<td>Owner 每天审批用时少于 1 小时</td>
+</tr>
+<tr>
+<td>3 合同、收款、交付</td>
+<td>6–8 周</td>
+<td>合同AI、财务AI、项目/生产/质检AI；接入电子签和 Stripe</td>
+<td>完成第一笔端到端成交</td>
+</tr>
+<tr>
+<td>4 客户成功和放权</td>
+<td>持续</td>
+<td>客户成功AI；按数据逐个动作晋升到 A2、A3；成本优化</td>
+<td>自动化率达到目标</td>
+</tr>
+</tbody></table>
+</div>
+<p>合计约 5–7 个月（不含前期准备）。</p>
+<div class="diagram"><pre class="mermaid">gantt
+    dateFormat  YYYY-MM-DD
+    axisFormat  %m/%d
+    section 前期准备
+    业务信息与资料           :p1, 2026-11-23, 21d
+    决策与定稿设计           :p2, after p1, 14d
+    section 搭建
+    0 地基                  :s0, after p2, 25d
+    1 控制面和知识           :s1, after s0, 35d
+    2 获客到报价             :s2, after s1, 35d
+    3 合同收款交付           :s3, after s2, 49d
+    section 运营
+    4 客户成功和放权          :s4, after s3, 60d</pre></div>
+<p>上图的起始日期只是示意（假设 11 月下旬启动前期准备）；底座的最终签约建议放在 12 月上旬，即微软 Ignite 和 AWS re:Invent 之后。</p>
+<h2 id="可以并行做的概念验证"><a class="anchor" href="#可以并行做的概念验证" aria-label="本节链接">#</a>可以并行做的概念验证</h2>
+<ul>
+<li><strong>Paperclip</strong>：2–4 周，先放内部岗位，同时按加固清单处理安全问题。</li>
+<li><strong>AWS Quick</strong>：30 天试用，先做后台流程和 Owner 看板。</li>
+<li><strong>评估集</strong>：前期准备阶段就可以开始收集真实对话，越早越好。</li>
+</ul>
+
+    </article>
+    <nav class="pager" aria-label="翻页">
+    <a class="prev" href="security.html"><span>上一页</span><strong>安全防护</strong></a>
+    <a class="next" href="prep.html"><span>下一页</span><strong>前期准备总览</strong></a>
+  </nav>
+    <footer class="foot">本站为方案构想，供讨论用；法律与税务内容未经律师或会计审阅，不构成法律意见。状态标记：✅ 已核实 · ⚠️ 待核实 · 💡 判断 · 📌 估算 · 📚 训练知识未复核。</footer>
+  </main>
+  <nav class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><ul><li><a href="#搭建费-几种路线对比">搭建费：几种路线对比</a></li><li><a href="#aws-部分每月多少钱">AWS 部分每月多少钱</a></li><li><a href="#其他每月费用">其他每月费用</a></li><li><a href="#容易漏掉的成本">容易漏掉的成本</a></li><li><a href="#实施路线图">实施路线图</a></li><li><a href="#可以并行做的概念验证">可以并行做的概念验证</a></li></ul></nav>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

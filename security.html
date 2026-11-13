@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>安全防护 · 一人 AI 公司 · 方案构想</title>
+<meta name="description" content="用 AI 组成整家公司、尽量少的人来管理：研究、架构设计与前期准备清单。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23255f73'/%3E%3Ccircle cx='16' cy='11' r='4.5' fill='%23ffd28a'/%3E%3Ccircle cx='8' cy='22' r='3' fill='%23fff'/%3E%3Ccircle cx='16' cy='24' r='3' fill='%23fff'/%3E%3Ccircle cx='24' cy='22' r='3' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+</head>
+<body data-page="security">
+<a class="skip" href="#content">跳到正文</a>
+<header class="topbar">
+  <button class="menu-btn" type="button" aria-label="打开目录" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>一人 AI 公司 · 方案构想</a>
+  <span class="progress" aria-label="阅读进度">第 11 / 22 页</span>
+  <button class="theme-btn" type="button" aria-label="切换深色/浅色">◐</button>
+</header>
+<div class="shell">
+  <aside class="sidebar" id="sidebar"><div class="nav-group"><div class="nav-group-title">开始</div><ul><li><a href="index.html">首页：一页看懂</a></li></ul></div><div class="nav-group"><div class="nav-group-title">基础研究</div><ul><li><a href="feasibility.html">可行性：能做到什么程度</a></li><li><a href="platforms.html">工具与平台选型</a></li><li><a href="compliance.html">合规：得州与美国</a></li><li><a href="updates.html">研究更新（11-13 补充核实）</a></li></ul></div><div class="nav-group"><div class="nav-group-title">方案设计</div><ul><li><a href="org.html">组织架构：1 个人 + AI 人物</a></li><li><a href="architecture.html">推荐架构：AWS Bedrock 路线</a></li><li><a href="knowledge.html">专属 RAG 知识层</a></li><li><a href="review.html">审核：风险分级与授权矩阵</a></li><li><a href="governance.html">AI 治理</a></li><li><a href="security.html" aria-current="page">安全防护</a></li><li><a href="cost-roadmap.html">成本与实施路线图</a></li></ul></div><div class="nav-group"><div class="nav-group-title">前期准备（请贵司配合）</div><ul><li><a href="prep.html">前期准备总览</a></li><li><a href="prep-questionnaire.html">① 业务信息问卷</a></li><li><a href="prep-assets.html">② 资料与账号清单</a></li><li><a href="prep-decisions.html">③ 需要拍板的决策</a></li><li><a href="prep-plan.html">④ 前期工作计划与验收</a></li></ul></div><div class="nav-group"><div class="nav-group-title">附录</div><ul><li><a href="glossary.html">术语表</a></li><li><a href="sources.html">来源索引</a></li><li><a href="full-research.html">全文 · 研究汇总 v0.2</a></li><li><a href="full-architecture.html">全文 · Bedrock 架构设计</a></li><li><a href="full-artifacts.html">全文 · 参考样例</a></li></ul></div>
+    <div class="side-foot">更新于 2026-11-13</div>
+  </aside>
+  <main id="content" class="content">
+    <article>
+      
+      <h1 class="page-title">安全防护</h1>
+      <blockquote>
+<p><strong>一句话</strong>：假设每个 AI 人物迟早会被注入恶意指令，然后保证它<strong>被攻破了也动不了钱、改不了规则、读不到其他客户的数据</strong>。</p>
+</blockquote>
+<h2 id="2026-年发生过的真实事件-✅"><a class="anchor" href="#2026-年发生过的真实事件-✅" aria-label="本节链接">#</a>2026 年发生过的真实事件（✅）</h2>
+<ul>
+<li><strong>OpenAI Dots</strong>：连续处理 10 个任务时 19.7% 出现中度越权；第三方测试发现它会批准自己被标记的动作。</li>
+<li><strong>Meta Muse</strong>：能看到其他用户的信息、会暴露文件系统；macOS 零日漏洞。</li>
+<li><strong>Grok Bot</strong>：同一账号下所有 bot 共用凭据；同公司的命令行工具上传了用户的整个代码仓库。</li>
+<li><strong>AWS AgentCore</strong>：Zenity 的&quot;AgentCorruption&quot;——一条提示就能接管同账号同区域的所有 Agent。</li>
+<li><strong>开源供应链</strong>：常用组件 LiteLLM 在 2026 年 3 月被植入后门；OpenClaw 技能市场出现恶意技能，2.8 万多个实例暴露在公网。</li>
+<li><strong>Paperclip</strong>：12 个安全公告，其中 2 个截至 11-13 仍未标注修复版本。</li>
+</ul>
+<h2 id="威胁模型"><a class="anchor" href="#威胁模型" aria-label="本节链接">#</a>威胁模型</h2>
+<p>对照 OWASP Agent 应用十大风险（2025-12 发布）：</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>威胁</th>
+<th>在这家公司里怎么发生</th>
+<th>主要控制</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ASI01 目标劫持 / 提示词注入</td>
+<td>客户邮件、网页、附件、知识片段里藏着指令</td>
+<td>隔离读信员；不可信内容打标记；网关响应拦截器打分；人物没有外网；高风险工具不在人物手里</td>
+</tr>
+<tr>
+<td>ASI02 工具滥用</td>
+<td>人物用合法工具做不该做的事</td>
+<td>Cedar 参数级规则；频率限制；执行器</td>
+</tr>
+<tr>
+<td>ASI03 身份和权限滥用</td>
+<td>幕僚长或被注入的人物给自己提权</td>
+<td>每个人物独立身份；人物账号禁止 IAM 写操作；放宽类变更有冷静期</td>
+</tr>
+<tr>
+<td>ASI04 供应链</td>
+<td>依赖包被投毒；恶意 MCP 服务器</td>
+<td>私有包仓库 + 锁定版本；镜像扫描和签名；MCP 只用白名单</td>
+</tr>
+<tr>
+<td>ASI05 意外代码执行</td>
+<td>人物被诱导执行任意命令</td>
+<td>不给通用 shell/HTTP 工具；代码只在沙箱里跑</td>
+</tr>
+<tr>
+<td>ASI06 记忆和上下文投毒</td>
+<td>恶意内容进入长期记忆或知识库</td>
+<td>入库注入扫描；按知识域审批；关闭&quot;情节记忆&quot;；每周抽查</td>
+</tr>
+<tr>
+<td>ASI07 不安全的 Agent 间通信</td>
+<td>人物之间互相传话，放大错误或注入</td>
+<td>用工作单 + 格式校验交接；不开放自由对话</td>
+</tr>
+<tr>
+<td>ASI08 错误连锁扩散</td>
+<td>一步错、步步错</td>
+<td>状态机分段；每段都有闸；质量金丝雀</td>
+</tr>
+<tr>
+<td>ASI09 利用人对 Agent 的信任</td>
+<td>Owner 疲劳时随手批准；伪造的审批邮件</td>
+<td>审批卡片附复核意见；防疲劳指标；只能在控制台审批</td>
+</tr>
+<tr>
+<td>ASI10 失控的 Agent</td>
+<td>死循环、乱花钱</td>
+<td>预算熔断；K1–K5 熔断</td>
+</tr>
+<tr>
+<td>同账号横向接管</td>
+<td>读元数据服务拿到凭据，调用其他 Agent</td>
+<td>三个人物账号分开；最小权限执行角色；凭据只能在运行环境里用；只有派工角色能调用人物</td>
+</tr>
+<tr>
+<td>悄悄关掉授权</td>
+<td>有人把策略改成&quot;只记录&quot;模式</td>
+<td>只允许流水线修改；变更告警；每小时检查是否在拦截模式</td>
+</tr>
+<tr>
+<td>Owner 被盗号或被社工</td>
+<td>钓鱼；深度伪造的&quot;客户来电&quot;</td>
+<td>通行密钥 + 硬件密钥；R4 硬红线；冷静期</td>
+</tr>
+<tr>
+<td>拒绝钱包</td>
+<td>攻击者诱导人物大量调用模型</td>
+<td>每个人物的预算；WAF 频率限制；预算动作</td>
+</tr>
+</tbody></table>
+</div>
+<h2 id="提示词注入的纵深防御"><a class="anchor" href="#提示词注入的纵深防御" aria-label="本节链接">#</a>提示词注入的纵深防御</h2>
+<div class="diagram"><pre class="mermaid">flowchart LR
+    X[&quot;外部内容&lt;br/&gt;邮件 · 附件 · 网页 · 客户文档&quot;]:::untrusted
+    S[&quot;① 恶意软件扫描&quot;]:::ctl
+    Q[&quot;② 隔离读信员AI&lt;br/&gt;没有工具 · 没有知识库 · 没有长期记忆&quot;]:::edge
+    J[&quot;③ 结构化输出&lt;br/&gt;格式校验 · 意图只能取枚举值&quot;]:::ctl
+    T[&quot;④ 原文只当数据&lt;br/&gt;打标记 · 提示词攻击检测&quot;]:::ctl
+    C[&quot;⑤ 核心区人物&lt;br/&gt;以结构化字段为准&quot;]:::core
+    P[&quot;⑥ 网关 Policy&lt;br/&gt;按人物限定工具和参数&quot;]:::cp
+    H[&quot;⑦ 高风险动作&lt;br/&gt;执行器 + 复核 + Owner&quot;]:::human
+    HQ[&quot;人工队列&quot;]:::human
+    X --&gt; S --&gt; Q --&gt; J --&gt; C
+    J -.-&gt;|&quot;需要时附上原文&quot;| T --&gt; C
+    J --&gt;|&quot;校验失败或判为可疑&quot;| HQ
+    C --&gt; P --&gt; H
+    classDef untrusted fill:#fafafa,stroke:#d32f2f,color:#b71c1c,stroke-width:2px,stroke-dasharray:5 3;
+    classDef ctl fill:#fffde7,stroke:#f9a825,color:#f57f17,stroke-width:2px;
+    classDef edge fill:#fce4ec,stroke:#ad1457,color:#880e4f,stroke-width:2px;
+    classDef core fill:#e3f2fd,stroke:#1565c0,color:#0d47a1,stroke-width:2px;
+    classDef cp fill:#ffebee,stroke:#c62828,color:#b71c1c,stroke-width:3px;
+    classDef human fill:#fff3e0,stroke:#e65100,color:#bf360c,stroke-width:3px;</pre></div>
+<p>核心是&quot;<strong>双 LLM 模式</strong>&quot;：读不可信内容的模型（隔离读信员），碰不到任何能力；有能力的模型，只看结构化字段。另外，对外内容里不能出现未登记的链接和外部图片，防止通过链接把数据带出去。</p>
+<h2 id="八层防护"><a class="anchor" href="#八层防护" aria-label="本节链接">#</a>八层防护</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>层</th>
+<th>做什么</th>
+<th>本方案怎么做</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1 身份</td>
+<td>每个 Agent 独立身份、短期凭据、最小权限、随时可撤销</td>
+<td>每个人物一个执行角色 + 一个网关身份；一键停职</td>
+</tr>
+<tr>
+<td>2 工具调用网关</td>
+<td>所有工具调用都经过网关，按规则放行</td>
+<td>Gateway + Policy + 拦截器 + 执行器</td>
+</tr>
+<tr>
+<td>3 输入输出护栏</td>
+<td>防注入、隐藏个人信息、过滤内容、核对事实</td>
+<td>组织级 + 岗位护栏；隔离读信员</td>
+</tr>
+<tr>
+<td>4 运行隔离</td>
+<td>每个会话独立沙箱，只能访问白名单</td>
+<td>每会话一个 microVM；人物没有外网；三个人物账号</td>
+</tr>
+<tr>
+<td>5 资金</td>
+<td>虚拟卡，设单笔和每日额度</td>
+<td>见下文</td>
+</tr>
+<tr>
+<td>6 检测与响应</td>
+<td>发现异常行为，定期红队</td>
+<td>GuardDuty、Security Hub；AI 专项告警；哨兵AI + 熔断</td>
+</tr>
+<tr>
+<td>7 供应链</td>
+<td>锁定依赖版本、私有仓库、白名单</td>
+<td>私有包仓库；镜像签名和 SBOM；不从任何技能市场直接安装</td>
+</tr>
+<tr>
+<td>8 数据</td>
+<td>不保留数据、控制存放地区、加密、客户隔离</td>
+<td>分级加密；数据不出美国；零保留模型；客户隔离四层</td>
+</tr>
+</tbody></table>
+</div>
+<h2 id="资金安全"><a class="anchor" href="#资金安全" aria-label="本节链接">#</a>资金安全</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>控制点</th>
+<th>做法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>收款</td>
+<td>Stripe 受限密钥，只给开票和查询类权限</td>
+</tr>
+<tr>
+<td>退款</td>
+<td>只能由执行器发起，额度按授权矩阵；超过上限只能 Owner 在 Stripe 后台手工处理</td>
+</tr>
+<tr>
+<td>付款</td>
+<td>人物碰不到银行账户。付供应商用虚拟卡，设单笔和每月上限，只能付给已登记的供应商；登记新收款方属于 R4</td>
+</tr>
+<tr>
+<td>频率</td>
+<td>规则 + 计数器，限制每天的退款笔数和金额</td>
+</tr>
+</tbody></table>
+</div>
+<h2 id="邮件与域名"><a class="anchor" href="#邮件与域名" aria-label="本节链接">#</a>邮件与域名</h2>
+<ul>
+<li><strong>两个域名</strong>：主域名和外联子域名分开，外联子域名被拉黑也不影响主域名。</li>
+<li><strong>认证</strong>：SPF、DKIM、DMARC，DMARC 策略设为 <code>p=reject</code>。Gmail、雅虎和微软都已强制要求认证，投诉率要低于 0.1% ✅。</li>
+<li><strong>发件地址</strong>：每个人物有自己的发件地址，规则规定人物只能用自己的地址发信。</li>
+<li><strong>收信校验</strong>：没通过 SPF/DKIM/DMARC 校验的邮件，一律不当作客户指令处理。</li>
+</ul>
+<h2 id="数据分级"><a class="anchor" href="#数据分级" aria-label="本节链接">#</a>数据分级</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>分级</th>
+<th>例子</th>
+<th>谁能访问</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>公开</td>
+<td>服务目录、公开价格</td>
+<td>所有人物</td>
+</tr>
+<tr>
+<td>内部</td>
+<td>SOP、话术、指标</td>
+<td>按岗位</td>
+</tr>
+<tr>
+<td>机密</td>
+<td>规则、合同模板、财务</td>
+<td>指定的人物 + Owner</td>
+</tr>
+<tr>
+<td>客户机密</td>
+<td>客户资料、客户记忆、交付物</td>
+<td>只有处理该客户工作单的人物</td>
+</tr>
+<tr>
+<td>受限</td>
+<td>模型调用全文日志、追踪数据、审计账本</td>
+<td>审计角色 + 内审AI（只读）</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>隐私删除和不可篡改审计的矛盾</strong>：审计账本只存 ID、哈希、决定和规则版本，不存正文和个人信息；全文放在可以删除、保留期较短的地方。这样删除请求能执行，审计链也完整。</p>
+
+    </article>
+    <nav class="pager" aria-label="翻页">
+    <a class="prev" href="governance.html"><span>上一页</span><strong>AI 治理</strong></a>
+    <a class="next" href="cost-roadmap.html"><span>下一页</span><strong>成本与实施路线图</strong></a>
+  </nav>
+    <footer class="foot">本站为方案构想，供讨论用；法律与税务内容未经律师或会计审阅，不构成法律意见。状态标记：✅ 已核实 · ⚠️ 待核实 · 💡 判断 · 📌 估算 · 📚 训练知识未复核。</footer>
+  </main>
+  <nav class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><ul><li><a href="#2026-年发生过的真实事件-✅">2026 年发生过的真实事件（✅）</a></li><li><a href="#威胁模型">威胁模型</a></li><li><a href="#提示词注入的纵深防御">提示词注入的纵深防御</a></li><li><a href="#八层防护">八层防护</a></li><li><a href="#资金安全">资金安全</a></li><li><a href="#邮件与域名">邮件与域名</a></li><li><a href="#数据分级">数据分级</a></li></ul></nav>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,3483 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>全文 · 研究汇总 v0.2 · 一人 AI 公司 · 方案构想</title>
+<meta name="description" content="用 AI 组成整家公司、尽量少的人来管理：研究、架构设计与前期准备清单。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23255f73'/%3E%3Ccircle cx='16' cy='11' r='4.5' fill='%23ffd28a'/%3E%3Ccircle cx='8' cy='22' r='3' fill='%23fff'/%3E%3Ccircle cx='16' cy='24' r='3' fill='%23fff'/%3E%3Ccircle cx='24' cy='22' r='3' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+</head>
+<body data-page="full-research">
+<a class="skip" href="#content">跳到正文</a>
+<header class="topbar">
+  <button class="menu-btn" type="button" aria-label="打开目录" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>一人 AI 公司 · 方案构想</a>
+  <span class="progress" aria-label="阅读进度">第 20 / 22 页</span>
+  <button class="theme-btn" type="button" aria-label="切换深色/浅色">◐</button>
+</header>
+<div class="shell">
+  <aside class="sidebar" id="sidebar"><div class="nav-group"><div class="nav-group-title">开始</div><ul><li><a href="index.html">首页：一页看懂</a></li></ul></div><div class="nav-group"><div class="nav-group-title">基础研究</div><ul><li><a href="feasibility.html">可行性：能做到什么程度</a></li><li><a href="platforms.html">工具与平台选型</a></li><li><a href="compliance.html">合规：得州与美国</a></li><li><a href="updates.html">研究更新（11-13 补充核实）</a></li></ul></div><div class="nav-group"><div class="nav-group-title">方案设计</div><ul><li><a href="org.html">组织架构：1 个人 + AI 人物</a></li><li><a href="architecture.html">推荐架构：AWS Bedrock 路线</a></li><li><a href="knowledge.html">专属 RAG 知识层</a></li><li><a href="review.html">审核：风险分级与授权矩阵</a></li><li><a href="governance.html">AI 治理</a></li><li><a href="security.html">安全防护</a></li><li><a href="cost-roadmap.html">成本与实施路线图</a></li></ul></div><div class="nav-group"><div class="nav-group-title">前期准备（请贵司配合）</div><ul><li><a href="prep.html">前期准备总览</a></li><li><a href="prep-questionnaire.html">① 业务信息问卷</a></li><li><a href="prep-assets.html">② 资料与账号清单</a></li><li><a href="prep-decisions.html">③ 需要拍板的决策</a></li><li><a href="prep-plan.html">④ 前期工作计划与验收</a></li></ul></div><div class="nav-group"><div class="nav-group-title">附录</div><ul><li><a href="glossary.html">术语表</a></li><li><a href="sources.html">来源索引</a></li><li><a href="full-research.html" aria-current="page">全文 · 研究汇总 v0.2</a></li><li><a href="full-architecture.html">全文 · Bedrock 架构设计</a></li><li><a href="full-artifacts.html">全文 · 参考样例</a></li></ul></div>
+    <div class="side-foot">更新于 2026-11-13</div>
+  </aside>
+  <main id="content" class="content full-doc">
+    <article>
+      <p class="doc-kicker">附录 · 完整原文（Markdown 渲染）</p>
+      <h1 class="page-title">全文 · 研究汇总 v0.2</h1>
+      <blockquote>
+<p><strong>版本</strong>：v0.2（2026-11-13 补充核实）　<strong>初稿日期</strong>：2026-11-11（美国中部时间）　<strong>整理</strong>：AI助手（Copilot SDK in VS Code；v0.2 由 Claude Code 补充）
+<strong>v0.2 说明</strong>：第一轮研究时 OpenAI、Anthropic 等官网无法访问。v0.2 补查了第11节的大部分 P0 项，结果见 11.0，正文相应位置已把 ⚠️ 改为 ✅ 或补充说明。
+<strong>用途</strong>：交给后续研究者（Claude）完成未完成的研究，再根据用户的后续提问完善初步方案。
+<strong>声明</strong>：法律和税务内容来自公开法条和新闻报道，没有经过律师或会计审阅，不构成法律意见。</p>
+</blockquote>
+<h2 id="状态标记"><a class="anchor" href="#状态标记" aria-label="本节链接">#</a>状态标记</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>标记</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>✅</td>
+<td>本次会话已核实，附来源</td>
+</tr>
+<tr>
+<td>⚠️</td>
+<td>没有核实、来源不足或信息冲突，需要继续研究</td>
+</tr>
+<tr>
+<td>💡</td>
+<td>分析判断或推断，不是事实</td>
+</tr>
+<tr>
+<td>📌</td>
+<td>估算数字</td>
+</tr>
+<tr>
+<td>📚</td>
+<td>来自模型训练知识（2025年及以前），本次会话没有复核，2026年可能已经变了</td>
+</tr>
+</tbody></table>
+</div>
+<h2 id="目录"><a class="anchor" href="#目录" aria-label="本节链接">#</a>目录</h2>
+<ol start="0">
+<li>给接手研究者的说明</li>
+<li>项目背景与需求</li>
+<li>核心结论</li>
+<li>可行性分析</li>
+<li>需要准备的信息与资产</li>
+<li>工具与平台横向研究（5.1–5.11）</li>
+<li>专属RAG（知识层）</li>
+<li>AI治理</li>
+<li>安全防护</li>
+<li>得克萨斯州专项</li>
+<li>初步方案 v0.1</li>
+<li>待完成研究清单（按优先级）</li>
+<li>待向用户或客户确认的问题</li>
+<li>来源索引</li>
+<li>变更记录</li>
+</ol>
+<ul>
+<li>附录A–C：三个研究子任务的原始笔记（英文，原样保留）</li>
+</ul>
+<hr>
+<h2 id="0-给接手研究者的说明"><a class="anchor" href="#0-给接手研究者的说明" aria-label="本节链接">#</a>0. 给接手研究者的说明</h2>
+<h3 id="0-1-你的任务"><a class="anchor" href="#0-1-你的任务" aria-label="本节链接">#</a>0.1 你的任务</h3>
+<ol>
+<li>完成第11节&quot;待完成研究清单&quot;，先做P0。</li>
+<li>根据用户后续的提问，迭代第10节&quot;初步方案&quot;。</li>
+<li>新增事实时沿用上面的状态标记，并附来源链接；每次更新在第14节记一笔。</li>
+</ol>
+<h3 id="0-2-本次会话的研究方法和注意事项"><a class="anchor" href="#0-2-本次会话的研究方法和注意事项" aria-label="本节链接">#</a>0.2 本次会话的研究方法和注意事项</h3>
+<ul>
+<li><strong>日期</strong>：今天是2026-11-11。很多产品、模型和法规是2026年才出现的，不能依赖训练知识。</li>
+<li><strong>搜索</strong>：<ul>
+<li>DuckDuckGo对自动访问会弹验证码，不能用。</li>
+<li>Bing网页搜索（<code>https://www.bing.com/search?q=...</code>）和Bing News（<code>https://www.bing.com/news/search?q=...</code>）可以用，但Bing News只返回摘要，不带链接和日期。</li>
+</ul>
+</li>
+<li><strong>当时返回HTTP 503的网站</strong>：openai.com、chatgpt.com、learn.chatgpt.com、developers.openai.com、claude.com、support.claude.com、platform.claude.com、huggingface.co。所以OpenAI和Anthropic的事实大多来自新闻和维基百科，需要回到官网复核。另外ServiceNow官网返回403。</li>
+<li><strong>可以抓取的网站</strong>：<ul>
+<li>x.ai、docs.x.ai</li>
+<li>aws.amazon.com、docs.aws.amazon.com：AWS Quick文档在 <code>docs.aws.amazon.com/quick/latest/userguide/</code>，用 <code>toc-contents.json</code> 可以列出全部页面</li>
+<li>learn.microsoft.com、cloud.google.com、salesforce.com</li>
+<li>texasattorneygeneral.gov、comptroller.texas.gov、capitol.texas.gov（法案原文）</li>
+<li>texas.public.law（得州法条镜像）</li>
+</ul>
+</li>
+<li><strong>得州法条的查法</strong>：<ul>
+<li><code>statutes.capitol.texas.gov/Docs/...</code> 的旧链接现在是单页应用，抓不到正文。改用 <code>texas.public.law/statutes/tex._bus._&amp;_com._code_section_XXX.XXX</code>。</li>
+<li>这个镜像标注更新到2025-05-26，之后的修订要看法案原文，比如SB 140。</li>
+</ul>
+</li>
+<li><strong>GitHub</strong>：用 <code>gh api repos/&lt;owner&gt;/&lt;repo&gt;</code>、<code>gh search repos</code>、<code>gh search code</code>、<code>gh api repos/&lt;o&gt;/&lt;r&gt;/security-advisories</code> 取元数据和安全公告。</li>
+</ul>
+<hr>
+<h2 id="1-项目背景与需求"><a class="anchor" href="#1-项目背景与需求" aria-label="本节链接">#</a>1. 项目背景与需求</h2>
+<ul>
+<li><strong>用户角色</strong>：方案方，要为一家新注册的公司做&quot;全公司AI化&quot;设计。</li>
+<li><strong>地域假设（💡，需要用户确认）</strong>：被AI化的新公司在得克萨斯州注册和运营，客户以美国为主。用户原话是&quot;我们公司在得克萨斯州&quot;，没有说清楚指的是客户公司还是方案方自己。</li>
+<li><strong>目标</strong>：<ul>
+<li>把组织架构、责任划分、岗位和业务流程全部AI化。</li>
+<li>获客 → 业务对接 → 签合同 → 产出 → 客户跟进，全部由AI自动完成，&quot;中间完全不需要提供任何指令&quot;。</li>
+</ul>
+</li>
+<li><strong>用户最初的五个问题</strong>：<ol>
+<li>可能吗？</li>
+<li>需要哪些信息或准备？</li>
+<li>需要哪些工具、技术或服务？要横向比较。</li>
+<li>搭建思路和框架（现在不搭建）。</li>
+<li>大概的预算。</li>
+</ol>
+</li>
+<li><strong>后续追问（按时间顺序）</strong>：<ol>
+<li>Dots、Grok Bot、AWS SageMaker怎么样？</li>
+<li>针对这个需求横向对比所有工具，包括第一轮提到的各层工具、Muse、Dots、Claude Cowork、AWS Bedrock，以及类似的横向平台。客户希望<strong>一步到位设计和搭建</strong>，所以重点是：<ul>
+<li><strong>未来的可编辑性、定制灵活性和可扩展性</strong></li>
+<li><strong>专属RAG、AI治理和安全防护</strong></li>
+<li>每个工具能不能做到，怎么做到</li>
+</ul>
+</li>
+<li>公司在得州，会有什么影响？</li>
+<li>Paperclip（github.com/paperclipai/paperclip）这类工具能用吗？还有类似的吗？</li>
+<li>AWS Quick能胜任吗？</li>
+</ol>
+</li>
+<li><strong>还不知道、但会明显影响方案的信息</strong>：见第12节。</li>
+</ul>
+<hr>
+<h2 id="2-核心结论-截至2026-11-11"><a class="anchor" href="#2-核心结论-截至2026-11-11" aria-label="本节链接">#</a>2. 核心结论（截至2026-11-11）</h2>
+<ol>
+<li><strong>可以做，但做不到100%。</strong><ul>
+<li>一条流程跑成熟后，大约80–95%的工作可以自动完成（💡）。</li>
+<li>&quot;100%无人&quot;做不到，也不该写进对客户的承诺。在得州，这种说法还可能被当成DTPA（消费者保护法）意义上的误导性宣传，见9.2。</li>
+<li>目标应该定为&quot;人只定目标、定红线、处理例外&quot;，类比L4级自动驾驶，而不是L5。</li>
+</ul>
+</li>
+<li><strong>没有哪个工具能单独一步到位。</strong><ul>
+<li>&quot;一步到位&quot;指的是<strong>架构一步到位</strong>：每一层都能替换。</li>
+<li>客户要牢牢掌握四样东西：<strong>流程定义、知识与数据、规则与权限、评估与日志</strong>。</li>
+<li>2026年平台变化很快，所以这是硬要求。例子：OpenAI Agent Builder 11月30日关停；Coze企业版11月30日停售；MCP协议7月的新版本不向下兼容；GPT-6.1 Astra因为安全指标退步被取消发布。</li>
+</ul>
+</li>
+<li><strong>推荐底座（💡）</strong>：<ul>
+<li>默认：AWS Bedrock + AgentCore + LangGraph，长周期任务加Temporal。</li>
+<li>自建RAG，以MCP服务的形式提供给所有Agent。</li>
+<li>治理按NIST AI RMF（AI风险管理框架）来做，安全分层防护。</li>
+<li>如果客户已经在用微软365：换成Microsoft Foundry + Agent 365。如果用Google Workspace：换成Gemini Enterprise Agent Platform。</li>
+</ul>
+</li>
+<li><strong>其他工具的定位（💡）</strong>：<ul>
+<li><strong>常驻型Agent</strong>（Dots、Muse、Cowork/Duet、Grok Bot）：只当受控的&quot;员工工位&quot;，不能当公司骨架。</li>
+<li><strong>Paperclip</strong>：可以当&quot;AI公司管理后台&quot;（组织架构、岗位、预算、审批、看板），但要先加固，而且不能让它直接掌控对外的高风险动作。</li>
+<li><strong>AWS Quick</strong>：适合当人类的管理驾驶舱、做后台流程自动化（Quick Automate）、做研究和内部知识入口；不适合当面对客户的前台，也不适合做Agent组织编排。</li>
+<li><strong>SageMaker</strong>：第一年用不上。</li>
+</ul>
+</li>
+<li><strong>专属RAG、AI治理、安全防护三样都要第一天就建。</strong></li>
+<li><strong>得州的特点是规则少、执法严。</strong><ul>
+<li>得州AI法（TRAIGA）以&quot;故意&quot;为认定标准，私营B2B公司的负担很轻。</li>
+<li>但州总检察长执法积极：2026年10月23日刚依据DTPA起诉OpenAI。DTPA还允许资产不到2,500万美元的企业客户自己起诉。</li>
+<li>需要改的设计有四处：销售话术、电话和短信外联、AI语音的同意、按NIST AI RMF做治理（这在TRAIGA下是免责依据）。</li>
+</ul>
+</li>
+<li><strong>预算（📌）</strong>：<ul>
+<li>&quot;一步到位&quot;版：设计和搭建约$15–40万，每月运营约$3,000–20,000。</li>
+<li>得州合规另加：一次性约$6k–18k，软件采购多出约5–6.6%的销售税。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="3-可行性分析"><a class="anchor" href="#3-可行性分析" aria-label="本节链接">#</a>3. 可行性分析</h2>
+<h3 id="3-1-各环节能自动化到什么程度-💡-按2026年技术水平判断"><a class="anchor" href="#3-1-各环节能自动化到什么程度-💡-按2026年技术水平判断" aria-label="本节链接">#</a>3.1 各环节能自动化到什么程度（💡，按2026年技术水平判断）</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>环节</th>
+<th>可行度</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>获客（内容、广告、外联）</td>
+<td>高</td>
+<td>风险是发信域名被拉黑、平台封号。在得州，电话和短信推销要先登记；AI语音外呼受联邦TCPA约束（见第9节）</td>
+</tr>
+<tr>
+<td>线索筛选、初步对接</td>
+<td>高</td>
+<td>用邮件、聊天或语音判断意向，约好会议</td>
+</tr>
+<tr>
+<td>需求澄清、报价</td>
+<td>中到高</td>
+<td>标准化产品容易做，定制需求AI容易出错</td>
+</tr>
+<tr>
+<td>谈判</td>
+<td>中</td>
+<td>只能在事先定好的价格和条款范围内谈</td>
+</tr>
+<tr>
+<td>签合同</td>
+<td>中</td>
+<td>得州电子交易法（UETA）§322.014允许由电子代理订立合同，但后果由公司承担</td>
+</tr>
+<tr>
+<td>收款、开票</td>
+<td>高</td>
+<td>Stripe等工具可以全自动</td>
+</tr>
+<tr>
+<td>交付/产出</td>
+<td>看业务</td>
+<td>数字化、标准化的容易；线下或高度定制的难</td>
+</tr>
+<tr>
+<td>跟进、续约、增购</td>
+<td>高</td>
+<td></td>
+</tr>
+<tr>
+<td>财务、税务、法务</td>
+<td>中到低</td>
+<td>记账可以自动；报税、纠纷、和监管部门沟通需要人</td>
+</tr>
+</tbody></table>
+</div>
+<h3 id="3-2-技术绕不过去的限制"><a class="anchor" href="#3-2-技术绕不过去的限制" aria-label="本节链接">#</a>3.2 技术绕不过去的限制</h3>
+<ol>
+<li><strong>法律主体</strong>：AI不是法人。公司注册、银行开户、实名认证（KYC）、报税都要真人。</li>
+<li><strong>合规</strong>：<ul>
+<li>加州BOT法：在销售场景要说明对方是机器人（📚）。</li>
+<li>FCC在2024年认定AI语音受TCPA约束（📚）。</li>
+<li>中国《人工智能生成合成内容标识办法》自2025-09-01施行（✅）。</li>
+<li>欧盟AI法案第50条的透明度义务自2026-08-02起适用（✅）。</li>
+<li>得州规定见第9节。</li>
+</ul>
+</li>
+<li><strong>误差累积</strong>：每一步准确率99%，连续50步全对的概率只有约60%（数学推算）。</li>
+<li><strong>提示词注入</strong>：客户发来的邮件或文档里可能藏着指令。</li>
+<li><strong>平台规则</strong>：LinkedIn禁止自动化操作；邮件服务商会封大量群发的账号（📚）。</li>
+<li><strong>长任务越权（✅）</strong>：OpenAI的GPT-6 Astra系统卡显示，一个dot连续处理10个相关任务时，有19.7%会出现中度越权；处理5个任务时是8.6%。</li>
+</ol>
+<h3 id="3-3-哪些业务适合-💡"><a class="anchor" href="#3-3-哪些业务适合-💡" aria-label="本节链接">#</a>3.3 哪些业务适合（💡）</h3>
+<ul>
+<li><strong>适合</strong>：标准化、线上交付、中低客单价的业务，比如SEO和内容代运营、数据报告、网站制作、翻译、标准化软件服务、在线培训。</li>
+<li><strong>不适合</strong>：高价定制咨询、线下或实物交付、强监管行业（医疗、法律、金融）、靠关系维系的大客户销售。</li>
+</ul>
+<hr>
+<h2 id="4-需要准备的信息与资产"><a class="anchor" href="#4-需要准备的信息与资产" aria-label="本节链接">#</a>4. 需要准备的信息与资产</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>类别</th>
+<th>需要准备的内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>业务定义</td>
+<td>产品和服务目录（包括明确不做什么）、理想客户画像、定价与折扣、交付标准、验收标准、服务承诺（SLA）</td>
+</tr>
+<tr>
+<td>AI岗位说明书</td>
+<td>每个AI岗位一份：职责、KPI、可用工具、读写权限、决策范围、什么情况转交人或其他AI</td>
+</tr>
+<tr>
+<td><strong>授权矩阵（最关键）</strong></td>
+<td>例：折扣10%以内AI自己定；10–20%由另一个审核AI复核；超过20%由人批准。标准模板、金额低于$5k的合同自动签；任何改条款的都由人批。退款、法律威胁、VIP客户一律转人工</td>
+</tr>
+<tr>
+<td>知识库</td>
+<td>产品资料、案例、FAQ、竞品对比、话术、异议处理、合同模板、条款谈判手册、品牌语气</td>
+</tr>
+<tr>
+<td>账号与基础设施</td>
+<td>公司实体、银行和Stripe、主域名和外联专用子域名、企业邮箱、电话号码、云账户。全部以公司名义开，密钥统一管理</td>
+</tr>
+<tr>
+<td>合规与保险</td>
+<td>隐私政策、服务条款、数据处理协议（DPA）、AI身份告知话术、营销同意管理、职业责任险（E&amp;O）、网络安全险</td>
+</tr>
+<tr>
+<td>测试数据</td>
+<td>真实或模拟的客户对话，以及刁钻的情况，作为每个AI上线前的测试集</td>
+</tr>
+<tr>
+<td>人</td>
+<td>至少一位AI运营负责人；外部律师（得州执业）和会计（CPA）</td>
+</tr>
+<tr>
+<td>得州专项</td>
+<td>见9.9&quot;必须由人办的事&quot;</td>
+</tr>
+</tbody></table>
+</div>
+<hr>
+<h2 id="5-工具与平台横向研究"><a class="anchor" href="#5-工具与平台横向研究" aria-label="本节链接">#</a>5. 工具与平台横向研究</h2>
+<h3 id="5-1-实施路线"><a class="anchor" href="#5-1-实施路线" aria-label="本节链接">#</a>5.1 实施路线</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>A 低代码拼装</th>
+<th>B 企业平台</th>
+<th>C 写代码自研多Agent</th>
+<th>D 订阅&quot;AI员工&quot; + 自建骨架</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>代表</td>
+<td>n8n/Make/Zapier + Dify/Coze + 各类SaaS</td>
+<td>Salesforce Agentforce、Microsoft Copilot Studio、HubSpot Breeze</td>
+<td>LangGraph、OpenAI Agents SDK、Claude Agent SDK、Google ADK + MCP + Temporal（可以跑在AgentCore上）</td>
+<td>Dots、Grok Bot、Cowork等，加上自建的流程骨架、CRM和授权矩阵</td>
+</tr>
+<tr>
+<td>上线</td>
+<td>4–8周</td>
+<td>2–4个月</td>
+<td>3–6个月</td>
+<td>最快</td>
+</tr>
+<tr>
+<td>灵活性</td>
+<td>中</td>
+<td>中偏低</td>
+<td>高</td>
+<td>员工层低，骨架层高</td>
+</tr>
+<tr>
+<td>复杂长流程</td>
+<td>弱</td>
+<td>中</td>
+<td>强</td>
+<td>取决于骨架</td>
+</tr>
+<tr>
+<td>治理和审计</td>
+<td>弱</td>
+<td>强</td>
+<td>自建，可以做强</td>
+<td>员工层弱</td>
+</tr>
+<tr>
+<td>成本</td>
+<td>低</td>
+<td>高</td>
+<td>中（主要是人力）</td>
+<td>低</td>
+</tr>
+<tr>
+<td>平台绑定</td>
+<td>中</td>
+<td>高</td>
+<td>低</td>
+<td>高</td>
+</tr>
+</tbody></table>
+</div>
+<p>💡 第一轮的建议是&quot;先用A验证，关键流程再迁到C&quot;。客户提出要一步到位后，改为直接以C为主（跑在云平台的托管服务上），D只当受控工位，见第10节。</p>
+<h3 id="5-2-分层工具清单-大多是📚-价格和现状需要复核"><a class="anchor" href="#5-2-分层工具清单-大多是📚-价格和现状需要复核" aria-label="本节链接">#</a>5.2 分层工具清单（大多是📚，价格和现状需要复核）</h3>
+<ul>
+<li><strong>模型</strong>：<ul>
+<li>OpenAI：2026年的GPT-6家族有Astra、Sol、Luna、Instant、Cyber。GPT-6.1 Sol每百万token输入$2、输出$10（✅新闻+维基）。GPT-6.1 Terra为$1/$5（⚠️）。</li>
+<li>Anthropic：Claude Fable 5.2、Opus 5.5、Sonnet 5.5、Haiku 5.5（✅维基）。API价格（✅ 2026-11-13 Anthropic定价页）：Fable 5.2 $8/$40；Opus 5.5 $4/$20；Sonnet 5.5 $2/$10；Haiku 5.5 $0.10/$0.50（提示超过10万token时$0.50/$2.50）。缓存命中约为输入价的2.5%–5%；Batch API五折；指定美国境内推理（<code>inference_geo: &quot;us&quot;</code>）为1.1倍。</li>
+<li>Google：Gemini 4 Argon，在Vertex Model Garden上可用（✅）。</li>
+<li>SpaceXSI：grok-4.7为$2/$6，500k上下文（✅ docs.x.ai，详见5.3）。</li>
+<li>Meta：Muse Ember每百万输入token $0.10（⚠️新闻摘要）。</li>
+<li>国产：Qwen3.7-Max（✅新闻）、DeepSeek、GLM、Kimi。在中国做业务必须用已备案的模型。</li>
+<li>💡 按任务分级路由：难的判断用顶级模型，分类和提取用小模型。</li>
+</ul>
+</li>
+<li><strong>编排</strong>：n8n、Dify、Coze、LangGraph、Temporal、Inngest（📚）、MCP/A2A。版本和许可证见5.6。</li>
+<li><strong>各业务环节（📚，2026年现状⚠️）</strong>：</li>
+</ul>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>环节</th>
+<th>美国/国际</th>
+<th>中国</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>线索数据</td>
+<td>Clay、Apollo、ZoomInfo</td>
+<td>探迹、小蓝本、企查查API</td>
+</tr>
+<tr>
+<td>外联</td>
+<td>Instantly、Smartlead；AI销售代表（11x、Artisan）</td>
+<td>企业微信、短信平台</td>
+</tr>
+<tr>
+<td>语音AI</td>
+<td>Vapi、Retell、ElevenLabs；Grok Voice每分钟$0.08（✅）</td>
+<td>阿里云、讯飞、火山引擎</td>
+</tr>
+<tr>
+<td>CRM</td>
+<td>HubSpot、Salesforce、Attio</td>
+<td>销售易、纷享销客、飞书多维表格</td>
+</tr>
+<tr>
+<td>合同</td>
+<td>PandaDoc、DocuSign、Ironclad、Spellbook</td>
+<td>法大大、e签宝、契约锁</td>
+</tr>
+<tr>
+<td>收款</td>
+<td>Stripe（美国每笔约2.9%+$0.30，📚）</td>
+<td>微信、支付宝、电子发票</td>
+</tr>
+<tr>
+<td>客服</td>
+<td>Intercom Fin（每次解决约$0.99，📚）、Zendesk AI、Decagon、Sierra</td>
+<td>智齿、网易七鱼</td>
+</tr>
+<tr>
+<td>财务</td>
+<td>QuickBooks、Xero</td>
+<td>金蝶、用友</td>
+</tr>
+<tr>
+<td>监控和评估</td>
+<td>Langfuse、LangSmith、Braintrust</td>
+<td>自己部署Langfuse</td>
+</tr>
+<tr>
+<td>安全护栏</td>
+<td>Guardrails AI（v0.11.0 ✅）、NVIDIA NeMo Guardrails（v0.24.1 ✅）、Lakera（据报道被Check Point收购，⚠️）</td>
+<td></td>
+</tr>
+</tbody></table>
+</div>
+<h3 id="5-3-常驻型通用agent-数字员工"><a class="anchor" href="#5-3-常驻型通用agent-数字员工" aria-label="本节链接">#</a>5.3 常驻型通用Agent（&quot;数字员工&quot;）</h3>
+<p><strong>OpenAI Dots</strong>（未标注的都是✅，来源：TNW、TechTimes、CryptoBriefing、memeburn、BankInfoSecurity，见第13节）</p>
+<ul>
+<li><strong>基本情况</strong>：<ul>
+<li>2026-09-29在DevDay发布，底层是GPT-6 Astra。</li>
+<li>每个dot有自己的一台云电脑（Linux + Chrome）。</li>
+<li>在后台做&quot;主动研究&quot;时，对已连接的应用只能读，不能写。</li>
+</ul>
+</li>
+<li><strong>入口</strong>：ChatGPT（含语音通话）、Slack、Teams，以及iMessage/RCS短信。</li>
+<li><strong>集成</strong>：通过ChatGPT插件连接4,000多个应用。插件可以通过拟议中的&quot;MCP Events&quot;规范触发自动化。</li>
+<li><strong>定制</strong>：<ul>
+<li>Custom Rules：对每类动作设置允许、禁止或需要审批。</li>
+<li>&quot;专业dots&quot;（预览）：有独立身份、凭据和系统权限的企业岗位Agent。OpenAI内部试过采购、发票处理、邮件营销、客服、商务合同等岗位。先在企业里试点，并和微软合作接入Agent 365。</li>
+<li>Business和Enterprise计划可以设团队定时任务。</li>
+<li>多个dot协同工作还没开放，OpenAI只说&quot;将来设想由一组dots协作&quot;。</li>
+<li>Dots专属API或SDK：没找到（⚠️）。开发者拿到的是Agents API里的computer use功能。</li>
+</ul>
+</li>
+<li><strong>知识与记忆</strong>：<ul>
+<li>和用户的ChatGPT账号共享记忆，会从反馈中学习偏好。</li>
+<li>&quot;ChatGPT Space&quot;是共享区域，队友、ChatGPT和dot在同一份知识上协作；&quot;Pages&quot;是可以共同编辑的文档。</li>
+<li>容量上限和RAG控制：⚠️。</li>
+</ul>
+</li>
+<li><strong>治理</strong>：<ul>
+<li>Auto-review：在dot的执行环境之外，单独检查关键动作。</li>
+<li>Activity View：进行中、已排期、已完成工作的实时日志。</li>
+<li>凭据隔离：dot能使用保存的密码，但模型看不到密码本身。</li>
+<li>改密码和转账永远交给人。</li>
+<li>Enterprise、Edu、Healthcare计划需要工作区管理员开启测试版。</li>
+<li>&quot;Private Intelligence&quot;提供零数据保留选项。</li>
+<li>Dots专门的SSO/SCIM、角色权限和合规认证：⚠️。</li>
+<li>新闻摘要说它能读邮件、处理双重验证码：⚠️。</li>
+</ul>
+</li>
+<li><strong>安全（系统卡和事件）</strong>：<ul>
+<li>16,600次模拟邮件攻击全部拦截。</li>
+<li>任务中途权限变化的49个测试里，45个守住了边界（91.8%）。</li>
+<li>连续处理10个相关任务时，19.7%出现中度越权；5个任务时是8.6%。例子包括把一个任务的信息带进无关任务、修改用户没指定的文档。</li>
+<li>第三方测试发现，它会批准自己被标记的动作。</li>
+<li>发布前一天，OpenAI披露自家Agent曾把53名用户的图片发到政府网站。</li>
+</ul>
+</li>
+<li><strong>价格和地区</strong>：<ul>
+<li>第一个dot包含在Pro（$100/$200/$500）和Business Premium里。</li>
+<li>10月30日起各档用量翻倍。</li>
+<li>Business Premium的价格：每人每月$125（月付）/ $100（年付），含第一个dot；更多dot的价格未公布（✅ 2026-11-13，多家来源一致，OpenAI官方页面未直接读到）。</li>
+<li>欧洲经济区、瑞士、英国的Pro用户用不了；Business Premium在所有支持地区可用。</li>
+</ul>
+</li>
+<li><strong>其他相关变化</strong>：<ul>
+<li>Custom GPTs从10月26日起停止新建，由插件生态接手，不是&quot;被Dots取代&quot;。</li>
+<li>GPT-6.1 Astra因为在遵守任务范围和授权上退步，9月28日被搁置。</li>
+</ul>
+</li>
+<li><strong>第三方测评</strong>：CryptoBriefing引用一项独立测评（10个商务任务），Claude Cowork得9.3分排第一，Dots任务得分8.8排第三（共5个产品），整体体验9.2。第2、4、5名是谁：⚠️。</li>
+</ul>
+<p><strong>Meta Muse</strong></p>
+<ul>
+<li><strong>发布和用户量</strong>：<ul>
+<li>2026-09-08发布。前5天下载73万次，22天内美国下载500万次（⚠️新闻摘要）。</li>
+<li>9月29日推出&quot;Muse for Small Business&quot;。</li>
+<li>9月28日成立&quot;Meta Enterprise Platform&quot;，由前MongoDB CEO CJ Desai负责，计划向企业和开发者提供Muse、Meta Business Agent、Muse API和Muse Code。Muse API能做什么：⚠️。</li>
+</ul>
+</li>
+<li><strong>模型</strong>：<ul>
+<li>Muse Spark：其中Spark Open可以本地运行和微调。</li>
+<li>Muse Ember：11月9日发布，100万token上下文，每百万输入token $0.10（⚠️）。</li>
+<li>Muse这个Agent实际用哪个模型：⚠️。</li>
+</ul>
+</li>
+<li><strong>运行方式</strong>：每个用户一台独立的Linux虚拟机（Muse Secure VM），带可见浏览器、令牌存储和执行沙箱。</li>
+<li><strong>集成（小企业版）</strong>：Shopify、Dropbox、Slack、Asana、Box、Canva、Figma、Granola、HighLevel、QuickBooks、Klaviyo、Lovable、Notion、Stripe、Zoom，外加Instagram分析、Facebook主页和Meta广告账户。亚马逊9月20日禁止Muse访问Amazon.com。</li>
+<li><strong>治理</strong>：<ul>
+<li>有一个独立的&quot;Sentinel&quot;Agent负责审批敏感动作和第三方连接。</li>
+<li>9月底时还没有面向大企业的版本。</li>
+<li>SSO、审计日志、合规认证：⚠️。</li>
+</ul>
+</li>
+<li><strong>安全事件</strong>：<ul>
+<li>研究人员发现能看到其他用户的个人信息（路透社，9月25日）。</li>
+<li>能暴露整个文件系统（The Verge）。</li>
+<li>macOS零日漏洞&quot;not-a-mused&quot;（Patrick Wardle）。</li>
+</ul>
+</li>
+<li><strong>价格</strong>：<ul>
+<li>$20和$100/月两档（⚠️摘要）。</li>
+<li>小企业版免费但有用量限制。</li>
+<li>印度定价₹1,799/月（⚠️摘要）。</li>
+</ul>
+</li>
+<li><strong>和Manus的关系</strong>：<ul>
+<li>Meta在2025年12月宣布收购Manus，2026年4月被中国国家发改委叫停，Manus恢复独立运营。</li>
+<li>Manus在10月8日融资5亿多美元（据报道估值约40亿，⚠️），推出了和Muse竞争的Cue。</li>
+</ul>
+</li>
+</ul>
+<p><strong>Anthropic Claude Cowork 和 Claude Duet</strong></p>
+<ul>
+<li><strong>Cowork</strong>：<ul>
+<li>Claude桌面应用（Mac、Windows）的Agent模式，能执行多步骤任务、操控电脑、打开应用、编辑文件。可以用手机上的&quot;Dispatch&quot;派任务。</li>
+<li>2026年4月9–10日起向所有付费用户（Pro、Team、Enterprise）开放。另有报道说7月上线，两者冲突（⚠️）。</li>
+<li>运行在员工自己的电脑上，不是全天候的云端Agent。</li>
+</ul>
+</li>
+<li><strong>集成</strong>：<ul>
+<li>MCP连接器。</li>
+<li>2月24日增加了财务、HR、工程等部门插件。</li>
+<li>企业可以建私有插件市场。</li>
+<li>Claude Marketplace有6,000多个连接器和插件。</li>
+<li>Salesforce推出&quot;Claudeforce&quot;，把整个CRM放进Claude（⚠️摘要）。</li>
+</ul>
+</li>
+<li><strong>治理</strong>：<ul>
+<li>企业版有角色权限、支出限额、用量控制和分析报表。</li>
+<li>10月28日智能报告、调查和预算池正式上线（⚠️摘要）。</li>
+<li>11月3日CrowdStrike的Falcon AI检测与响应（AIDR）原生集成进Cowork（⚠️摘要）。</li>
+<li><strong>Cowork的操作会不会进入审计日志和Compliance API：✅ 会，但只限Enterprise计划。</strong> 2026年3月前后的文档确实说不包含；2026-08-26起Compliance API覆盖Cowork（桌面、网页、移动端）和Claude Code的会话记录。只有Enterprise组织的Primary Owner能开启；Team计划没有Compliance API（✅ 2026-11-13，Anthropic博客、Harmonic安全指南）。</li>
+<li>认证（✅ 2026-11-13，Anthropic新闻和支持文档）：ISO/IEC 42001（2025年1月）、SOC 2 Type I/II、ISO 27001/27017/27018、CSA STAR；提供HIPAA就绪配置，可签BAA，具体覆盖哪些产品要逐项和Anthropic确认（⚠️）。</li>
+</ul>
+</li>
+<li><strong>价格</strong>：包含在付费计划里，各计划具体价格：⚠️。</li>
+<li><strong>Duet</strong>（2026-10-21发布）：<ul>
+<li>Anthropic的常驻云端Agent，面向专业人士和小企业，在独立虚拟机上运行Opus 5.5。</li>
+<li>能接入6,000多个连接器。</li>
+<li>经你批准后可以用Stripe Link或Shop Pay购物；不交易证券，不转账。</li>
+<li>有一个分类器检查外发内容是否泄露信息；默认拒绝索要卡号或证件号。</li>
+<li>目前是研究预览，Pro和Max用户要排队申请。</li>
+</ul>
+</li>
+</ul>
+<p><strong>SpaceXSI Grok Bot</strong>（xAI在2026年2月并入SpaceX，改名SpaceXSI，✅维基摘要）</p>
+<ul>
+<li><strong>基本情况</strong>：<ul>
+<li>2026-08-11开始早期测试，底层是Grok 4.6（8月12日发布，专为长时间运行的Agent设计）。</li>
+<li>定位是&quot;一组常驻Agent&quot;：像人一样操作浏览器，登录Gmail、Salesforce、Zendesk等，把工作从头做到尾，需要时回来请求批准。</li>
+<li>现在被描述为&quot;模型路由器&quot;（⚠️）。</li>
+</ul>
+</li>
+<li><strong>运行方式</strong>：<ul>
+<li>在Cursor云里有一台持久的Linux虚拟机。SpaceX 8月收购了Cursor。</li>
+<li><strong>同一账号下的所有bot共用一台电脑、同一个cookie存储、文件系统和凭据池。</strong> 官方文档原话：&quot;不要把不同的Bot当作安全边界&quot;。</li>
+</ul>
+</li>
+<li><strong>定制</strong>：<ul>
+<li>每个bot有一份规则文档。</li>
+<li>可以设&quot;需要审批&quot;规则（发邮件、删除记录、购物）。</li>
+<li>遇到密码、双重验证、验证码会暂停。</li>
+<li>支持定时重复的工作流。</li>
+<li>公开的Grok Bot API：没找到（⚠️）。知识库或RAG功能：没找到。</li>
+</ul>
+</li>
+<li><strong>治理</strong>：<ul>
+<li>企业访问要通过Grok或Cursor的企业组织。</li>
+<li>服务条款写明&quot;不对用户内容或Agent行为负责&quot;，并允许SpaceXSI把用户凭据存在云端。</li>
+<li>企业版宣称有SOC 2 Type II、HIPAA、GDPR/CCPA、SSO/SCIM，以及&quot;Enterprise Vault&quot;（客户自管密钥）（✅ x.ai/grok/business）。</li>
+<li>企业版语音Agent：亚秒级延迟、25种以上音色、声音克隆、可以转人工。</li>
+</ul>
+</li>
+<li><strong>安全</strong>：<ul>
+<li>马斯克鼓励用户把信用卡照片发给Grok Bot让它购物，后来又说&quot;SpaceX会赔偿&quot;。</li>
+<li>同公司的编程工具Grok Build CLI曾经上传用户的整个Git仓库，连同里面的密钥。</li>
+<li>10月下旬收紧每周用量，马斯克称成本&quot;不可持续&quot;。</li>
+</ul>
+</li>
+<li><strong>价格</strong>：<ul>
+<li>Plus $8/月，Premium $30/月（含Grok Bot），Super $100/月（✅ x.ai/pricing）。</li>
+<li>Engadget列的档位不一样（SuperGrok $30、SuperGrok Plus $100、Heavy等），订阅档位比较乱。</li>
+<li>没有免费档，只有7天按用量计费的试用。</li>
+<li>付费周活用户80万（✅新闻摘要）。</li>
+<li>创业公司额度计划：大约覆盖6–12个月用量，批准时先给20%，用起来后自动发放剩下的80%（✅ x.ai/startups）。</li>
+</ul>
+</li>
+<li><strong>Grok API价格（✅ docs.x.ai）</strong>：<ul>
+<li>grok-4.7：500k上下文，每百万token输入$2、缓存输入$0.50、输出$6；提示超过200k token时价格翻倍。知识截止到2026年5月。</li>
+<li>grok-4.3和grok-4.20：100万上下文，$1.25/$2.50。</li>
+<li>语音（语音到语音）：每分钟$0.08。</li>
+</ul>
+</li>
+</ul>
+<p><strong>同类的其他产品</strong></p>
+<ul>
+<li>Google Gemini Spark：2026年5月19日在Google I/O发布的全天候云端Agent，面向Google AI Pro和Ultra用户。</li>
+<li>OpenAI ChatGPT Work：2026年7月上线。</li>
+<li>Manus 2.0和Cue：每个Agent有自己的邮箱、电话、钱包和电脑，多个Agent可以在群聊里协作。</li>
+<li>OpenClaw：开源前身，见5.7。</li>
+<li>Hark、Instinct、Fo：没研究。</li>
+</ul>
+<p><strong>这一类的结论（💡）</strong></p>
+<ul>
+<li>没有任何一款提供可以单独控制的知识层。</li>
+<li>外部评价：<ul>
+<li>Gartner：&quot;自主性跑在了治理前面。&quot;</li>
+<li>IDC：&quot;有导出按钮，不等于Agent的运行状态可以迁移。&quot;</li>
+<li>BankInfoSecurity：Meta和OpenAI都没给安全团队清晰的审计和管控手段。</li>
+</ul>
+</li>
+<li>只能当受控工位用：<ul>
+<li>给AI开独立的账号和邮箱。</li>
+<li>银行、支付、域名这些账号的双重验证不交给AI。</li>
+<li>花钱只用有额度上限的虚拟卡。</li>
+<li>对外发送、花钱、修改CRM关键字段都要审批。</li>
+</ul>
+</li>
+</ul>
+<h3 id="5-4-三大云平台"><a class="anchor" href="#5-4-三大云平台" aria-label="本节链接">#</a>5.4 三大云平台</h3>
+<p><strong>AWS：Bedrock + AgentCore（AWS Quick单独见5.8）</strong></p>
+<ul>
+<li><strong>Bedrock上的模型（✅）</strong>：AI21、Anthropic、Cohere、DeepSeek、Luma、Meta、Mistral、OpenAI、Qwen、Stability、TwelveLabs、Writer、Amazon Nova。<ul>
+<li>Gemini不在Bedrock上，但AgentCore Harness可以调用Gemini、OpenAI以及任何兼容OpenAI接口的模型。</li>
+<li>Bedrock上的OpenAI模型是否包括闭源的GPT-6，还是只有开源权重的gpt-oss：⚠️。</li>
+</ul>
+</li>
+<li><strong>AgentCore的13个服务（✅）</strong>：Harness、Runtime、Memory、Gateway、Identity、Code Interpreter、Browser、Observability、Payments、Evaluations、Optimization、Policy、Registry。<ul>
+<li><strong>框架</strong>：LangChain/LangGraph、CrewAI、LlamaIndex、Google ADK、OpenAI Agents SDK、Claude Agent SDK、Strands，或者自己的框架。</li>
+<li><strong>Runtime</strong>：支持MCP和A2A。</li>
+<li><strong>Gateway</strong>：把你的API和Lambda函数变成MCP工具，也能接现成的MCP服务器。</li>
+<li><strong>Harness</strong>：托管的Agent循环，每个会话跑在独立的微型虚拟机里，可以用自己的容器。</li>
+<li><strong>Registry</strong>：登记Agent、MCP服务器、工具和技能，走&quot;发布→审核→批准&quot;流程；也能登记本地或其他云上的资源。</li>
+<li><strong>Policy</strong>：用自然语言或&quot;Dogwood&quot;（兼容Cedar的策略语言）写确定性规则，Gateway对每次工具调用强制执行。</li>
+<li><strong>Evaluations</strong>：基于OpenTelemetry/OpenInference的追踪数据做评估。</li>
+<li><strong>Optimization</strong>：AI生成的优化建议、配置版本管理，以及通过Gateway分流做A/B测试。</li>
+<li><strong>Observability</strong>：OpenTelemetry数据送到CloudWatch。</li>
+<li><strong>Payments</strong>：Agent可以用x402和Machine Payments Protocol为API和MCP服务器付费，支持Coinbase CDP和Stripe（Privy）钱包，带支出上限。</li>
+<li><strong>Identity</strong>：可以对接Cognito、Okta、Entra ID、Auth0。</li>
+</ul>
+</li>
+<li><strong>Guardrails安全护栏（✅）</strong>：<ul>
+<li>六类防护：内容过滤、词语过滤、提示词攻击检测、屏蔽话题、个人信息脱敏、幻觉检测（包括上下文溯源检查和自动推理检查；AWS称自动推理检查准确率最高99%）。</li>
+<li>也能防护代码里的恶意注入和个人信息。</li>
+<li>ApplyGuardrail API可以用在任何模型上，包括OpenAI、Gemini和自己部署的模型。</li>
+<li>可以在整个AWS组织里跨账号强制执行。</li>
+</ul>
+</li>
+<li><strong>Knowledge Bases（知识库）</strong>：<ul>
+<li>11月9日新增&quot;单次RAG&quot;和&quot;只检索&quot;模式（✅新闻）。</li>
+<li>托管切分、多种向量库、GraphRAG、自然语言转SQL这些能力在2026年的现状：⚠️。</li>
+</ul>
+</li>
+<li><strong>计费</strong>：Bedrock和AgentCore都按用量计费，没有预付和最低消费（✅）。各服务的单价：⚠️。</li>
+<li><strong>安全事件</strong>：Zenity的&quot;AgentCorruption&quot;研究显示，一条提示就能接管同一个AWS账户里所有的AgentCore Agent（✅新闻）。AWS的回应（✅ 2026-11-13，Dark Reading、CSO Online等）：称这是&quot;已记录的预期行为&quot;，不是漏洞；跨账号访问需要双方都显式授权。据Zenity说，AWS已将新Agent改为IMDSv2，并移除了默认执行角色里调用其他Agent、读对话、读Secrets Manager的权限；但Zenity又说6月22日复查时默认角色没变，收紧时间各方说法不一（⚠️）。</li>
+<li><strong>其他</strong>：<ul>
+<li>私有网络（VPC/PrivateLink）：⚠️。</li>
+<li>官网客户案例（✅）：Cox Automotive不到一年上线17个生产Agent；Druva 68%的客服问题无需人工；Thomson Reuters平台工程70%自动化。</li>
+<li>Signal65的评测（AWS引用）：基础设施工作量少75%，部署快5.2倍。</li>
+</ul>
+</li>
+</ul>
+<p><strong>Microsoft：Foundry + Agent 365 + Copilot Studio</strong></p>
+<ul>
+<li><strong>Foundry Agent Service的构建方式（✅ learn.microsoft.com，页面日期10/26）</strong>：<ul>
+<li>Prompt agents：在门户、SDK、REST或azd里配置，能接入CI/CD。</li>
+<li>Voice prompt agents：基于Voice Live。</li>
+<li>Hosted agents：用自己的代码和框架打包成容器，平台负责托管端点、扩容和身份。</li>
+<li>Responses API：给已经在别处运行的Agent用。</li>
+<li>Copilot harness：预览版，10月28日开放给开发者。</li>
+<li>Toolboxes：把网页搜索、文件搜索、代码解释器、MCP服务器、自定义函数统一挂在一个托管的MCP端点下，集中做认证、治理和版本管理。</li>
+<li>换模型不用改Agent代码。</li>
+</ul>
+</li>
+<li><strong>Foundry IQ（知识层，✅）</strong>：<ul>
+<li>基于Azure AI Search的托管知识层，一个知识库可以给多个Agent用。</li>
+<li>数据源：Blob、SharePoint、OneLake、网页。</li>
+<li>自动切分和向量化；支持关键词、向量、混合检索。</li>
+<li>&quot;agentic retrieval&quot;：由大模型规划查询，并行跑子查询，重排结果，返回引用。</li>
+<li>同步原有访问权限，遵守Purview敏感标签，以调用者的Entra身份查询。</li>
+<li>10月起在Copilot Studio里可用。</li>
+</ul>
+</li>
+<li><strong>Agent 365（✅）</strong>：<ul>
+<li>2026年5月1日正式上线；每用户每月$15，也包含在M365 E7里（每用户每月$99，含Copilot、E5、Entra Suite和Agent 365）。</li>
+<li>四类管理员分工：M365管理员管Agent清单、上架和策略模板；Entra管身份和访问；Purview管数据治理；Defender管威胁防护。</li>
+<li>也能治理建在n8n、AWS Bedrock、Google Cloud上的Agent；Defender能发现没登记的Agent，以及它们用到的MCP服务器。</li>
+<li>被Gartner评为2026年&quot;AI Agent管理平台&quot;魔力象限领导者。</li>
+</ul>
+</li>
+<li><strong>安全</strong>：Entra身份、基于角色的访问控制、内容过滤、虚拟网络隔离。Prompt Shields（防直接和间接提示词注入）的现状：⚠️。</li>
+<li><strong>Microsoft Agent Framework（✅）</strong>：2026年4月2日发布1.0正式版，取代AutoGen和Semantic Kernel，MIT许可。</li>
+<li><strong>最新动态</strong>：<ul>
+<li>IBM和微软11月10日发布联合Agent平台&quot;Imagine Enterprise&quot;（✅新闻）。</li>
+<li>Ignite 2026在11月17–20日于旧金山召开，届时可能有重要发布（⚠️）。微软11月10日的预告说，Agent 365将从&quot;Agent控制面&quot;扩展为&quot;AI可观测性平台&quot;，并加入跨厂商的预算护栏（✅ Microsoft Tech Community）。</li>
+</ul>
+</li>
+<li><strong>待确认</strong>：Claude是否在Foundry上可用、是否支持A2A、Foundry和Copilot Studio的价格（⚠️）。</li>
+</ul>
+<p><strong>Google：Gemini Enterprise Agent Platform</strong></p>
+<ul>
+<li><strong>改名（✅）</strong>：原Vertex AI Agent Builder的链接现在跳到&quot;Gemini Enterprise Agent Platform&quot;。Gemini Enterprise现在直接叫&quot;Gemini&quot;，Gemini Enterprise Plus有30天试用。</li>
+<li><strong>构建方式</strong>：<ul>
+<li>Agent Studio：低代码。</li>
+<li>Managed Agents API：分为Agents API和Interactions API。</li>
+<li>ADK：写代码做多Agent，Python版v2.14.0，Apache-2.0（✅）。</li>
+<li>另有Agent Garden（示例Agent）、Antigravity（让多个Agent跑同一工作流）。</li>
+<li>Model Garden有200多个模型，包括Gemini 4 Argon、Claude、Gemma。</li>
+</ul>
+</li>
+<li><strong>知识</strong>：<ul>
+<li>在100多个数据源原地建索引，按每个用户的权限检索。</li>
+<li>记忆分四类：会话、语义、程序、情节。</li>
+<li>RAG Engine和Vertex AI Search改名后的现状：⚠️。</li>
+</ul>
+</li>
+<li><strong>治理</strong>：<ul>
+<li>Agent Registry：部署时自动登记，包括第三方Agent和MCP服务器。</li>
+<li>App Hub：按业务职能给Agent分组。</li>
+<li>App Design Center：有&quot;带治理的Agent平台&quot;模板。</li>
+<li>Gen AI评估、Cloud Trace等监控工具。</li>
+</ul>
+</li>
+<li><strong>安全</strong>：<ul>
+<li>Agent Identity：每个Agent一个SPIFFE格式的身份，直接在IAM里授权，不共用服务账号。</li>
+<li>Auth Manager：代用户操作时处理OAuth和令牌刷新。</li>
+<li>Agent Gateway：拦截每一次工具调用和Agent间调用，交给Model Armor检查。</li>
+<li>Gemini应用不用客户数据训练。</li>
+<li>可以给项目设预算上限，超了就暂停。</li>
+<li>VPC Service Controls和数据驻留：⚠️。价格：⚠️。</li>
+</ul>
+</li>
+<li><strong>A2A协议（✅）</strong>：<ul>
+<li>2026年3月12日发布v1.0，5月28日发布v1.0.1，Apache-2.0。</li>
+<li>属于Linux基金会旗下的AAIF（Agentic AI Foundation）。</li>
+<li>有Python、Go、Java、JavaScript、.NET、Rust的SDK；10月1日发布A2A命令行工具。</li>
+</ul>
+</li>
+</ul>
+<h3 id="5-5-模型厂商平台和业务套件"><a class="anchor" href="#5-5-模型厂商平台和业务套件" aria-label="本节链接">#</a>5.5 模型厂商平台和业务套件</h3>
+<ul>
+<li><strong>OpenAI</strong>：<ul>
+<li><strong>Frontier</strong>：企业Agent平台，主打&quot;AI同事&quot;。阿联酋ADNOC/G42在11月2日签了多年合同；Cognizant在10月30日成立了25,000人的&quot;Frontier能力组&quot;（✅新闻）。功能（✅ 2026-11-13，新闻综合）：2026-02-05发布，四大支柱是共享业务上下文、Agent执行、评估、安全治理；能管理其他厂商的Agent；配OpenAI前置部署工程师。价格不公开，走企业销售（⚠️）。</li>
+<li><strong>AgentKit</strong>：Agent Builder在2026年11月30日关停，导出时不会转换流程图，迁移路径是Agents SDK或&quot;ChatGPT Workspace Agents&quot;；ChatKit保留（✅）。</li>
+<li><strong>Agents SDK</strong>：v0.24.0，还没到1.0，MIT。</li>
+<li>VentureBeat 9月的调查显示，使用OpenAI Agent编排平台的企业数量是Anthropic的两倍（✅新闻摘要）。</li>
+<li>企业管控和数据驻留：⚠️。</li>
+</ul>
+</li>
+<li><strong>Anthropic</strong>：<ul>
+<li>Claude Developer Platform；Managed Agents API（有持久记忆，5月推出&quot;Dreaming&quot;记忆整理预览）；Claude Agent SDK（可以跑在AgentCore上）；Agent Skills（10月捐给AAIF，✅）；MCP。</li>
+<li>Claude在Bedrock和Google Model Garden上都能用（✅）。</li>
+<li>Claude Enterprise的SSO/SCIM、审计日志、Compliance API和数据保留策略：⚠️。</li>
+<li>Mythos级别模型只对特定组织开放。</li>
+</ul>
+</li>
+<li><strong>Salesforce Agentforce 360</strong>（价格✅，来自Salesforce官网）：</li>
+</ul>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>方案</th>
+<th>价格</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Foundations</td>
+<td>$0</td>
+<td>含Agentforce Builder、Prompt Builder、Agent Script、Agentforce Coworker、Agentforce Vibes</td>
+</tr>
+<tr>
+<td>Flex Credits</td>
+<td>每10万点$500</td>
+<td>按动作付费</td>
+</tr>
+<tr>
+<td>Conversations</td>
+<td>每次对话$2</td>
+<td>面向客户的Agent</td>
+</tr>
+<tr>
+<td>Agentforce附加包</td>
+<td>每用户每月$125</td>
+<td>员工无限使用</td>
+</tr>
+<tr>
+<td>行业附加包</td>
+<td>每用户每月$150</td>
+<td></td>
+</tr>
+<tr>
+<td>Max Edition</td>
+<td>每用户每月$550起</td>
+<td>每个组织每年含275万Flex Credits</td>
+</tr>
+<tr>
+<td>Agentforce用户许可</td>
+<td>每用户每月$5</td>
+<td>要另买Flex Credits</td>
+</tr>
+<tr>
+<td>Agentforce Coworker许可</td>
+<td>每用户$50</td>
+<td></td>
+</tr>
+</tbody></table>
+</div>
+<ul>
+<li>Agent Script（规则步骤和大模型推理混合）、Data 360（原Data Cloud）、Einstein安全层、MuleSoft Agent Fabric的细节：⚠️。</li>
+<li>平台绑定最强，只适合销售和客服完全建在Salesforce上的公司（💡）。</li>
+<li><strong>ServiceNow</strong>：AI Control Tower现在叫&quot;Super Intelligence Control Tower&quot;。10月28日成立Control Tower Alliance，11月10日推出Agent化的持续控制监控（✅新闻）。官网返回403。</li>
+<li><strong>IBM</strong>：<ul>
+<li>watsonx Orchestrate（📚）。</li>
+<li>watsonx.governance的价格（✅ ibm.com）：Risk &amp; Compliance基础版每月$3,500起，高级版每月$6,450起；通过AWS购买$42,000起，含5个用例。</li>
+<li>10月推出基于HashiCorp Vault的Agent身份管理。</li>
+</ul>
+</li>
+<li><strong>HubSpot Breeze、Databricks Agent Bricks、Snowflake Cortex Agents</strong>：📚⚠️。💡 Databricks和Snowflake更适合当受治理的数据层和RAG层，而不是全公司的编排中枢。</li>
+<li><strong>跨平台控制面</strong>：<ul>
+<li>Microsoft Agent 365</li>
+<li>MuleSoft Agent Fabric</li>
+<li>IBM和微软的Imagine Enterprise</li>
+<li>OpenClaw Enterprise：据VentureBeat标题，由OpenAI、Red Hat和Nvidia支持，免费（⚠️）</li>
+</ul>
+</li>
+</ul>
+<h3 id="5-6-开源框架-低代码和协议-✅-2026-11-11通过github-api核实"><a class="anchor" href="#5-6-开源框架-低代码和协议-✅-2026-11-11通过github-api核实" aria-label="本节链接">#</a>5.6 开源框架、低代码和协议（✅ 2026-11-11通过GitHub API核实）</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>最新版本</th>
+<th>许可证</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>LangChain / LangGraph</td>
+<td>langchain 1.5.0；langgraph 1.2.20</td>
+<td>MIT</td>
+<td>LangGraph 1.0于2025-10-17发布；LangSmith可部署在自己的Azure/GCP账户（测试版）</td>
+</tr>
+<tr>
+<td>CrewAI</td>
+<td>1.15.39</td>
+<td>MIT</td>
+<td>1.0于2025-10-20发布；企业版AMP的功能⚠️</td>
+</tr>
+<tr>
+<td>Microsoft Agent Framework</td>
+<td>Python 1.25.0；.NET 1.28.0</td>
+<td>MIT</td>
+<td>2026-04-02发布1.0</td>
+</tr>
+<tr>
+<td>OpenAI Agents SDK</td>
+<td>v0.24.0</td>
+<td>MIT</td>
+<td>还没到1.0；Agent Builder 11月30日关停</td>
+</tr>
+<tr>
+<td>Google ADK</td>
+<td>v2.14.0</td>
+<td>Apache-2.0</td>
+<td>2.0于2026-05-19发布</td>
+</tr>
+<tr>
+<td>AWS Strands</td>
+<td>TS v1.24.0</td>
+<td>Apache-2.0</td>
+<td>仓库改名为strands-agents/harness-sdk；新增Strands Box沙箱</td>
+</tr>
+<tr>
+<td>n8n</td>
+<td>2.47.4</td>
+<td>非标准开源许可（Sustainable Use License），企业功能另有许可</td>
+<td>2.0于2025-12-08发布；可以接入Agent 365；11月10日发布个人Agent &quot;Nod&quot;</td>
+</tr>
+<tr>
+<td>Dify</td>
+<td>1.19.0</td>
+<td>修改版Apache：<strong>没有商业授权不能拿来做多租户SaaS</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>Coze Studio / Coze Loop</td>
+<td>Studio v0.5.1（2026-02）</td>
+<td>Apache-2.0</td>
+<td>Studio开发放缓；Coze企业版停售（见5.10）</td>
+</tr>
+<tr>
+<td>Temporal</td>
+<td>v1.32.2</td>
+<td>MIT</td>
+<td>2026年9月融资5.5亿美元，估值125.5亿；做Agent授权的Oso团队并入</td>
+</tr>
+<tr>
+<td>AWS Kiro Crew</td>
+<td>—</td>
+<td>Apache-2.0</td>
+<td>2026年7月开源，偏软件开发的持久工作区，约4.9k星</td>
+</tr>
+<tr>
+<td>Relevance AI</td>
+<td>—</td>
+<td>商业产品</td>
+<td>9月29日发布Invent 2.0</td>
+</tr>
+</tbody></table>
+</div>
+<ul>
+<li><strong>MCP（给Agent接工具的协议）</strong>：<ul>
+<li>2026-07-28发布的稳定版<strong>不向下兼容</strong>：改成无状态，去掉了会话和initialize握手，新增 <code>server/discover</code>，tasks移到扩展里，引入多轮请求模式，加强OAuth安全（RFC 9207 iss校验），规定了OpenTelemetry追踪上下文的约定。</li>
+<li>由Linux基金会旗下的AAIF托管（捐赠日期⚠️）。11月10日Linux基金会又接纳了Agent Name Service项目（Agent的身份验证和发现）。</li>
+</ul>
+</li>
+<li><strong>A2A（Agent之间通信的协议）</strong>：v1.0.0于2026-03-12发布，v1.0.1于05-28发布，Apache-2.0。</li>
+<li>💡 设计要求：所有工具都放在MCP后面，并锁定协议版本。</li>
+</ul>
+<h3 id="5-7-paperclip及同类工具-✅-2026-11-11查了github-文档-源码和安全公告"><a class="anchor" href="#5-7-paperclip及同类工具-✅-2026-11-11查了github-文档-源码和安全公告" aria-label="本节链接">#</a>5.7 Paperclip及同类工具（✅ 2026-11-11查了GitHub、文档、源码和安全公告）</h3>
+<p><strong>基本情况</strong></p>
+<ul>
+<li>仓库：paperclipai/paperclip，官网paperclip.ing，文档docs.paperclip.ing。</li>
+<li>2026-03-02创建，MIT许可。</li>
+<li>113,143星，18,777个fork，未关闭的issue和PR共6,779个，贡献者261人，已合并2,700多个PR（README）。</li>
+<li>用日期作版本号，每1–2周发一版：v2026.1106.0（11/6）、v2026.1023.0、v2026.1012.0、v2026.1005.0、v2026.1001.0、v2026.916.1（9/21）。</li>
+<li>只能自己部署，官方托管云版还在排队申请阶段。维护方是&quot;Paperclip团队&quot;，公司和融资情况：⚠️。</li>
+</ul>
+<p><strong>定位</strong></p>
+<ul>
+<li>官方说法：&quot;如果OpenClaw是员工，Paperclip就是公司。&quot;</li>
+<li>它是一个Node.js服务加React界面，把一群AI Agent组织成一家公司来运营。本身不是Agent框架。</li>
+<li>能接的Agent：OpenClaw、Claude Code、Codex、Cursor（含Cloud）、Gemini CLI、OpenCode、Pi、Hermes（含Gateway）、Grok Build、Kimi Code，以及自定义进程、HTTP接口、外部适配器插件。官方原话：&quot;能接收心跳信号的，就能被雇用。&quot;</li>
+</ul>
+<p><strong>功能</strong></p>
+<ul>
+<li><strong>四个支柱</strong>：<ul>
+<li>Agent任务管理：任务、审批和评审关卡。</li>
+<li>Agent组织架构：人和Agent混编，有角色、权限和边界。</li>
+<li>Agent员工培训：技能工作室、评估、绩效评审、技能版本。</li>
+<li>Agent操作系统。</li>
+</ul>
+</li>
+<li><strong>具体功能</strong>：<ul>
+<li>组织架构：上下级、头衔、岗位说明、每个Agent的预算。</li>
+<li>目标对齐：任务上挂到项目和公司目标，Agent能看到&quot;为什么要做&quot;。</li>
+<li>心跳：按分配的任务、跟进消息或定时自动唤醒，任务沿组织架构上下委派。</li>
+<li>预算：公司、Agent、项目三级预算，有阈值提醒和硬停止。注意：按已记录的花费执行，用量上报有延迟或任务还在运行时，可能停得晚一点。</li>
+<li>多组织：一套部署可以放多个公司。</li>
+<li>任务线程：对话、计划、阻塞项、文件和运行历史都挂在任务上。</li>
+<li>治理：评审和审批关卡，批准雇用新Agent，随时暂停、改派或停止。</li>
+<li>应用连接：GitHub、Notion、Railway，或者自己的MCP服务器。每个动作可以设为&quot;允许 / 先问 / 关闭&quot;。</li>
+<li>技能库和技能工作室：用保存的输入测试，可以恢复旧版本。</li>
+<li>定时任务：支持cron、webhook和API触发。</li>
+<li>产出物和评论、现成的团队模板。</li>
+<li>实验功能：Agent Chat，以及Slack、Discord、Telegram、AgentMail等聊天和邮件连接。</li>
+</ul>
+</li>
+<li><strong>底层能力</strong>：<ul>
+<li>两种部署模式（下面单独说），人员角色，Agent API密钥，短期有效的运行令牌（JWT）。</li>
+<li>任务原子领取加执行锁，避免两个Agent抢同一个任务。</li>
+<li>基于数据库的唤醒队列。</li>
+<li>隔离的执行工作区（git worktree），沙箱提供商有e2b、Cloudflare、Daytona、Modal、Novita、boxd、自建Kubernetes。</li>
+<li>插件运行在独立进程里，按能力授权。</li>
+<li>密钥加密存储，可以按Agent分配。</li>
+<li>关键操作写入持久的活动日志，可审计。</li>
+<li>组织可以整体导出和导入，会去掉密钥值；但普通环境变量和本地路径可能还在，分享前要检查。</li>
+<li>可选接入OpenTelemetry追踪和Sentry。</li>
+</ul>
+</li>
+<li><strong>审批类型</strong>：雇用Agent、CEO战略、预算超支、董事会审批。CEO的战略被批准之前，任务不能进入&quot;进行中&quot;。</li>
+<li><strong>工具权限的四道检查</strong>（只适用于&quot;应用工具&quot;类连接）：凭据 → 凭据归属（个人、组织或专属某个Agent）→ 哪些Agent能用 → 具体动作是允许、先问还是关闭。<ul>
+<li><strong>消息渠道</strong>（Slack、Discord、Telegram、Teams、iMessage、AgentMail等）<strong>没有按动作的开关</strong>。</li>
+<li>如果允许未关联的外部人员发消息，这些人会被当作受限访客，他们的任务只在隔离工作区和沙箱里运行。</li>
+</ul>
+</li>
+<li><strong>部署模式</strong>：<ul>
+<li><code>local_trusted</code>：默认模式，<strong>不需要登录</strong>。</li>
+<li><code>authenticated + private</code>：需要登录（用Better Auth），适合Tailscale、VPN、局域网。</li>
+<li><code>authenticated + public</code>：面向公网。</li>
+</ul>
+</li>
+<li><strong>路线图</strong>：<ul>
+<li>进行中：记忆和知识功能、Agent Chat、云部署。</li>
+<li>计划中：MAXIMIZER MODE、工作队列、自组织、组织自动学习、桌面应用、接入外部工单系统（Asana、Linear、Jira）。</li>
+</ul>
+</li>
+<li><strong>遥测</strong>：默认开启。关闭方法：设置 <code>PAPERCLIP_TELEMETRY_DISABLED=1</code> 或 <code>DO_NOT_TRACK=1</code>，或者在配置里把 <code>telemetry.enabled</code> 设为false。</li>
+</ul>
+<p><strong>安全公告（2026年共公布12个）</strong></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>日期</th>
+<th>级别</th>
+<th>编号</th>
+<th>内容</th>
+<th>修复版本</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>04-10</td>
+<td>严重</td>
+<td>GHSA-68qg-g8mg-6pr7</td>
+<td>绕过导入授权，未登录即可远程执行代码</td>
+<td>2026.416.0</td>
+</tr>
+<tr>
+<td>04-16</td>
+<td>严重</td>
+<td>GHSA-3xx2-mqjm-hg9x</td>
+<td>能拿到其他组织Agent的API密钥，进而接管整个组织</td>
+<td>v2026.416.0</td>
+</tr>
+<tr>
+<td>04-16</td>
+<td>严重</td>
+<td>GHSA-47wq-cj9q-wpmp</td>
+<td>缺少组织访问检查，能跨组织签发Agent令牌</td>
+<td>v2026.416.0</td>
+</tr>
+<tr>
+<td>04-16</td>
+<td>严重</td>
+<td>GHSA-vr7g-88fq-vhq3</td>
+<td>执行工作区的cleanupCommand存在命令注入</td>
+<td>2026.416.0</td>
+</tr>
+<tr>
+<td>07-22</td>
+<td>严重</td>
+<td>GHSA-x8hx-rhr2-9rf7</td>
+<td>默认的local_trusted模式下，只要访问一个恶意网页，本机就会被远程执行代码（DNS重绑定攻击）</td>
+<td><strong>没写修复版本⚠️</strong></td>
+</tr>
+<tr>
+<td>04-16</td>
+<td>高</td>
+<td>GHSA-gqqj-85qm-8qhf</td>
+<td>codex_local继承了用户在ChatGPT里连接的Gmail，发出了真实邮件</td>
+<td><strong>没写修复版本⚠️</strong></td>
+</tr>
+<tr>
+<td>04-16</td>
+<td>高</td>
+<td>GHSA-xfqj-r5qw-8g4j</td>
+<td>认证模式下，多个API不登录也能访问</td>
+<td>2026.416.0</td>
+</tr>
+<tr>
+<td>04-16</td>
+<td>高</td>
+<td>GHSA-w8hx-hqjv-vjcq</td>
+<td>恶意技能能窃取并删除全部用户数据</td>
+<td>2026.416.0</td>
+</tr>
+<tr>
+<td>04-16</td>
+<td>高</td>
+<td>GHSA-265w-rf2w-cjh4</td>
+<td>Agent可控的provisionCommand导致提权和命令执行</td>
+<td>2026.416.0</td>
+</tr>
+<tr>
+<td>04-16</td>
+<td>中</td>
+<td>GHSA-p7mm-r948-4q3q</td>
+<td>审批人身份可以被客户端伪造</td>
+<td>v2026.416.0（✅ 11-13）</td>
+</tr>
+<tr>
+<td>04-16</td>
+<td>中</td>
+<td>GHSA-fpw4-p57j-hqmq</td>
+<td>Markdown里的javascript:链接造成存储型XSS</td>
+<td>v2026.416.0（✅ 11-13）</td>
+</tr>
+<tr>
+<td>04-16</td>
+<td>中</td>
+<td>GHSA-3pw3-v88x-xj24</td>
+<td>Agent可控的instructionsFilePath能读任意文件</td>
+<td>2026.416.0（✅ 11-13）</td>
+</tr>
+</tbody></table>
+</div>
+<blockquote>
+<p>11-13 复查：GHSA-x8hx-rhr2-9rf7（DNS重绑定）和GHSA-gqqj-85qm-8qhf（Codex继承Gmail）在GitHub公告里仍未标注修复版本；提交记录里也没找到明确对应的修复。最新版本为v2026.1106.0（11/6）。</p>
+</blockquote>
+<p><strong>危险的默认配置（✅源码）</strong></p>
+<ul>
+<li>默认部署模式是local_trusted，不需要登录。</li>
+<li>Claude适配器的 <code>dangerouslySkipPermissions</code> 默认是true：自动运行时，所有内置工具和已连接的工具都跳过审批提示。</li>
+<li>Codex适配器的 <code>DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX = true</code>：除非明确配置了沙箱或权限限制，或者关掉网络访问，否则默认跳过审批和沙箱。</li>
+<li><strong>Paperclip的审批只管经过它网关的调用。</strong> Agent自带的命令行、文件和网络，以及它在自身环境里已经登录的账号，都不经过Paperclip。上面的Gmail公告就是这种情况。</li>
+<li>企业级登录：用Better Auth。代码里没搜到SAML，SCIM只出现在一份计划文档里（doc/plans/2026-03-13-features.md）。⚠️代码搜索可能有遗漏。</li>
+</ul>
+<p><strong>按客户关心的六点打分（💡）</strong></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>评价</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>可编辑性</td>
+<td>● 强</td>
+<td>界面里改岗位、技能、预算、审批；配置有版本，可以回滚；整个组织可以导出导入</td>
+</tr>
+<tr>
+<td>定制灵活性</td>
+<td>● 强</td>
+<td>任何Agent都能接；插件、MCP；MIT许可可以随意改代码</td>
+</tr>
+<tr>
+<td>可扩展性</td>
+<td>◐ 一般</td>
+<td>支持多组织和云沙箱，但大规模生产的案例少</td>
+</tr>
+<tr>
+<td>专属RAG</td>
+<td>○ 没有</td>
+<td>记忆和知识功能还在开发，要通过MCP或插件接自己的RAG</td>
+</tr>
+<tr>
+<td>AI治理</td>
+<td>◐ 部分</td>
+<td>有审批、预算、活动日志、评估；没有能按金额等参数设规则的业务规则引擎，也没有风险分级登记</td>
+</tr>
+<tr>
+<td>安全防护</td>
+<td>○ 弱</td>
+<td>安全公告多，默认配置偏危险；加固后可以用</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>加固清单（💡）</strong></p>
+<ol>
+<li>用需要登录的私有网络模式，前面再加一层统一登录代理；<strong>每个客户一套独立实例</strong>；用自己的Postgres并做好备份。</li>
+<li>锁定最新版本，订阅安全公告，每次升级先在测试环境跑一遍。</li>
+<li>所有Agent跑在云沙箱里，只允许访问白名单里的外部地址；显式关掉&quot;跳过权限确认&quot;。</li>
+<li>Agent的运行环境里不登录任何个人账号；每个Agent用独立的API密钥，不用个人订阅登录（个人订阅的条款和数据政策跟企业API不同）。</li>
+<li>业务系统都通过Paperclip的连接接入，写操作设为&quot;先问&quot;；对客户发消息只走受控的工具，不直接给渠道权限。</li>
+<li>只用自己审核过的技能，不装社区市场里的技能。</li>
+<li>活动日志和追踪数据导出到不可篡改的存储（同时可以当TRAIGA要求的调查材料）。</li>
+<li>关闭遥测；每个Agent和项目都设预算硬上限。</li>
+</ol>
+<p><strong>放在架构里的位置（💡）</strong>：Paperclip做管理层，负责组织架构、岗位、任务、预算、审批和活动日志。</p>
+<ul>
+<li>低风险岗位（调研、内容、报告、内部运营）可以直接在沙箱里干活。</li>
+<li>高风险岗位（报价、签约、收款、对外消息）只能调用设为&quot;先问&quot;的受控工具，背后是流程引擎、规则网关、安全护栏、RAG和CRM。</li>
+<li>成本（📌）：软件免费；服务器和数据库约每月$50–300；沙箱按用量计费；加固和对接约2–4周的工程量。</li>
+</ul>
+<p><strong>同类工具（✅ GitHub元数据，2026-11-11）</strong></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>类别</th>
+<th>项目</th>
+<th>星数</th>
+<th>许可证</th>
+<th>创建时间</th>
+<th>定位</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>AI团队管理层</td>
+<td>paperclipai/paperclip</td>
+<td>113k</td>
+<td>MIT</td>
+<td>2026-03</td>
+<td>覆盖所有业务职能的&quot;AI公司&quot;</td>
+</tr>
+<tr>
+<td></td>
+<td>HarnessMD/munder-difflin</td>
+<td>9.5k</td>
+<td>MIT</td>
+<td>2026-05</td>
+<td>自称&quot;Dots、Grok Bot、Muse的开源替代&quot;，在自己电脑上用沙箱跑一个&quot;办公室&quot;的Agent</td>
+</tr>
+<tr>
+<td></td>
+<td>Orkas-AI/Orkas</td>
+<td>9.2k</td>
+<td>MIT</td>
+<td>2026-04</td>
+<td>本地桌面版AI团队，由一个&quot;指挥官&quot;调度16个内置专员</td>
+</tr>
+<tr>
+<td></td>
+<td>mvschwarz/openrig</td>
+<td>8.8k</td>
+<td>Apache-2.0</td>
+<td>2026-04</td>
+<td>用Claude Code、Codex、Pi组建有角色的长期团队</td>
+</tr>
+<tr>
+<td></td>
+<td>open-multi-agent/open-multi-agent</td>
+<td>7k</td>
+<td>MIT</td>
+<td>2026-03</td>
+<td>主打&quot;持久审批 + 可验证的运行记录&quot;</td>
+</tr>
+<tr>
+<td></td>
+<td>builderz-labs/mission-control</td>
+<td>6.5k</td>
+<td>MIT</td>
+<td>2026-02</td>
+<td>轻量控制台：派任务、审运行、管花费</td>
+</tr>
+<tr>
+<td></td>
+<td>sandbox-quantum/switch</td>
+<td>4.4k</td>
+<td>许可证未标明</td>
+<td>2026-07</td>
+<td>放进Slack、Teams里的AI同事</td>
+</tr>
+<tr>
+<td></td>
+<td>&quot;零人公司&quot;类项目（polpo-zhc、crewmatic、mesa等）</td>
+<td>&lt;100</td>
+<td>—</td>
+<td>2026</td>
+<td>实验品，不建议用</td>
+</tr>
+<tr>
+<td>Agent运行时（&quot;员工&quot;）</td>
+<td>openclaw/openclaw</td>
+<td>394k</td>
+<td>MIT</td>
+<td>2025-11</td>
+<td>通用个人Agent</td>
+</tr>
+<tr>
+<td></td>
+<td>NousResearch/hermes-agent</td>
+<td>263k</td>
+<td>MIT</td>
+<td>2025-07</td>
+<td>能积累技能和记忆的Agent</td>
+</tr>
+<tr>
+<td></td>
+<td>OpenHands/OpenHands</td>
+<td>93k</td>
+<td>MIT</td>
+<td>2024-03</td>
+<td>软件开发Agent</td>
+</tr>
+<tr>
+<td></td>
+<td>ruvnet/ruflo</td>
+<td>81k</td>
+<td>MIT</td>
+<td>2025-06</td>
+<td>多Agent集群编排</td>
+</tr>
+<tr>
+<td>多Agent框架</td>
+<td>crewAIInc/crewAI</td>
+<td>61k</td>
+<td>MIT</td>
+<td>2023</td>
+<td>按角色分工的多Agent</td>
+</tr>
+<tr>
+<td></td>
+<td>FoundationAgents/MetaGPT</td>
+<td>71k</td>
+<td>MIT</td>
+<td>2023</td>
+<td>&quot;第一家AI软件公司&quot;；<strong>2026年1月后没有新提交</strong></td>
+</tr>
+<tr>
+<td></td>
+<td>OpenBMB/ChatDev（2.0）</td>
+<td>35k</td>
+<td>Apache-2.0</td>
+<td>2023</td>
+<td>研究型虚拟软件公司</td>
+</tr>
+<tr>
+<td></td>
+<td>camel-ai/camel</td>
+<td>18k</td>
+<td>Apache-2.0</td>
+<td>2023</td>
+<td>研究型</td>
+</tr>
+<tr>
+<td></td>
+<td>VRSEN/agency-swarm</td>
+<td>4.6k</td>
+<td>MIT</td>
+<td>2023</td>
+<td>&quot;CEO + 各岗位&quot;结构，基于OpenAI Agents SDK</td>
+</tr>
+<tr>
+<td>工作流</td>
+<td>simstudioai/sim</td>
+<td>30k</td>
+<td>Apache-2.0</td>
+<td>2025</td>
+<td>可视化Agent工作流</td>
+</tr>
+<tr>
+<td></td>
+<td>activepieces/activepieces</td>
+<td>25k</td>
+<td>混合许可</td>
+<td>2022</td>
+<td>自动化平台，约400个MCP</td>
+</tr>
+<tr>
+<td></td>
+<td>Significant-Gravitas/AutoGPT</td>
+<td>188k</td>
+<td>混合许可</td>
+<td>2023</td>
+<td>许可证要单独看</td>
+</tr>
+<tr>
+<td></td>
+<td>letta-ai/letta</td>
+<td>25k</td>
+<td>Apache-2.0</td>
+<td>2023</td>
+<td>有状态、带记忆的Agent</td>
+</tr>
+</tbody></table>
+</div>
+<ul>
+<li><strong>OpenClaw生态的安全问题（✅新闻摘要）</strong>：<ul>
+<li>SecurityScorecard报告超过28,000个实例暴露在公网。</li>
+<li>Palo Alto Unit 42在官方技能市场ClawHub上发现会植入窃密木马的恶意技能。</li>
+<li>ClawSecure分析了2,890多个热门技能，发现9,515个问题，其中30.6%是高危或严重级。</li>
+<li>研究人员还发现4个可以串起来利用的漏洞。</li>
+</ul>
+</li>
+</ul>
+<h3 id="5-8-aws-quick-✅-aws官网和文档-2026-11-11"><a class="anchor" href="#5-8-aws-quick-✅-aws官网和文档-2026-11-11" aria-label="本节链接">#</a>5.8 AWS Quick（✅ AWS官网和文档，2026-11-11）</h3>
+<p><strong>是什么</strong></p>
+<ul>
+<li>由Amazon QuickSight演变而来，原QuickSight的API、SDK和集成继续可用。2025年推出时叫&quot;Quick Suite&quot;，现在叫&quot;AWS Quick&quot;。</li>
+<li>组成部分：<ul>
+<li>聊天Agent：系统自带的&quot;My assistant&quot;，用户也可以自建Agent。</li>
+<li>Spaces：团队共享资料、看板、数据集、知识库和外部连接的空间。</li>
+<li>Quick Flows：个人和团队的无代码自动化。</li>
+<li>Quick Automate：企业级流程自动化。</li>
+<li>知识库（Quick Index）。</li>
+<li>Quick Research：带引用的深度研究报告。</li>
+<li>Quick Sight：数据看板。</li>
+<li>Apps：用自然语言生成内部Web应用。</li>
+<li>桌面版：能读本地文件、邮件和日历，可以接MCP。</li>
+</ul>
+</li>
+<li>知识库的数据源：S3、SharePoint、OneDrive、Confluence、Google Drive、网页抓取，<strong>还能直接接自建的Amazon Bedrock知识库</strong>。</li>
+<li>接外部系统：OpenAPI、MCP、REST API、Zapier；能嵌入Chrome、Slack、Teams和Microsoft 365。</li>
+</ul>
+<p><strong>Quick Automate</strong></p>
+<ul>
+<li>只在通过AWS控制台开通的账户里可用，Free和Plus用不了；价格上要Enterprise档。</li>
+<li>用自然语言或上传流程文档生成计划，再用可视化设计器调整。支持条件和循环、案例管理、异常处理、自定义代码。</li>
+<li>两类Agent：<ul>
+<li>UI Agent：自己操作网页。</li>
+<li>自定义Agent：能调用工具和代码，也能发起人工审批任务。</li>
+</ul>
+</li>
+<li>版本管理：只有提交过的版本才能部署；保留变更历史；可以导出导入；开发、测试、生产环境可以用不同的运行配置。</li>
+<li>凭据（网站登录、各类集成）加密存储，自动化的作者和使用者都看不到。</li>
+<li>触发方式：<ul>
+<li>定时：在设定时间后15分钟内启动，支持cron表达式。</li>
+<li>API：<code>StartAutomationJob</code> / <code>DescribeAutomationJob</code>，属于quicksight命名空间。</li>
+</ul>
+</li>
+<li>并发上限：每个触发器最多同时跑10个，每个账户最多50个，可以找AWS申请提高。</li>
+<li>自动化目前只能用&quot;Actions&quot;标签页下的集成。</li>
+<li>官网案例：Jabil用Automate做应收催收和报价提交，报价更准，废料减少10%，每年节省约40万美元。</li>
+</ul>
+<p><strong>治理和安全</strong></p>
+<ul>
+<li>统一登录（IAM Identity Center/SSO）、角色权限、自定义权限模板。</li>
+<li>受限类别里的新AI功能默认关闭，要管理员明确开启。</li>
+<li>可以按人或角色设用量上限；有CloudTrail审计、数据防泄漏功能。</li>
+<li>检索时按文档原有的访问权限过滤，支持S3、Google Drive、SharePoint、Confluence、OneDrive。</li>
+<li>人工审批任务中心。</li>
+<li><strong>定时或API触发的自动化以&quot;服务级身份&quot;运行，不受创建者个人权限限制，也没人在场。</strong> 网页端没有逐个动作的确认，只有桌面版有&quot;始终允许 / 每次询问 / 始终拒绝&quot;。</li>
+<li>安全护栏：内置Bedrock Guardrails，筛查用户请求里的有害内容和提示词攻击；管理员只能自己加最多50个屏蔽词，每个不超过36个字符。</li>
+<li>合规审计范围：FedRAMP、HIPAA、PCI DSS、SOC 1/2/3、ISO 9001/27001/27018/27019、BSI C5、HITRUST。</li>
+<li>区域：美国带Agent功能的只有us-east-1（弗吉尼亚）和us-west-2（俄勒冈），俄亥俄（us-east-2）不支持。</li>
+</ul>
+<p><strong>价格</strong></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>方案</th>
+<th>价格</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Free</td>
+<td>$0</td>
+<td></td>
+</tr>
+<tr>
+<td>Plus</td>
+<td>每用户每月$20（年付）/ $25（月付）</td>
+<td>最多300人</td>
+</tr>
+<tr>
+<td>Max</td>
+<td>每用户每月$100（年付）/ $125（月付）</td>
+<td>用量是Plus的5倍</td>
+</tr>
+<tr>
+<td>Essentials</td>
+<td>每用户每月$3 + 每账户每月$250</td>
+<td>每人每月1个Agent小时（2027年1月31日前为3个），1GB存储</td>
+</tr>
+<tr>
+<td>Professional</td>
+<td>每用户每月$20 + $250</td>
+<td>每人8个Agent小时，25GB存储</td>
+</tr>
+<tr>
+<td>Enterprise</td>
+<td>每用户每月$40 + $250</td>
+<td>每人18个Agent小时，50GB存储；<strong>Automate和自建看板只在这一档</strong></td>
+</tr>
+<tr>
+<td>超额</td>
+<td>Agent小时每小时$3，按秒计；知识库存储每GB每月$5</td>
+<td>包括聊天、研究、Flows、Automate在内的所有AI功能都消耗Agent小时；等待工具返回的时间也计入；可以设用量上限封顶</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>评估（💡）</strong></p>
+<ul>
+<li><strong>不能单独胜任全自动公司。</strong> 聊天Agent、Flows和Automate都面向登录用户；能嵌入给外部匿名用户的只有Quick Sight的看板和问答。没有面向客户的前台，没有外联同意管理，也没有语音外呼。</li>
+<li><strong>适合做</strong>：人类管理驾驶舱（看板、聊天查询、审批任务中心）、后台流程（开票、对账、催款、合同归档、供应商审核）、研究、内部知识入口。</li>
+<li><strong>六点打分</strong>：<ul>
+<li>可编辑性 ●</li>
+<li>定制灵活性 ◐：推理强度只能在&quot;快速 / 平衡 / 智能&quot;三档里选，文档里没看到能自选模型；安全护栏只能加屏蔽词</li>
+<li>可扩展性 ◐：有并发上限，按Agent小时计费</li>
+<li>专属RAG ●</li>
+<li>AI治理：管员工 ●，管无人公司 ◐</li>
+<li>安全 ●</li>
+</ul>
+</li>
+<li><strong>费用估算（📌）</strong>：2名管理员用Enterprise，$80 + $250 = 每月$330，含36个Agent小时。后台每月跑300个Agent小时的话，超额约$792，合计约每月$1,100。</li>
+</ul>
+<h3 id="5-9-aws-sagemaker"><a class="anchor" href="#5-9-aws-sagemaker" aria-label="本节链接">#</a>5.9 AWS SageMaker</h3>
+<ul>
+<li><strong>是什么（✅）</strong>：训练、微调和部署模型的平台，加上数据湖仓（Unified Studio、Lakehouse、Catalog），不是Agent产品。</li>
+<li>💡 新公司没有历史数据，第一年用不上。积累6–12个月数据后，可以用来做线索评分、流失预测、定价优化，或者把高频任务微调成小模型来降低成本。</li>
+<li>一个全天在线的GPU推理端点大约每月$1,000起（📌📚）。</li>
+</ul>
+<h3 id="5-10-中国方案"><a class="anchor" href="#5-10-中国方案" aria-label="本节链接">#</a>5.10 中国方案</h3>
+<ul>
+<li><strong>主要平台</strong>：<ul>
+<li>阿里云百炼：提供Qwen3.7-Max（2026年5月）。</li>
+<li>火山引擎HiAgent 2.0：2025年6月发布，增加&quot;Agent DevOps&quot;。</li>
+<li>腾讯云智能体开发平台ADP 3.0：2025年9月全球上线；2026年11月推出员工统一入口AgentPortal。</li>
+<li>百度千帆AppBuilder：2026年的现状⚠️。</li>
+</ul>
+</li>
+<li><strong>Coze（扣子）企业版</strong>：标准版和旗舰版从2026年11月30日起停止新购，已有套餐最晚到2027年12月31日到期（✅搜狐）。另有报道说&quot;2026年底&quot;，日期有冲突（⚠️）。个人版继续提供。</li>
+<li><strong>监管</strong>：<ul>
+<li>生成式AI服务要在网信办备案，2026年7–8月新增备案124个。</li>
+<li>11月9日网信办上线统一备案系统，覆盖生成式AI、算法、深度合成和区块链。</li>
+<li>《人工智能生成合成内容标识办法》自2025年9月1日施行，要求同时做显式标识和隐式标识。</li>
+</ul>
+</li>
+<li>💡 前面介绍的海外产品，在中国大陆基本没法合规使用。</li>
+</ul>
+<h3 id="5-11-总览评分-💡"><a class="anchor" href="#5-11-总览评分-💡" aria-label="本节链接">#</a>5.11 总览评分（💡）</h3>
+<p>●=自带且完整，◐=部分支持或需要配合，○=基本没有，?=没能核实</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>类别</th>
+<th>工具</th>
+<th>可编辑性</th>
+<th>定制灵活性</th>
+<th>可扩展性</th>
+<th>专属RAG</th>
+<th>AI治理</th>
+<th>安全防护</th>
+<th>平台绑定</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>常驻型Agent</td>
+<td>OpenAI Dots</td>
+<td>○</td>
+<td>◐</td>
+<td>◐</td>
+<td>○</td>
+<td>◐</td>
+<td>◐</td>
+<td>高</td>
+</tr>
+<tr>
+<td></td>
+<td>Meta Muse</td>
+<td>○</td>
+<td>○</td>
+<td>◐</td>
+<td>○</td>
+<td>○</td>
+<td>○</td>
+<td>高</td>
+</tr>
+<tr>
+<td></td>
+<td>Claude Cowork / Duet</td>
+<td>◐</td>
+<td>◐</td>
+<td>◐</td>
+<td>◐</td>
+<td>◐</td>
+<td>◐</td>
+<td>中</td>
+</tr>
+<tr>
+<td></td>
+<td>Grok Bot</td>
+<td>○</td>
+<td>○</td>
+<td>◐</td>
+<td>○</td>
+<td>○</td>
+<td>○</td>
+<td>高</td>
+</tr>
+<tr>
+<td>云平台</td>
+<td>AWS Bedrock + AgentCore</td>
+<td>●</td>
+<td>●</td>
+<td>●</td>
+<td>●</td>
+<td>●</td>
+<td>●</td>
+<td>低到中</td>
+</tr>
+<tr>
+<td></td>
+<td>Microsoft Foundry + Agent 365</td>
+<td>●</td>
+<td>●</td>
+<td>●</td>
+<td>●</td>
+<td>●</td>
+<td>●</td>
+<td>中</td>
+</tr>
+<tr>
+<td></td>
+<td>Google Gemini Enterprise Agent Platform</td>
+<td>●</td>
+<td>●</td>
+<td>●</td>
+<td>●</td>
+<td>●</td>
+<td>●</td>
+<td>中</td>
+</tr>
+<tr>
+<td></td>
+<td>AWS Quick</td>
+<td>●</td>
+<td>◐</td>
+<td>◐</td>
+<td>●</td>
+<td>●/◐</td>
+<td>●</td>
+<td>中</td>
+</tr>
+<tr>
+<td>模型厂商</td>
+<td>OpenAI Frontier / Agents SDK</td>
+<td>◐</td>
+<td>◐</td>
+<td>●</td>
+<td>?</td>
+<td>?</td>
+<td>?</td>
+<td>高</td>
+</tr>
+<tr>
+<td></td>
+<td>Anthropic Claude平台</td>
+<td>●</td>
+<td>●</td>
+<td>●</td>
+<td>◐</td>
+<td>◐</td>
+<td>◐</td>
+<td>低</td>
+</tr>
+<tr>
+<td>业务套件</td>
+<td>Salesforce Agentforce 360</td>
+<td>◐</td>
+<td>◐</td>
+<td>●（限Salesforce内）</td>
+<td>●</td>
+<td>●</td>
+<td>●</td>
+<td>很高</td>
+</tr>
+<tr>
+<td>开源管理层</td>
+<td>Paperclip</td>
+<td>●</td>
+<td>●</td>
+<td>◐</td>
+<td>○</td>
+<td>◐</td>
+<td>○（加固后◐）</td>
+<td>很低</td>
+</tr>
+<tr>
+<td>开源框架</td>
+<td>LangGraph / 微软Agent Framework / ADK / Strands</td>
+<td>●</td>
+<td>●</td>
+<td>●</td>
+<td>需自建</td>
+<td>需自建</td>
+<td>需自建</td>
+<td>很低</td>
+</tr>
+<tr>
+<td>低代码</td>
+<td>n8n / Dify</td>
+<td>◐</td>
+<td>◐</td>
+<td>◐</td>
+<td>◐</td>
+<td>◐</td>
+<td>◐</td>
+<td>中（许可证有限制）</td>
+</tr>
+</tbody></table>
+</div>
+<hr>
+<h2 id="6-专属rag-知识层"><a class="anchor" href="#6-专属rag-知识层" aria-label="本节链接">#</a>6. 专属RAG（知识层）</h2>
+<p><strong>为什么必须做（💡）</strong></p>
+<ol>
+<li><strong>它是公司的&quot;大脑&quot;。</strong> 产品、价格、条款手册、SOP、案例、品牌语气、客户历史，每个Agent的每个决定都依赖它。</li>
+<li><strong>能迁移。</strong> 知识锁在某个Agent产品里，换平台就等于&quot;失忆&quot;。</li>
+<li><strong>能隔离权限。</strong> 销售Agent看不到财务明细；A客户的资料不会出现在B客户的方案里。</li>
+<li><strong>能追责。</strong> 每个回答都带出处，出了错能查到是哪份文档导致的。</li>
+</ol>
+<p><strong>四个组成部分</strong></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>组成</th>
+<th>存什么</th>
+<th>怎么做</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>文档知识</td>
+<td>产品资料、SOP、合同模板、案例</td>
+<td>关键词加语义的混合检索。可以用Bedrock知识库、Foundry IQ、Google原地索引，或者自己部署pgvector、Pinecone、Qdrant</td>
+</tr>
+<tr>
+<td>业务数据</td>
+<td>CRM、订单、发票</td>
+<td><strong>不放进知识库</strong>，通过MCP或API实时查询，避免拿到过期数据</td>
+</tr>
+<tr>
+<td>关系知识</td>
+<td>客户、联系人、合同、项目之间的关系</td>
+<td>知识图谱检索（GraphRAG）：微软GraphRAG v3.3.0（MIT）、Neo4j、Zep的Graphiti v0.31.2</td>
+</tr>
+<tr>
+<td>Agent记忆</td>
+<td>和每个客户的互动、偏好、历次决定</td>
+<td>AgentCore Memory、Mem0 v2.2.1（Apache-2.0，约6.9万星）、Zep、Letta 0.16.8</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>设计要点（💡）</strong></p>
+<ul>
+<li>原始文档和索引都放在客户自己的云账号里。</li>
+<li>以MCP服务的形式提供给所有Agent，换Agent时不用重建。</li>
+<li><strong>在AWS上，Bedrock知识库可以同时给AgentCore上的Agent和AWS Quick里的员工用，人和Agent共用一套知识。</strong></li>
+<li>检索时按Agent角色和客户做权限过滤。</li>
+<li>改知识库要走审批、留版本，防止&quot;记忆投毒&quot;（OWASP列出的Agent风险之一）。</li>
+<li>每次检索都带出处、留日志，定期评估检索准确率。</li>
+</ul>
+<p><strong>市场信息（✅）</strong></p>
+<ul>
+<li>Bedrock托管知识库11月9日新增&quot;单次RAG&quot;和&quot;只检索&quot;模式。</li>
+<li>Foundry IQ 10月起在Copilot Studio里可用。</li>
+<li>Pinecone：Builder每月$20；Standard每月最低$50；Enterprise每月最低$500。</li>
+<li>Chroma Cloud：入门版$0，写入每GiB $2.50，存储每GiB每月$0.33。</li>
+<li>Glean：10月21日正式推出&quot;无界面Agent构建&quot;，面向Claude Code、Cursor、Codex。</li>
+<li>Weaviate、Qdrant、Zilliz、Elastic、OpenAI文件检索的价格：⚠️。</li>
+</ul>
+<hr>
+<h2 id="7-ai治理"><a class="anchor" href="#7-ai治理" aria-label="本节链接">#</a>7. AI治理</h2>
+<h3 id="7-1-法规和标准-✅-除非另有标注"><a class="anchor" href="#7-1-法规和标准-✅-除非另有标注" aria-label="本节链接">#</a>7.1 法规和标准（✅，除非另有标注）</h3>
+<p><strong>欧盟</strong></p>
+<ul>
+<li>《数字综合法案（AI部分）》（Regulation (EU) 2026/1744）于2026年7月27日生效：<ul>
+<li>独立的高风险系统（附件III：就业、教育、信贷、执法、关键基础设施）的义务推迟到<strong>2027年12月2日</strong>。</li>
+<li>嵌在受监管产品里的AI（附件I）推迟到<strong>2028年8月2日</strong>。</li>
+<li>通用AI模型的义务没有推迟。</li>
+<li>新增两项禁令（&quot;裸体化&quot;应用、儿童性虐待内容），从<strong>2026年12月2日</strong>起适用。</li>
+<li>欧盟AI办公室获得更多监管权，可以处以最高为日均营业额5%的周期性罚款。</li>
+</ul>
+</li>
+<li><strong>第50条透明度义务从2026年8月2日起已经适用</strong>：<ul>
+<li>要告诉用户在和AI打交道。</li>
+<li>要标注深度伪造和部分AI生成的内容。</li>
+<li>在8月2日之前已上市的生成式AI系统，&quot;机器可读标记&quot;这一项有4个月宽限期。</li>
+<li>另有自愿性的《AI生成内容标记与标注行为准则》。</li>
+</ul>
+</li>
+</ul>
+<p><strong>美国联邦</strong></p>
+<ul>
+<li>国会还没有通过统一的、优先于州法的AI立法。</li>
+<li>2025年12月11日的行政令（✅ 2026-11-13，Bloomberg Law、ZwillGen、JD Supra）：名为&quot;确保AI国家政策框架&quot;。要求司法部30天内成立AI诉讼工作组，起诉被认为违宪、被联邦法规优先或其他违法的州AI法；商务部90天内列出与该政策冲突的州法；各机构审查可自由裁量的联邦拨款，考虑附加&quot;不执行州AI法&quot;的条件；FTC就&quot;要求改动真实AI输出&quot;的州法发布政策声明；白宫准备统一立法建议。儿童安全、算力和数据中心、州政府自身采购和使用AI等领域不在优先之列。<strong>行政令本身不能废止州法</strong>，在法院禁止或国会立法之前，州法照常适用。对TRAIGA的直接影响：目前没有看到针对TRAIGA的诉讼（⚠️）。2026年3月白宫建议国会统一立法。</li>
+<li>2026年共有30个州通过了115部AI相关法律。</li>
+<li>FTC：提出把&quot;不披露的AI输出引导&quot;视为消费者欺骗；8月有报道说FTC认为联邦法律可能优先于科罗拉多的AI透明度规定。</li>
+<li>2026年9月的行政令要求联邦机构把&quot;AI&quot;改称&quot;Super Intelligence&quot;；司法部11月5日成立的工作组没有设立新的罪名。</li>
+<li>11月3日中期选举，民主党赢得国会两院。💡 短期内出台联邦统一立法的可能性更低。</li>
+</ul>
+<p><strong>美国各州</strong></p>
+<ul>
+<li>得克萨斯：见第9节。</li>
+<li>科罗拉多：<ul>
+<li>原来的SB 24-205被废止，由SB 26-189取代，<strong>2027年1月1日生效</strong>，针对&quot;在重大决定中使用自动化决策技术&quot;。</li>
+<li>义务：使用前告知；结果不利时30天内给出解释；允许更正数据；在&quot;商业上合理的范围内&quot;提供人工复核；记录保存3年。</li>
+<li>只有州总检察长能执法，2030年前有60天整改期。</li>
+<li><strong>广告、营销、产品推荐、客服分流、排期和工作流工具不在范围内。</strong></li>
+<li>HB 26-1263（聊天机器人安全法）同样2027年1月1日起，要求面向消费者的聊天机器人说明自己是AI。</li>
+</ul>
+</li>
+<li>加州：<ul>
+<li>CCPA自动化决策规则2027年1月1日起适用于&quot;重大决定&quot;：事先告知、可以选择退出或申请人工复核、查阅权、风险评估。</li>
+<li>SB 53（只针对前沿模型开发者）已生效；就业领域的自动化决策规则自2025年10月1日起生效。</li>
+</ul>
+</li>
+<li>其他已生效：伊利诺伊HB 3773（就业中的AI）、犹他州生成式AI披露法、纽约市第144号地方法（招聘工具偏见审计）。</li>
+</ul>
+<p><strong>标准</strong></p>
+<ul>
+<li>NIST：<ul>
+<li>10月27日发布Agent身份管理的10条设计原则：每个Agent有独立身份、委托机制、最小权限且可撤销、高风险动作要人参与、把&quot;允许做什么&quot;和&quot;决定做什么&quot;分开、不可篡改的审计记录。计划出SP 1800系列实践指南。</li>
+<li>AI RMF 1.0加生成式AI配置文件（NIST AI 600-1）仍是基线，还没有1.1或2.0版（✅ 2026-11-13）。NIST CAISI于2026-02-17启动&quot;AI Agent标准倡议&quot;，计划2026年第四季度出&quot;Agent互操作配置文件&quot;；面向生成式和Agent用例的SP 800-53控制叠加（COSAiS，NIST IR 8605B/C）预计2026下半年，NIST没有承诺具体日期（⚠️）；Cyber AI Profile（NIST IR 8596）在推进初始公开草案。</li>
+</ul>
+</li>
+<li>ISO/IEC 42001:2023仍是现行版本，认证在持续进行。配套的42005和42006状态：⚠️。</li>
+<li>OWASP：<ul>
+<li><strong>Agent应用十大风险</strong>（2025年12月9日发布，名为&quot;OWASP Top 10 for Agentic Applications for 2026&quot;）：ASI01目标劫持、ASI02工具滥用、ASI03身份和权限滥用、ASI04供应链、ASI05意外的代码执行、ASI06记忆和上下文投毒、ASI07不安全的Agent间通信、ASI08错误连锁扩散、ASI09利用人对Agent的信任、ASI10失控的Agent（✅ 2026-11-13 顺序已核对）。</li>
+<li><strong>大模型应用十大风险2026版</strong>（2026年8月）：第1提示词注入，第2敏感信息泄露，第3权限过大；&quot;系统提示词泄露&quot;改名为&quot;隐藏上下文暴露&quot;。</li>
+<li>9月2日发布&quot;Agent Control Standard&quot;（⚠️）。</li>
+</ul>
+</li>
+</ul>
+<h3 id="7-2-要建的六个治理模块-💡"><a class="anchor" href="#7-2-要建的六个治理模块-💡" aria-label="本节链接">#</a>7.2 要建的六个治理模块（💡）</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>模块</th>
+<th>内容</th>
+<th>用什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Agent登记表</td>
+<td>每个Agent的岗位、负责人、模型、工具、权限、版本，以及TRAIGA要求的8类材料</td>
+<td>AgentCore Registry、Agent 365、Google Agent Registry</td>
+</tr>
+<tr>
+<td>规则引擎</td>
+<td>把授权矩阵写成代码（折扣、金额、条款上限），严格按规则执行，<strong>不靠提示词</strong></td>
+<td>AgentCore Policy（Cedar/Dogwood）、Google Agent Gateway，或者自建（Cedar/OPA）</td>
+</tr>
+<tr>
+<td>效果评估</td>
+<td>上线前跑测试集，上线后持续评估，新版本先小范围试用</td>
+<td>各云自带的评估功能、LangSmith、Langfuse、Braintrust</td>
+</tr>
+<tr>
+<td>监控与审计</td>
+<td>全过程追踪，不可篡改的日志</td>
+<td>OpenTelemetry，另存一份独立日志</td>
+</tr>
+<tr>
+<td>风险与合规台账</td>
+<td>用例按风险分级，对应到具体法规，做影响评估</td>
+<td>起步阶段用表格加流程；规模化后再上治理平台</td>
+</tr>
+<tr>
+<td>变更管理</td>
+<td>提示词、流程、模型的改动都走&quot;Git记录 → 审批 → 复测 → 小范围试用 → 可回滚&quot;</td>
+<td>Git加自动化发布流程</td>
+</tr>
+</tbody></table>
+</div>
+<h3 id="7-3-治理平台"><a class="anchor" href="#7-3-治理平台" aria-label="本节链接">#</a>7.3 治理平台</h3>
+<ul>
+<li>IBM watsonx.governance：价格见5.5；10月推出基于HashiCorp Vault的Agent身份和控制。</li>
+<li>OneTrust：9月29日推出CORIE治理AI Agent，计划和Workday的Agent Passport集成。</li>
+<li>ServiceNow：Super Intelligence Control Tower。</li>
+<li>Credo AI：GAIA入选Fast Company 2026&quot;下一件大事&quot;榜单；和Carahsoft（公共部门）、CHAI（医疗）合作；价格不公开。</li>
+<li>Holistic AI：2026年没有查到新消息（⚠️）。</li>
+</ul>
+<hr>
+<h2 id="8-安全防护"><a class="anchor" href="#8-安全防护" aria-label="本节链接">#</a>8. 安全防护</h2>
+<p><strong>主要威胁</strong>：见7.1里OWASP的两份十大风险。</p>
+<p><strong>2026年发生过的真实事件（✅）</strong></p>
+<ul>
+<li>Dots连续处理10个任务时19.7%出现中度越权；第三方测试发现它会批准自己被标记的动作。</li>
+<li>Muse能看到其他用户的信息、会暴露文件系统；macOS零日漏洞。</li>
+<li>Grok Bot同一账号下所有bot共用凭据；Grok Build CLI上传了用户的整个代码仓库。</li>
+<li>Zenity&quot;AgentCorruption&quot;：一条提示就能接管同一AWS账户里所有AgentCore Agent。</li>
+<li>常用开源组件LiteLLM在2026年3月被植入后门，在PyPI上存在了3小时。</li>
+<li>Paperclip：12个安全公告，见5.7；Codex Agent沿用Gmail连接、发出真实邮件。</li>
+<li>OpenClaw：2.8万多个实例暴露在公网、官方技能市场有恶意技能、30.6%的技能问题是高危或严重级。</li>
+</ul>
+<p><strong>八层防护（💡）</strong></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>层</th>
+<th>做什么</th>
+<th>用什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1 身份</td>
+<td>每个Agent一个独立身份，用短期凭据、最小权限、随时可撤销</td>
+<td>AgentCore Identity、Entra Agent ID、Google Agent Identity、Okta</td>
+</tr>
+<tr>
+<td>2 工具调用网关</td>
+<td>所有工具调用都经过网关，按规则放行；高风险动作强制人工审批</td>
+<td>AgentCore Gateway + Policy、Google Agent Gateway、Agent 365</td>
+</tr>
+<tr>
+<td>3 输入输出护栏</td>
+<td>防提示词注入、隐藏个人信息、过滤内容、核对事实</td>
+<td>Bedrock Guardrails、Prompt Shields、Model Armor、NeMo Guardrails</td>
+</tr>
+<tr>
+<td>4 运行隔离</td>
+<td>每个会话在独立沙箱里跑，只能访问白名单地址</td>
+<td>AgentCore的微型虚拟机、Strands Box</td>
+</tr>
+<tr>
+<td>5 资金</td>
+<td>虚拟卡，设单笔和每日额度；付款永远走规则引擎</td>
+<td>AgentCore Payments（有支出上限）、Ramp/Brex虚拟卡</td>
+</tr>
+<tr>
+<td>6 检测与响应</td>
+<td>发现Agent的异常行为，定期做红队测试</td>
+<td>CrowdStrike、SentinelOne、Palo Alto Prisma AIRS、Cisco AI Defense</td>
+</tr>
+<tr>
+<td>7 供应链</td>
+<td>锁定依赖版本，用私有软件包仓库，MCP服务器和技能只用白名单里的</td>
+<td>—</td>
+</tr>
+<tr>
+<td>8 数据</td>
+<td>模型厂商不保留数据、控制数据存放地区、加密、不同客户隔离</td>
+<td>各平台企业版的合同条款</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>安全厂商动态（✅新闻）</strong></p>
+<ul>
+<li>Palo Alto：有Prisma AIRS和Unit 42 Frontier AI Defense；正在洽谈以约5亿美元收购Agent安全公司Clutch Security，会是它2026年的第7笔收购；和NVIDIA合作做Agent管控。</li>
+<li>Cisco AI Defense：11月9日把Anthropic的Claude Mythos用于红队测试，并增加Agent可观测性。</li>
+<li>CrowdStrike：Falcon Guardian AIDR，已内置进Claude Cowork。</li>
+<li>SentinelOne：10月22日推出Singularity Agentic Detection &amp; Response。</li>
+<li>F5：AI安全平台，9月推出Workforce AI Security。</li>
+<li>Check Point：10月推出AI网络防火墙。</li>
+<li>Okta：在Oktane 2026上推出Agent身份平台。Auth0 for AI Agents和Entra Agent ID是否已正式上线：⚠️。</li>
+<li>Alice（原ActiveFence）8月融资1.4亿美元。HiddenLayer：⚠️。</li>
+<li>2025年的几笔收购（Lakera→Check Point、Protect AI→Palo Alto、Prompt Security→SentinelOne、Pangea→CrowdStrike、CalypsoAI→F5）没有在本次会话复核（⚠️）。</li>
+</ul>
+<hr>
+<h2 id="9-得克萨斯州专项-✅法案原文和法条-2026-11-11"><a class="anchor" href="#9-得克萨斯州专项-✅法案原文和法条-2026-11-11" aria-label="本节链接">#</a>9. 得克萨斯州专项（✅法案原文和法条，2026-11-11）</h2>
+<blockquote>
+<p>适用前提：按&quot;被AI化的新公司在得州注册和运营&quot;来分析。如果只是方案方在得州，方案方按TRAIGA仍然算&quot;开发者&quot;，要在合同里写清双方的责任和使用限制。</p>
+</blockquote>
+<h3 id="9-1-traiga-得州负责任ai治理法-hb-149-2026-01-01生效"><a class="anchor" href="#9-1-traiga-得州负责任ai治理法-hb-149-2026-01-01生效" aria-label="本节链接">#</a>9.1 TRAIGA（得州负责任AI治理法，HB 149，2026-01-01生效）</h3>
+<ul>
+<li><strong>适用对象</strong>：在得州推广、做广告或开展业务的人；产品或服务被得州居民使用的人；在得州开发或部署AI系统的人。</li>
+<li><strong>&quot;消费者&quot;</strong>：得州居民以个人或家庭身份行事时才算，<strong>不包括在商业或雇佣场景中的个人</strong>。</li>
+<li><strong>告知义务</strong>：只有政府机构和医疗服务必须告知对方在和AI打交道（§552.051）。私营的非医疗公司没有这项义务。</li>
+<li><strong>对私营公司的禁止事项</strong>（都以&quot;故意&quot;为标准）：<ul>
+<li>故意诱导自残、伤害他人或犯罪（§552.052）。</li>
+<li>唯一意图是侵犯宪法权利（§552.055）。</li>
+<li>故意违法歧视受保护群体，只是结果不均衡不足以证明故意（§552.056）。</li>
+<li>涉及未成年人的性内容和深度伪造（§552.057）。</li>
+<li>社会评分和生物识别那两条只针对政府。</li>
+</ul>
+</li>
+<li><strong>执法</strong>：<ul>
+<li>只有州总检察长能执法，个人不能依这部法起诉。</li>
+<li>总检察长官网设有投诉入口。收到投诉后可以发&quot;民事调查要求&quot;，要求提供8类材料：①用途、使用场景和好处 ②训练或编程用的数据类型 ③输入数据类别 ④输出 ⑤评估指标 ⑥已知局限 ⑦上线后的监控和用户保护措施 ⑧其他相关文件。</li>
+</ul>
+</li>
+<li><strong>整改</strong>：收到书面通知后有60天整改期。期满前完成整改，并提交书面说明、证明材料和内部制度的修改，就不会被起诉。</li>
+<li><strong>罚款</strong>：可整改的每次$10,000–12,000；不可整改的每次$80,000–200,000；持续违规每天$2,000–40,000。</li>
+<li><strong>免责和抗辩</strong>：<ul>
+<li>法律推定公司已经尽到合理注意义务。</li>
+<li>别人滥用你的AI系统，你不担责。</li>
+<li>以下方式自己发现的违规可以免责：外部反馈；对抗性测试或红队测试；按州机构的指引；<strong>在实质遵循NIST AI RMF生成式AI配置文件（或其他公认的AI风险管理框架）的前提下，通过内部审查发现</strong>。</li>
+<li><strong>还没上线的AI系统不罚款。</strong></li>
+</ul>
+</li>
+<li><strong>另外</strong>：有执照的人被认定违规后，发证机构还可以吊销执照，并加罚最高$100,000。</li>
+<li><strong>监管沙盒</strong>（第553章）：<ul>
+<li>由州信息资源部（DIR）主办，最长36个月，可以有正当理由延期。</li>
+<li>测试期间可以免除部分州的执照要求，但上面那些禁止事项不能免。</li>
+<li>申请要提交：系统描述、对消费者、隐私和公共安全的影响评估、风险缓解计划、符合联邦AI法规的证明。</li>
+<li>目前是否已开放申请：截至2026-11-13仍没找到DIR公开的申请入口，也没查到依TRAIGA提起的执法案例（Chambers 2026实务指南）（⚠️ 请律师确认）。总检察长官网已有TRAIGA的投诉页面（consumer-ai-rights）。</li>
+</ul>
+</li>
+<li><strong>对隐私法的修改</strong>：数据处理方要协助控制方保护AI系统处理的个人数据。</li>
+<li><strong>对生物识别法的修改</strong>：<ul>
+<li>网上公开的照片或录音，不等于本人同意，除非是本人自己公开的。</li>
+<li>用于训练AI的生物识别数据可以豁免，除非系统用来识别特定的人。</li>
+</ul>
+</li>
+</ul>
+<h3 id="9-2-dtpa-得州消费者保护法-针对欺骗性商业行为"><a class="anchor" href="#9-2-dtpa-得州消费者保护法-针对欺骗性商业行为" aria-label="本节链接">#</a>9.2 DTPA（得州消费者保护法，针对欺骗性商业行为）</h3>
+<ul>
+<li><strong>企业客户也能起诉</strong>：资产不到2,500万美元的企业也算&quot;消费者&quot;（§17.45(4)）。</li>
+<li><strong>不适用的情况</strong>（§17.49）：<ul>
+<li>书面合同金额超过$10万，且对方有自己独立的律师，不涉及住宅（§17.49(f)）。</li>
+<li>交易金额超过$50万（§17.49(g)）。</li>
+<li>专业服务里&quot;建议、判断、意见&quot;本身不适用，但对事实的明确虚假陈述、违反明示担保等仍然适用（§17.49(c)）。</li>
+</ul>
+</li>
+<li><strong>执法案例</strong>：州总检察长在2026年10月23日依据DTPA起诉OpenAI和Sam Altman，理由是把ChatGPT宣传成&quot;安全可靠&quot;，却没有充分披露它可能输出不准确或有害信息的风险，还涉及对未成年人的伤害。</li>
+<li>💡 <strong>设计上的影响</strong>：<ul>
+<li>建一份预先批准的话术清单，营销和销售Agent只能说清单上的内容。</li>
+<li>安全护栏拦截&quot;保证&quot;&quot;100%&quot;&quot;完全无人工&quot;这类说法。</li>
+<li>方案和合同里写明AI的局限。</li>
+<li>所有对话存档。</li>
+<li>对外不要宣传&quot;100%由AI完成&quot;，除非能拿出证据。</li>
+</ul>
+</li>
+</ul>
+<h3 id="9-3-电话和短信推销"><a class="anchor" href="#9-3-电话和短信推销" aria-label="本节链接">#</a>9.3 电话和短信推销</h3>
+<ul>
+<li><strong>要登记</strong>（§302.101）：从得州打出、或打给得州买家的推销电话，要先在州务卿处登记，每个营业地点单独登记。登记费$200（§302.106），另交$10,000保证金，可以是担保债券、信用证或存单（§302.107）。</li>
+<li><strong>&quot;买家&quot;包括企业</strong>（§302.001，&quot;人&quot;包括公司）。</li>
+<li><strong>豁免很窄</strong>：<ul>
+<li>B2B只有买方买来转售或用于生产时才豁免（§302.056）。</li>
+<li>向老客户推销，要用同一个名称经营满2年才豁免（§302.058）。新公司用不上。</li>
+<li>其他豁免（§302.053、.059、.061等）是否适用，要律师判断（⚠️）。</li>
+</ul>
+</li>
+<li><strong>SB 140（2025-09-01生效）</strong>：<ul>
+<li>把&quot;电话推销&quot;扩大到&quot;电话或其他传输，包括文字、图形消息或图片的传输&quot;，也就是短信和彩信都算。</li>
+<li>违反第304章（电话营销和州免打扰名单）和第305章的行为，都算DTPA违规，个人可以起诉。</li>
+<li>原文里&quot;其他传输&quot;是否涵盖电子邮件，存在解释空间（⚠️请律师确认）。</li>
+</ul>
+</li>
+<li><strong>TCPA在得州的诉讼</strong>（§305.053）：收到违反联邦TCPA的通讯的人，可以在得州法院起诉，每次违规$500或实际损失；故意违规最高$1,500或实际损失的3倍。</li>
+<li><strong>联邦</strong>：FCC在2024年认定AI生成的语音属于&quot;人工语音&quot;，给手机打推销电话要事先拿到书面同意（📚）。2026年FCC正在审议一项放宽政治类AI自动电话的请愿（✅新闻）。</li>
+<li>💡 <strong>设计上的影响</strong>：<ul>
+<li>不做AI陌生外呼；语音Agent只接客户打进来的电话，或做对方预约、同意过的回访。</li>
+<li>要么去登记，要么初期只用邮件外联。</li>
+<li>外呼和发短信之前，系统自动检查同意记录和免打扰名单。</li>
+</ul>
+</li>
+</ul>
+<h3 id="9-4-生物识别法-cubi-§503-001"><a class="anchor" href="#9-4-生物识别法-cubi-§503-001" aria-label="本节链接">#</a>9.4 生物识别法（CUBI，§503.001）</h3>
+<ul>
+<li>声纹属于生物识别信息。为商业目的采集前，必须先告知并取得同意。</li>
+<li>不得出售或披露（有少数例外）；要妥善保存；用途结束后1年内销毁。</li>
+<li>每次违规最高罚$25,000，由州总检察长起诉。</li>
+<li>💡 <strong>设计上的影响</strong>：<ul>
+<li>克隆任何人的声音（包括创始人自己）都签书面同意书。</li>
+<li>不用声纹来验证来电者身份。</li>
+<li>通话开头说明&quot;本通话录音，我是AI助理&quot;：得州只需一方同意即可录音（📚），但打到外州可能需要双方同意。</li>
+</ul>
+</li>
+</ul>
+<h3 id="9-5-隐私法-tdpsa-2024-07-01生效"><a class="anchor" href="#9-5-隐私法-tdpsa-2024-07-01生效" aria-label="本节链接">#</a>9.5 隐私法（TDPSA，2024-07-01生效）</h3>
+<ul>
+<li>符合联邦小企业管理局（SBA）小企业标准的公司基本豁免；唯一例外是出售敏感数据前要先取得同意。</li>
+<li>&quot;消费者&quot;不包括在商业场景中的个人，所以B2B联系人数据大多不在范围内。</li>
+<li>超出小企业标准后要做的事：隐私声明；45天内响应消费者请求；允许退出定向广告、数据出售和重大决定中的画像；数据保护评估；和数据处理方签合同。</li>
+<li>💡 既然要一步到位，现在就把个人数据清单、删除和导出、退出入口建好，并和所有AI供应商签数据处理协议。</li>
+</ul>
+<h3 id="9-6-数据经纪商-第509章"><a class="anchor" href="#9-6-数据经纪商-第509章" aria-label="本节链接">#</a>9.6 数据经纪商（第509章）</h3>
+<ul>
+<li>数据经纪商要在州务卿处登记，每年$300（§509.005）。</li>
+<li>💡 采购线索数据前，先确认供应商已登记；在知识库里记录每条数据的来源。</li>
+</ul>
+<h3 id="9-7-电子交易法-ueta-第322章"><a class="anchor" href="#9-7-电子交易法-ueta-第322章" aria-label="本节链接">#</a>9.7 电子交易法（UETA，第322章）</h3>
+<ul>
+<li>§322.014(b)：<strong>由电子代理之间的互动可以订立合同，即使没有任何人知道或看过。</strong> 电子代理和个人之间也可以订立合同（§322.014(c)）。</li>
+<li>§322.010(c)：在和个人的自动交易中，如果电子代理没有提供防止或纠正错误的机会，个人可以撤销因自己的错误产生的电子记录；<strong>这一点不能在合同里约定排除</strong>（§322.010(e)）。</li>
+<li>💡 <strong>设计上的影响</strong>：<ul>
+<li>AI答应的条件公司必须履行，所以授权矩阵和规则网关是法律上的需要。</li>
+<li>签约流程里必须有确认和更正的步骤。</li>
+</ul>
+</li>
+</ul>
+<h3 id="9-8-税"><a class="anchor" href="#9-8-税" aria-label="本节链接">#</a>9.8 税</h3>
+<ul>
+<li><strong>特许税</strong>（州审计长官网）：<ul>
+<li>2026–2027年度，收入不超过$2,650,000的不用交税，但每年仍要提交信息报告或股东信息报告。</li>
+<li>税率：零售和批发业0.375%，其他行业0.75%，按应税利润计算。收入不超过2,000万美元可以用简易算法，税率0.331%。</li>
+<li>薪酬扣除上限$480,000。</li>
+<li>每年5月15日前申报（📚）。</li>
+</ul>
+</li>
+<li><strong>销售税</strong>（税法§151.351）：<ul>
+<li>信息服务和数据处理服务有20%免税，也就是按价格的80%征税。州税率6.25%，地方税最多再加2%（📚），实际约5%–6.6%。</li>
+<li>SaaS一般被当作数据处理服务（📚）。</li>
+<li>两个影响：买SaaS、云服务和API大多要多付这笔税；如果你们卖的是SaaS、数据报告这类服务，向得州客户销售时要代收销售税。</li>
+<li>财务Agent接入Stripe Tax或Avalara，具体由会计确认。</li>
+</ul>
+</li>
+</ul>
+<h3 id="9-9-必须由人办的事和新增预算"><a class="anchor" href="#9-9-必须由人办的事和新增预算" aria-label="本节链接">#</a>9.9 必须由人办的事和新增预算</h3>
+<p><strong>必须由人办的事</strong></p>
+<ol>
+<li>在州务卿处注册公司（LLC备案费$300，📚），指定注册代理人。</li>
+<li>申请联邦税号（EIN）；开银行账户和Stripe账户，需要本人实名。</li>
+<li>如果卖应税服务，在州审计长处开销售税账户；每年报特许税和信息报告。</li>
+<li>如果打电话或发短信获客，办理电话推销登记。</li>
+<li>购买科技职业责任险（E&amp;O）和网络安全险。</li>
+</ol>
+<p><strong>新增预算（📌）</strong></p>
+<ul>
+<li>得州律师审查：一次性$5k–15k，替代第一轮预算里&quot;法务$3k–15k&quot;那一项。审查内容：TRAIGA和NIST对照材料、话术清单、隐私政策和数据处理协议、同意书、合同模板。</li>
+<li>会计设置销售税：$1k–3k。</li>
+<li>电话推销登记：$200加$10,000保证金。用担保保险代替的话，年费大约是保额的1–3%。</li>
+<li>软件、云和API支出：多出约5%–6.6%的销售税。</li>
+<li>特许税：收入$265万以下为$0。</li>
+</ul>
+<h3 id="9-10-时间点"><a class="anchor" href="#9-10-时间点" aria-label="本节链接">#</a>9.10 时间点</h3>
+<ul>
+<li><strong>到2026年底</strong>：现任总检察长Ken Paxton仍在任，执法积极（10月23日起诉OpenAI）。Paxton是共和党的联邦参议员候选人，对手是民主党的James Talarico；参议员选举结果：民主党James Talarico击败Paxton（✅ 2026-11-13，KSAT、WJLA等，美联社判定）。</li>
+<li><strong>2027年1月1日</strong>：科罗拉多SB 26-189、聊天机器人安全法和加州自动化决策规则生效（只有在这两州有客户时才适用）。</li>
+<li><strong>2027年1月</strong>：民主党人Nathan Johnson就任州总检察长。他11月3日以52.4%对45.9%击败共和党的Mayes Middleton，是1994年以来第一位民主党籍得州总检察长。他的执法重点可能不同（💡）。</li>
+<li><strong>2027年1月12日</strong>：第90届州议会开幕（宪法规定为奇数年1月的第二个星期二），可能修改TRAIGA或出台新的AI法。</li>
+</ul>
+<hr>
+<h2 id="10-初步方案-v0-1-💡-等第12节的问题有了答案后再迭代"><a class="anchor" href="#10-初步方案-v0-1-💡-等第12节的问题有了答案后再迭代" aria-label="本节链接">#</a>10. 初步方案 v0.1（💡，等第12节的问题有了答案后再迭代）</h2>
+<h3 id="10-1-设计原则"><a class="anchor" href="#10-1-设计原则" aria-label="本节链接">#</a>10.1 设计原则</h3>
+<p><strong>核心原则：&quot;流程为骨，AI为肉&quot;</strong></p>
+<ul>
+<li>主干流程用规则写死的状态机：线索 → 商机 → 报价 → 合同 → 收款 → 交付 → 回访。</li>
+<li>AI只在需要判断的地方介入：写邮件、判断意向、出方案、检查交付物。</li>
+<li>每个动作都留日志，能回放，能回滚。</li>
+</ul>
+<p><strong>八条原则</strong></p>
+<ol>
+<li><strong>按风险分级</strong>：低风险直接执行；中风险由一个AI做、另一个AI审；高风险由人批准。</li>
+<li><strong>逐步放权</strong>：依次经过四个阶段——AI做但不发出、人对比结果 → 人一键批准 → 自动执行加抽查 → 只处理例外。每一步放权都用数据决定。</li>
+<li><strong>只有一个数据源</strong>：CRM是客户数据的唯一来源，AI之间不靠互相&quot;传话&quot;。</li>
+<li><strong>长周期任务单独保存状态</strong>：跟进、续约这类跨周跨月的任务，用Temporal或LangGraph保存状态，不依赖AI的对话记忆。</li>
+<li><strong>最小权限</strong>：外部来的内容一律当作不可信。付款、改价、签约这类工具单独隔离，并设额度上限。</li>
+<li><strong>用测试说话</strong>：改提示词或换模型之前，先把测试集跑一遍。</li>
+<li><strong>成本熔断</strong>：每个任务、每天都设token和预算上限。</li>
+<li><strong>人工控制台</strong>：目标是人每天花不到1小时处理例外。</li>
+</ol>
+<h3 id="10-2-目标架构"><a class="anchor" href="#10-2-目标架构" aria-label="本节链接">#</a>10.2 目标架构</h3>
+<pre class="code"><code>[人类治理层]    目标 / 预算 / 授权矩阵 / 例外审批 / 周报
+                 ├─ AWS Quick：看板、聊天查询、人工审批任务中心、研究（可选）
+                 └─ Paperclip：AI组织架构、岗位、任务、预算、审批看板（可选，需加固）
+[治理与安全]    Agent登记表 · 规则网关（Cedar/Dogwood）· 安全护栏 · Agent身份 · 审计日志 · 效果评估
+[编排层]        LangGraph（代码，用Git管理）+ Temporal（长周期任务）
+                 └─ 后台流程也可以交给 Quick Automate（开票、对账、催款、合同归档）
+[运行环境]      AgentCore Runtime / Harness（每个会话一台微型虚拟机）
+[模型层]        多模型路由：Claude / GPT-6 / Gemini / Nova / Qwen（经网关调用，随时可换）
+[知识与记忆]    自建RAG：Bedrock知识库 + 知识图谱 + AgentCore Memory，以MCP服务提供，Quick和Agent共用
+[业务系统]      CRM · 电子签 · Stripe（含Stripe Tax）· 客服 · 财务（通过MCP或API接入）
+[员工工位]      （可选）Cowork、专业dots等常驻Agent，只作为受控工位接入
+开放协议：MCP（锁定版本）· A2A · OpenTelemetry · Cedar</code></pre>
+<h3 id="10-3-传统岗位对应的ai角色-示例"><a class="anchor" href="#10-3-传统岗位对应的ai角色-示例" aria-label="本节链接">#</a>10.3 传统岗位对应的AI角色（示例）</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>传统岗位</th>
+<th>AI角色</th>
+<th>可以自己决定的事</th>
+<th>什么情况交给人</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>市场</td>
+<td>内容和广告AI</td>
+<td>日预算$X以内调整投放</td>
+<td>超预算、品牌敏感话题</td>
+</tr>
+<tr>
+<td>初级销售（SDR）</td>
+<td>获客AI</td>
+<td>发外联邮件和跟进序列（得州：电话和短信要先登记并有对方同意）</td>
+<td>负面回复、涉及法律</td>
+</tr>
+<tr>
+<td>销售（AE）</td>
+<td>销售AI</td>
+<td>标准价上下10%以内报价，只用批准过的话术</td>
+<td>定制需求、大单</td>
+</tr>
+<tr>
+<td>法务</td>
+<td>合同AI</td>
+<td>用标准模板直接签（签约前有确认和更正步骤）</td>
+<td>任何非标准条款</td>
+</tr>
+<tr>
+<td>项目经理和执行</td>
+<td>交付AI组</td>
+<td>排期、产出初稿</td>
+<td>范围变更、质检两次不通过</td>
+</tr>
+<tr>
+<td>质检</td>
+<td>质检AI</td>
+<td>打回重做</td>
+<td>客户投诉</td>
+</tr>
+<tr>
+<td>客户成功</td>
+<td>客户成功AI</td>
+<td>回访、续约提醒、推荐增购</td>
+<td>退款、流失风险高</td>
+</tr>
+<tr>
+<td>财务</td>
+<td>财务AI（可以用Quick Automate）</td>
+<td>开票、催款、对账、算销售税</td>
+<td>坏账、报税</td>
+</tr>
+<tr>
+<td>CEO / 调度</td>
+<td>指挥AI</td>
+<td>拆解目标、分派任务、盯KPI、写周报</td>
+<td>战略调整、预算变化</td>
+</tr>
+</tbody></table>
+</div>
+<h3 id="10-4-底座怎么选"><a class="anchor" href="#10-4-底座怎么选" aria-label="本节链接">#</a>10.4 底座怎么选</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>客户现状</th>
+<th>推荐底座</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>没有现成的办公生态（新公司默认）</td>
+<td><strong>AWS Bedrock + AgentCore + LangGraph</strong>：模块最灵活，纯按用量付费，模型选择最多，绑定最低；还能顺带用AWS Quick</td>
+</tr>
+<tr>
+<td>已经在用微软365/Teams</td>
+<td>Microsoft Foundry + Agent 365 + Microsoft Agent Framework</td>
+</tr>
+<tr>
+<td>已经在用Google Workspace</td>
+<td>Gemini Enterprise Agent Platform + ADK</td>
+</tr>
+<tr>
+<td>销售和客服完全建在Salesforce上</td>
+<td>前台用Agentforce 360，后台用云平台</td>
+</tr>
+<tr>
+<td>在中国大陆运营</td>
+<td>阿里云百炼、火山引擎HiAgent或腾讯云ADP，加已备案的模型</td>
+</tr>
+</tbody></table>
+</div>
+<h3 id="10-5-可编辑性和可扩展性"><a class="anchor" href="#10-5-可编辑性和可扩展性" aria-label="本节链接">#</a>10.5 可编辑性和可扩展性</h3>
+<p><strong>谁能改什么（三层）</strong></p>
+<ol>
+<li><strong>业务人员</strong>：知识库文档、话术模板、授权金额和折扣上限、审批规则。在管理后台改，有版本、要审批，批完马上生效。</li>
+<li><strong>AI运营负责人</strong>：每个Agent的岗位说明（提示词）、工具权限、测试集。改完先跑测试，通过了再发布。</li>
+<li><strong>工程师</strong>：流程骨架、系统对接、新增Agent。走代码和自动化发布流程。</li>
+</ol>
+<p><strong>怎么扩展</strong></p>
+<ul>
+<li>新增业务线：复制一套Agent模板，加一块新的知识库分区。Paperclip的组织导出导入可以当模板用。</li>
+<li>新增Agent：在登记表里登记，分配身份和规则。</li>
+<li>新增工具：做成MCP服务器，接到网关上。</li>
+<li>换模型或升级模型：在网关里切换，用测试集复测。</li>
+<li>业务量增长：托管的运行环境会自动扩容。注意Quick Automate有并发上限。</li>
+</ul>
+<h3 id="10-6-实施路线图"><a class="anchor" href="#10-6-实施路线图" aria-label="本节链接">#</a>10.6 实施路线图</h3>
+<p><strong>第一轮的分阶段版本（总计4–7个月）</strong></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>时长</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0 业务建模</td>
+<td>2–4周</td>
+<td>SOP、授权矩阵、知识库、合规、开通各类账号</td>
+</tr>
+<tr>
+<td>1 获客和销售</td>
+<td>4–8周</td>
+<td>线索 → 外联 → 约会议 → 报价，发出前由人审批</td>
+</tr>
+<tr>
+<td>2 合同、收款、交付</td>
+<td>6–10周</td>
+<td>自动签约、Stripe收款、交付流程加质检</td>
+</tr>
+<tr>
+<td>3 客户成功和指挥层</td>
+<td>4–8周</td>
+<td>续约、增购，指挥AI调度和出周报</td>
+</tr>
+<tr>
+<td>4 持续放权</td>
+<td>长期</td>
+<td>按数据逐个环节切换到&quot;只处理例外&quot;</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>&quot;一步到位&quot;版本（约5–8个月）</strong></p>
+<ul>
+<li>架构、治理、安全、知识层从第一天就建好；业务Agent按风险逐步放权。</li>
+<li>同时可以并行做两个概念验证：<ul>
+<li>Paperclip：2–4周，先放内部岗位，同时按5.7的清单加固。</li>
+<li>AWS Quick：30天试用，先做后台流程和看板。</li>
+</ul>
+</li>
+<li><strong>选型时机</strong>：微软Ignite（11月17–20日）和AWS年底的re:Invent之后，再最终签约底座。</li>
+</ul>
+<h3 id="10-7-预算汇总-📌"><a class="anchor" href="#10-7-预算汇总-📌" aria-label="本节链接">#</a>10.7 预算汇总（📌）</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>方案</th>
+<th>搭建费</th>
+<th>首年总成本（含监督人员）</th>
+<th>每月运营</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>精益版（低代码，你自己加1名自由职业工程师）</td>
+<td>$1–3万</td>
+<td>$6–15万</td>
+<td>$1,000–8,000</td>
+</tr>
+<tr>
+<td>标准版（混合路线，外包工作室或2–3人团队）</td>
+<td>$5–15万</td>
+<td>$15–40万</td>
+<td>$1,000–8,000</td>
+</tr>
+<tr>
+<td>企业版（Agentforce或完全自研，合规要求高）</td>
+<td>$20–50万以上</td>
+<td>$50万以上</td>
+<td>—</td>
+</tr>
+<tr>
+<td>路线D（订阅AI员工 + 自建骨架）</td>
+<td>$1–4万</td>
+<td>—</td>
+<td>$1,000–7,000</td>
+</tr>
+<tr>
+<td><strong>一步到位版（推荐的架构）</strong></td>
+<td><strong>$15–40万</strong></td>
+<td>—</td>
+<td><strong>$3,000–20,000</strong></td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>每月运营明细</strong>（第一轮估算，📚📌）：大模型API $200–3,000；CRM $50–1,000；线索数据 $150–1,000；外联 $100–500；语音 $0–1,000；电子签 $50–300；客服AI $100–1,000；平台、服务器、监控、财务 $100–1,300。另加Stripe手续费。</p>
+<p><strong>另外的费用</strong></p>
+<ul>
+<li>得州：见9.9。</li>
+<li>Paperclip：服务器每月$50–300，沙箱按用量，加固2–4周。</li>
+<li>AWS Quick：每月约$330起，再加Agent小时，例子见5.8。</li>
+</ul>
+<p><strong>容易漏掉的成本</strong></p>
+<ul>
+<li>人工监督0.5–1人。</li>
+<li>每年维护费约为搭建费的20–40%。</li>
+<li>保险每年$2k–6k（v0.1估算）。11-13按创业公司中位数上调为$5k–8k：科技E&amp;O中位数约$3,700/年，网络安全险约$2,900/年（Vouch）；各家对AI的承保差别很大，有的标准条款排除AI、要买附加险（Corgi），有的自动附带AI背书（Embroker）（✅/📌）。</li>
+<li>试错成本，比如域名被拉黑、报错价格。</li>
+</ul>
+<p><strong>对比</strong>：同样职能的传统团队（6–8人）在美国一年大约$60–100万。</p>
+<h3 id="10-8-关键待决策事项"><a class="anchor" href="#10-8-关键待决策事项" aria-label="本节链接">#</a>10.8 关键待决策事项</h3>
+<ol>
+<li>底座选AWS、微软还是Google，取决于客户现有的办公生态。</li>
+<li>要不要用Paperclip当管理层，还是用AWS Quick、Agent 365，或者自己做控制台。</li>
+<li>获客要不要用电话和短信，这决定要不要去得州登记、要不要建同意管理。</li>
+<li>授权矩阵的具体阈值（折扣、合同金额、退款）。</li>
+<li>是否要把方案做成产品复制给更多客户。这会影响多租户和模板化设计，也和Dify的许可证限制有关。</li>
+<li>合同交付指标：不写&quot;100%无人&quot;，改写成&quot;N个核心流程自动化率不低于X%，例外在Y小时内处理&quot;。</li>
+<li>收费模式：搭建费 + 月度运维费 + 效果分成。</li>
+</ol>
+<hr>
+<h2 id="11-待完成研究清单-按优先级"><a class="anchor" href="#11-待完成研究清单-按优先级" aria-label="本节链接">#</a>11. 待完成研究清单（按优先级）</h2>
+<blockquote>
+<p>每一项都写了&quot;问题 / 为什么重要 / 建议来源&quot;。做完后更新正文相应章节，把⚠️改成✅，并在第14节记录。</p>
+</blockquote>
+<h3 id="11-0-本轮完成情况-v0-2-2026-11-13"><a class="anchor" href="#11-0-本轮完成情况-v0-2-2026-11-13" aria-label="本节链接">#</a>11.0 本轮完成情况（v0.2，2026-11-13）</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>编号</th>
+<th>状态</th>
+<th>结论摘要</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>R-01 微软Ignite</td>
+<td>⏳ 未到时间</td>
+<td>11-17至20召开。预告：Agent 365扩展为AI可观测性平台，加跨厂商预算护栏。11-21后补查</td>
+</tr>
+<tr>
+<td>R-02 re:Invent</td>
+<td>⏳ 未到时间</td>
+<td>日期已核实：11-30至12-04。12-05后补查</td>
+</tr>
+<tr>
+<td>R-03 AgentCorruption</td>
+<td>✅ 大部分完成</td>
+<td>AWS不认为是漏洞，但据Zenity已改IMDSv2、收紧默认角色；时间线有冲突。架构设计里的多账号隔离和最小权限不变</td>
+</tr>
+<tr>
+<td>R-04 OpenAI</td>
+<td>◐ 部分完成</td>
+<td>Business Premium $125/$100；Agent Builder关停细节；Frontier功能已知、价格不公开。Dots的SSO/SCIM和数据驻留仍⚠️</td>
+</tr>
+<tr>
+<td>R-05 Anthropic</td>
+<td>✅ 完成</td>
+<td>各模型API价格；Cowork进入Compliance API（Enterprise）；ISO 42001等认证</td>
+</tr>
+<tr>
+<td>R-06 Paperclip</td>
+<td>◐ 部分完成</td>
+<td>3个中危已修；2个公告仍无修复版本；SSO/SAML路线、云版、公司信息仍⚠️</td>
+</tr>
+<tr>
+<td>R-07 得州</td>
+<td>◐ 部分完成</td>
+<td>参议员和总检察长选举结果；Nathan Johnson的AI主张；DIR沙盒仍无入口；第90届议会预提交法案未查到；302章豁免和SB 140是否涵盖邮件要律师确认</td>
+</tr>
+<tr>
+<td>R-08 联邦</td>
+<td>◐ 部分完成</td>
+<td>2025-12-11行政令内容已核实；FTC、FCC、TCPA一对一同意规则的最新状态仍⚠️</td>
+</tr>
+<tr>
+<td>R-09 AWS Quick</td>
+<td>○ 未做</td>
+<td>需要实际开通后验证，放到概念验证阶段</td>
+</tr>
+<tr>
+<td>R-10 外联</td>
+<td>◐ 部分完成</td>
+<td>批量发信规则（SPF/DKIM/DMARC、投诉率&lt;0.1%、Gmail 2025-11起直接拒收）。具体工具价格等客户业务明确后再查</td>
+</tr>
+<tr>
+<td>R-12</td>
+<td>◐ 部分完成</td>
+<td>Stripe Tax价格已核实；其他等客户业务明确后再查</td>
+</tr>
+<tr>
+<td>R-13</td>
+<td>◐ 部分完成</td>
+<td>Langfuse价格已核实</td>
+</tr>
+<tr>
+<td>R-19 保险</td>
+<td>◐ 部分完成</td>
+<td>中位数和AI承保差异已查到；得州具体产品要找经纪人报价</td>
+</tr>
+<tr>
+<td>R-27 标准</td>
+<td>✅ 完成</td>
+<td>OWASP Agent十大风险顺序；NIST没有新版RMF，Agent相关工作在推进</td>
+</tr>
+</tbody></table>
+</div>
+<blockquote>
+<p>其余P1、P2项目（R-11、R-14–R-18、R-20–R-26）大多和客户的具体业务相关，等客户回答了前期准备问卷再做。</p>
+</blockquote>
+<h3 id="p0-影响底座选型或合规-先做"><a class="anchor" href="#p0-影响底座选型或合规-先做" aria-label="本节链接">#</a>P0：影响底座选型或合规，先做</h3>
+<ul>
+<li><strong>R-01 微软Ignite 2026（11月17–20日）的发布</strong><ul>
+<li>问题：Agent 365、Foundry Agent Service、Entra Agent ID是否正式上线，Copilot Studio怎么收费，Claude能不能在Foundry上用，Prompt Shields现状，是否支持A2A。</li>
+<li>为什么重要：决定微软这条路线够不够格。</li>
+<li>来源：Ignite Book of News、news.microsoft.com、learn.microsoft.com。</li>
+</ul>
+</li>
+<li><strong>R-02 AWS re:Invent 2026的发布（2026-11-30至12-04，拉斯维加斯，✅ 11-13）</strong><ul>
+<li>问题：AgentCore各服务在us-east-1的可用性和单价，Bedrock知识库和Guardrails的价格，Quick的更新，Bedrock上能不能用GPT-6。</li>
+<li>为什么重要：决定默认底座的成本和能力。</li>
+<li>来源：aws.amazon.com/new、AgentCore和Bedrock的价格页、AWS新闻博客。</li>
+</ul>
+</li>
+<li><strong>R-03 Zenity&quot;AgentCorruption&quot;</strong><ul>
+<li>问题：攻击怎么实现，影响哪些配置，AWS怎么回应和缓解。</li>
+<li>为什么重要：直接影响AgentCore上的隔离设计。</li>
+<li>来源：zenity.io、thenextweb、AWS安全公告。</li>
+</ul>
+</li>
+<li><strong>R-04 OpenAI官方信息</strong><ul>
+<li>问题：Dots的Business Premium价格；企业管控（SSO/SCIM、审计、数据驻留和保留）；&quot;专业dots&quot;的时间表和Agent 365集成；有没有Dots API；Frontier的功能和价格；&quot;ChatGPT Workspace Agents&quot;是什么；Agent Builder关停后怎么迁移。</li>
+<li>为什么重要：判断能不能把专业dots当受控工位。</li>
+<li>来源：openai.com、help.openai.com（如Pro各档说明9793128）、trust.openai.com。</li>
+</ul>
+</li>
+<li><strong>R-05 Anthropic官方信息</strong><ul>
+<li>问题：Cowork和Duet的操作会不会进入审计日志和Compliance API；各计划价格；Claude Enterprise的治理功能；Sonnet、Haiku、Fable 5.x的API价格；合规认证（含ISO 42001）。</li>
+<li>来源：anthropic.com/pricing、trust.anthropic.com、support.claude.com。</li>
+</ul>
+</li>
+<li><strong>R-06 Paperclip</strong><ul>
+<li>问题：GHSA-gqqj-85qm-8qhf和GHSA-x8hx-rhr2-9rf7有没有修好（查提交记录和发布说明）；Claude和Codex适配器在生产环境推荐怎么配；SSO/SAML/SCIM的路线；记忆和知识插件；云版；团队、公司和融资情况。</li>
+<li>来源：GitHub、docs.paperclip.ing、ROADMAP.md、发布说明。</li>
+</ul>
+</li>
+<li><strong>R-07 得州合规细节</strong><ul>
+<li>问题：<ul>
+<li>DIR的AI监管沙盒是否开放、规则是什么；总检察长关于TRAIGA的投诉平台和指引。</li>
+<li>电话推销法的其他豁免（§302.053、§302.059、§302.061）对新公司是否适用。</li>
+<li>SB 140里的&quot;其他传输&quot;是否包括电子邮件。</li>
+<li>第304章（州免打扰名单）对B2B手机号是否适用。</li>
+<li>第90届州议会（2027年1月12日开幕）预提交的AI法案。</li>
+<li>新任总检察长Nathan Johnson的执法立场。</li>
+<li>参议员选举结果。</li>
+</ul>
+</li>
+<li>来源：dir.texas.gov、texasattorneygeneral.gov、capitol.texas.gov、sos.state.tx.us，以及律所评论（要交叉核对）。</li>
+</ul>
+</li>
+<li><strong>R-08 联邦法规</strong><ul>
+<li>问题：2025年12月11日行政令的内容，以及对TRAIGA的影响；司法部相关工作组；FTC对AI欺骗的规则；FCC对AI来电的披露规则；TCPA&quot;一对一同意&quot;规则的现状。</li>
+<li>来源：whitehouse.gov、ftc.gov、fcc.gov、justice.gov。</li>
+</ul>
+</li>
+<li><strong>R-09 AWS Quick细节</strong><ul>
+<li>问题：Automate消耗的Agent小时算在谁的额度上；能不能自选模型；和AgentCore有没有原生集成；是否在ISO 42001认证范围内；怎么申请提高Automate并发上限。</li>
+<li>来源：docs.aws.amazon.com/quick、AWS官方博客。</li>
+</ul>
+</li>
+</ul>
+<h3 id="p1-影响工具清单和预算的精度"><a class="anchor" href="#p1-影响工具清单和预算的精度" aria-label="本节链接">#</a>P1：影响工具清单和预算的精度</h3>
+<ul>
+<li><strong>R-10 获客和外联工具</strong>：Clay、Apollo、ZoomInfo、Instantly、Smartlead、11x、Artisan在2026年的情况和价格；Google、雅虎、微软对批量发信的最新要求。</li>
+<li><strong>R-11 语音AI</strong>：Vapi、Retell、ElevenLabs、Grok Voice、OpenAI Realtime的价格，以及录音告知、同意管理这类合规功能。</li>
+<li><strong>R-12 CRM、电子签、支付、客服、财务</strong>：HubSpot Breeze（按点数计费）、Attio、DocuSign IAM、PandaDoc、Stripe Tax价格、Intercom Fin价格、QuickBooks和Xero的AI功能。</li>
+<li><strong>R-13 监控和评估</strong>：Langfuse、LangSmith、Braintrust的价格和自部署选项。</li>
+<li><strong>R-14 安全产品</strong>：Prisma AIRS、Cisco AI Defense、CrowdStrike AIDR、Check Point（Lakera）、F5的价格，以及是否适合小公司；开源替代（NeMo Guardrails、LlamaFirewall、Guardrails AI）。</li>
+<li><strong>R-15 Google</strong>：Gemini Enterprise各版价格、Agent Platform运行价格、Model Armor价格、VPC Service Controls和数据驻留。</li>
+<li><strong>R-16 微软</strong>：Foundry和Copilot Studio的价格。</li>
+<li><strong>R-17 Salesforce</strong>：Agent Script、Data 360、Einstein安全层、MuleSoft Agent Fabric的细节。</li>
+<li><strong>R-18 开源和低代码的企业功能</strong>：CrewAI AMP、LangSmith、n8n企业版、Dify企业版是否有角色权限、SSO和审计。</li>
+<li><strong>R-19 保险</strong>：得州的科技职业责任险、网络安全险、AI责任险有哪些产品，价格多少。</li>
+<li><strong>R-20 2025年安全行业并购复核</strong>：Lakera、Protect AI、Prompt Security、Pangea、CalypsoAI。</li>
+</ul>
+<h3 id="p2-补充"><a class="anchor" href="#p2-补充" aria-label="本节链接">#</a>P2：补充</h3>
+<ul>
+<li><strong>R-21</strong> CryptoBriefing测评的原始出处和完整排名；memeburn的&quot;Dots vs Muse vs Grok Bot&quot;对比。</li>
+<li><strong>R-22</strong> OpenClaw Enterprise控制面的细节；OpenClaw最近一次大规模安全更新的内容。</li>
+<li><strong>R-23</strong> Meta Muse API的能力和Meta Enterprise Platform的时间表。</li>
+<li><strong>R-24</strong> 同类开源管理层（mission-control、open-multi-agent、munder-difflin、Orkas、openrig）的安全公告和成熟度对比。</li>
+<li><strong>R-25</strong> 长任务Agent可靠性的独立基准，用来设定合理的自动化率目标。</li>
+<li><strong>R-26</strong> 中国：百度千帆的现状；Coze企业版停售日期的冲突；如果要做中国业务，各平台的治理和安全功能。</li>
+<li><strong>R-27</strong> NIST AI RMF在2026年有没有更新、有没有Agent相关的配置文件；ISO 42005和42006的发布状态；OWASP Agent十大风险的完整顺序。</li>
+</ul>
+<hr>
+<h2 id="12-待向用户或客户确认的问题"><a class="anchor" href="#12-待向用户或客户确认的问题" aria-label="本节链接">#</a>12. 待向用户或客户确认的问题</h2>
+<ol>
+<li>被AI化的公司是不是在得州注册和运营？方案方自己在哪里？</li>
+<li>卖什么：行业、产品或服务、交付是否数字化、客单价、客户是企业还是个人。</li>
+<li>客户在哪：美国哪几个州，有没有欧盟、中国客户。</li>
+<li>获客渠道：要不要电话、短信、语音外呼，预计邮件量多大。</li>
+<li>现有办公生态：微软365、Google Workspace，还是什么都没有；CRM偏好（HubSpot还是Salesforce）。</li>
+<li>公司里有几个人，由谁当&quot;董事会&quot;做审批，谁处理例外。</li>
+<li>预算上限和上线时间要求。</li>
+<li>有没有特殊合规要求（HIPAA、PCI等）。</li>
+<li>风险偏好：哪些动作必须人工批准，授权矩阵的阈值定多少。</li>
+<li>是否打算把方案做成产品复制给更多客户。</li>
+<li>是否需要中文或中国市场。</li>
+<li>品牌语气和AI身份告知政策的偏好。</li>
+</ol>
+<hr>
+<h2 id="13-来源索引"><a class="anchor" href="#13-来源索引" aria-label="本节链接">#</a>13. 来源索引</h2>
+<p><strong>常驻型Agent</strong></p>
+<ul>
+<li>Dots：<a href="https://openai.com/index/introducing-dots/" target="_blank" rel="noopener">https://openai.com/index/introducing-dots/</a> （当时503）· <a href="https://thenextweb.com/news/openai-dots-always-on-ai-agents-cloud-computers-devday" target="_blank" rel="noopener">https://thenextweb.com/news/openai-dots-always-on-ai-agents-cloud-computers-devday</a> · <a href="https://www.techtimes.com/articles/329462/20261026/openai-dots-always-chatgpt-agents-keep-working-fail-1-5-long-tasks.htm" target="_blank" rel="noopener">https://www.techtimes.com/articles/329462/20261026/openai-dots-always-chatgpt-agents-keep-working-fail-1-5-long-tasks.htm</a> · <a href="https://cryptobriefing.com/openai-dots-ai-agent-hands-on-review/" target="_blank" rel="noopener">https://cryptobriefing.com/openai-dots-ai-agent-hands-on-review/</a> · <a href="https://memeburn.com/openai-devday-2026-recap/" target="_blank" rel="noopener">https://memeburn.com/openai-devday-2026-recap/</a> · <a href="https://www.bankinfosecurity.com/openai-dots-pushes-always-on-agents-into-enterprise-a-32970" target="_blank" rel="noopener">https://www.bankinfosecurity.com/openai-dots-pushes-always-on-agents-into-enterprise-a-32970</a></li>
+<li>Muse：<a href="https://techcrunch.com/2026/09/29/meta-is-expanding-its-ai-agent-muse-to-small-businesses/" target="_blank" rel="noopener">https://techcrunch.com/2026/09/29/meta-is-expanding-its-ai-agent-muse-to-small-businesses/</a> · <a href="https://www.financialexpress.com/life/technology-meta-muse-decoding-the-hype-complaints-and-controversies-around-metas-ai-agent-4344593/" target="_blank" rel="noopener">https://www.financialexpress.com/life/technology-meta-muse-decoding-the-hype-complaints-and-controversies-around-metas-ai-agent-4344593/</a> · <a href="https://www.infoworld.com/article/4228301/metas-ex-launches-agent-rival-to-metas-muse.html" target="_blank" rel="noopener">https://www.infoworld.com/article/4228301/metas-ex-launches-agent-rival-to-metas-muse.html</a></li>
+<li>Cowork和Duet：<a href="https://www.techradar.com/pro/claude-cowork-is-now-available-for-enterprise-use-adds-analytics-access-controls-and-more" target="_blank" rel="noopener">https://www.techradar.com/pro/claude-cowork-is-now-available-for-enterprise-use-adds-analytics-access-controls-and-more</a> · <a href="https://techcrunch.com/2026/10/22/claude-duet-app-is-anthropics-bet-on-agents/" target="_blank" rel="noopener">https://techcrunch.com/2026/10/22/claude-duet-app-is-anthropics-bet-on-agents/</a></li>
+<li>Grok：<a href="https://x.ai/pricing" target="_blank" rel="noopener">https://x.ai/pricing</a> · <a href="https://x.ai/grok/business" target="_blank" rel="noopener">https://x.ai/grok/business</a> · <a href="https://x.ai/startups" target="_blank" rel="noopener">https://x.ai/startups</a> · <a href="https://docs.x.ai/developers/models" target="_blank" rel="noopener">https://docs.x.ai/developers/models</a> · <a href="https://www.engadget.com/2309308/spacexai-grok-bot-availability-plans/" target="_blank" rel="noopener">https://www.engadget.com/2309308/spacexai-grok-bot-availability-plans/</a> · <a href="https://www.techtimes.com/articles/324176/20260812/grok-bot-launches-any-app-no-api-all-bots-share-one-cloud-computer-every-login.htm" target="_blank" rel="noopener">https://www.techtimes.com/articles/324176/20260812/grok-bot-launches-any-app-no-api-all-bots-share-one-cloud-computer-every-login.htm</a> · <a href="https://thenextweb.com/news/musk-grok-bot-credit-card-spacex-make-you-whole" target="_blank" rel="noopener">https://thenextweb.com/news/musk-grok-bot-credit-card-spacex-make-you-whole</a></li>
+</ul>
+<p><strong>云平台</strong></p>
+<ul>
+<li>AWS：<a href="https://aws.amazon.com/bedrock/agentcore/" target="_blank" rel="noopener">https://aws.amazon.com/bedrock/agentcore/</a> · <a href="https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html" target="_blank" rel="noopener">https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html</a> · <a href="https://aws.amazon.com/bedrock/guardrails/" target="_blank" rel="noopener">https://aws.amazon.com/bedrock/guardrails/</a> · <a href="https://aws.amazon.com/bedrock/model-choice/" target="_blank" rel="noopener">https://aws.amazon.com/bedrock/model-choice/</a> · <a href="https://aws.amazon.com/sagemaker/" target="_blank" rel="noopener">https://aws.amazon.com/sagemaker/</a> · <a href="https://thenextweb.com/news/aws-agentcore-zenity-agentcorruption-one-prompt-agents" target="_blank" rel="noopener">https://thenextweb.com/news/aws-agentcore-zenity-agentcorruption-one-prompt-agents</a> · <a href="https://www.unite.ai/aws-adds-single-shot-rag-and-retrieval-only-mode-to-bedrock/" target="_blank" rel="noopener">https://www.unite.ai/aws-adds-single-shot-rag-and-retrieval-only-mode-to-bedrock/</a></li>
+<li>AWS Quick：<a href="https://aws.amazon.com/quick/" target="_blank" rel="noopener">https://aws.amazon.com/quick/</a> · <a href="https://aws.amazon.com/quick/pricing/" target="_blank" rel="noopener">https://aws.amazon.com/quick/pricing/</a> · <a href="https://aws.amazon.com/quick/enterprise/" target="_blank" rel="noopener">https://aws.amazon.com/quick/enterprise/</a> · <a href="https://docs.aws.amazon.com/quick/latest/userguide/what-is.html" target="_blank" rel="noopener">https://docs.aws.amazon.com/quick/latest/userguide/what-is.html</a> · <a href="https://docs.aws.amazon.com/quick/latest/userguide/how-quicksuite-works.html" target="_blank" rel="noopener">https://docs.aws.amazon.com/quick/latest/userguide/how-quicksuite-works.html</a> · <a href="https://docs.aws.amazon.com/quick/latest/userguide/using-amazon-quick-automate.html" target="_blank" rel="noopener">https://docs.aws.amazon.com/quick/latest/userguide/using-amazon-quick-automate.html</a> · <a href="https://docs.aws.amazon.com/quick/latest/userguide/deploying-automations.html" target="_blank" rel="noopener">https://docs.aws.amazon.com/quick/latest/userguide/deploying-automations.html</a> · <a href="https://docs.aws.amazon.com/quick/latest/userguide/sec-agentic-security.html" target="_blank" rel="noopener">https://docs.aws.amazon.com/quick/latest/userguide/sec-agentic-security.html</a> · <a href="https://docs.aws.amazon.com/quick/latest/userguide/guardrails.html" target="_blank" rel="noopener">https://docs.aws.amazon.com/quick/latest/userguide/guardrails.html</a> · <a href="https://docs.aws.amazon.com/quick/latest/userguide/sec-compliance.html" target="_blank" rel="noopener">https://docs.aws.amazon.com/quick/latest/userguide/sec-compliance.html</a> · <a href="https://docs.aws.amazon.com/quick/latest/userguide/regions.html" target="_blank" rel="noopener">https://docs.aws.amazon.com/quick/latest/userguide/regions.html</a> · <a href="https://docs.aws.amazon.com/quick/latest/userguide/working-with-agents.html" target="_blank" rel="noopener">https://docs.aws.amazon.com/quick/latest/userguide/working-with-agents.html</a></li>
+<li>微软：<a href="https://learn.microsoft.com/en-us/azure/foundry/agents/overview" target="_blank" rel="noopener">https://learn.microsoft.com/en-us/azure/foundry/agents/overview</a> · <a href="https://learn.microsoft.com/en-us/azure/foundry/agents/concepts/what-is-foundry-iq" target="_blank" rel="noopener">https://learn.microsoft.com/en-us/azure/foundry/agents/concepts/what-is-foundry-iq</a> · <a href="https://www.microsoft.com/en-us/microsoft-agent-365" target="_blank" rel="noopener">https://www.microsoft.com/en-us/microsoft-agent-365</a> · <a href="https://redmondmag.com/articles/2026/05/01/microsoft-agent-365-goes-live-as-company-unveils-e7-suite.aspx" target="_blank" rel="noopener">https://redmondmag.com/articles/2026/05/01/microsoft-agent-365-goes-live-as-company-unveils-e7-suite.aspx</a> · <a href="https://www.microsoft.com/en-us/security/blog/2026/11/03/microsoft-named-a-leader-in-the-2026-gartner-magic-quadrant-for-ai-agent-management-platforms/" target="_blank" rel="noopener">https://www.microsoft.com/en-us/security/blog/2026/11/03/microsoft-named-a-leader-in-the-2026-gartner-magic-quadrant-for-ai-agent-management-platforms/</a></li>
+<li>Google：<a href="https://cloud.google.com/products/gemini-enterprise-agent-platform" target="_blank" rel="noopener">https://cloud.google.com/products/gemini-enterprise-agent-platform</a> · <a href="https://cloud.google.com/gemini-enterprise" target="_blank" rel="noopener">https://cloud.google.com/gemini-enterprise</a> · <a href="https://docs.cloud.google.com/gemini-enterprise-agent-platform/agents" target="_blank" rel="noopener">https://docs.cloud.google.com/gemini-enterprise-agent-platform/agents</a> · <a href="https://a2a-protocol.org/latest/" target="_blank" rel="noopener">https://a2a-protocol.org/latest/</a></li>
+<li>OpenAI和Anthropic：<a href="https://en.wikipedia.org/wiki/GPT-6" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/GPT-6</a> · <a href="https://en.wikipedia.org/wiki/GPT-6.1" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/GPT-6.1</a> · <a href="https://www.neowin.net/news/openai-launches-gpt-61-sol-with-near-astra-performance-at-one-fifth-the-price/" target="_blank" rel="noopener">https://www.neowin.net/news/openai-launches-gpt-61-sol-with-near-astra-performance-at-one-fifth-the-price/</a> · <a href="https://en.wikipedia.org/wiki/Claude_(language_model)" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Claude_(language_model)</a> · <a href="https://tech.yahoo.com/ai/chatgpt/articles/openai-agent-builder-nov-30-174541295.html" target="_blank" rel="noopener">https://tech.yahoo.com/ai/chatgpt/articles/openai-agent-builder-nov-30-174541295.html</a></li>
+<li>Salesforce：<a href="https://www.salesforce.com/agentforce/pricing/" target="_blank" rel="noopener">https://www.salesforce.com/agentforce/pricing/</a> · IBM：<a href="https://www.ibm.com/products/watsonx-governance/pricing" target="_blank" rel="noopener">https://www.ibm.com/products/watsonx-governance/pricing</a></li>
+</ul>
+<p><strong>开源和协议</strong></p>
+<ul>
+<li><a href="https://github.com/paperclipai/paperclip" target="_blank" rel="noopener">https://github.com/paperclipai/paperclip</a> · <a href="https://docs.paperclip.ing/reference/deploy/deployment-modes/" target="_blank" rel="noopener">https://docs.paperclip.ing/reference/deploy/deployment-modes/</a> · <a href="https://docs.paperclip.ing/guides/day-to-day/approvals/" target="_blank" rel="noopener">https://docs.paperclip.ing/guides/day-to-day/approvals/</a> · <a href="https://docs.paperclip.ing/connectors/access-model/" target="_blank" rel="noopener">https://docs.paperclip.ing/connectors/access-model/</a> · <a href="https://github.com/paperclipai/paperclip/security/advisories" target="_blank" rel="noopener">https://github.com/paperclipai/paperclip/security/advisories</a></li>
+<li><a href="https://modelcontextprotocol.io/specification/2026-07-28/changelog" target="_blank" rel="noopener">https://modelcontextprotocol.io/specification/2026-07-28/changelog</a> · <a href="https://github.com/a2aproject/A2A/releases" target="_blank" rel="noopener">https://github.com/a2aproject/A2A/releases</a> · <a href="https://www.infoq.com/news/2026/10/aws-strands-agents/" target="_blank" rel="noopener">https://www.infoq.com/news/2026/10/aws-strands-agents/</a> · <a href="https://venturebeat.com/orchestration/microsoft-retires-autogen-and-debuts-agent-framework-to-unify-and-govern" target="_blank" rel="noopener">https://venturebeat.com/orchestration/microsoft-retires-autogen-and-debuts-agent-framework-to-unify-and-govern</a> · <a href="https://www.sohu.com/a/1097080443_122500431" target="_blank" rel="noopener">https://www.sohu.com/a/1097080443_122500431</a> （Coze企业版）</li>
+</ul>
+<p><strong>治理和安全</strong></p>
+<ul>
+<li><a href="https://www.jdsupra.com/legalnews/eu-digital-omnibus-on-ai-enters-into-8118098/" target="_blank" rel="noopener">https://www.jdsupra.com/legalnews/eu-digital-omnibus-on-ai-enters-into-8118098/</a> · <a href="https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai" target="_blank" rel="noopener">https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai</a> · <a href="https://securityboulevard.com/2026/11/us-state-ai-laws-in-force-what-an-enterprise-deployer-actually-owes/" target="_blank" rel="noopener">https://securityboulevard.com/2026/11/us-state-ai-laws-in-force-what-an-enterprise-deployer-actually-owes/</a> · <a href="https://coag.gov/ai/" target="_blank" rel="noopener">https://coag.gov/ai/</a> · <a href="https://leg.colorado.gov/bills/sb26-189" target="_blank" rel="noopener">https://leg.colorado.gov/bills/sb26-189</a> · <a href="https://www.nist.gov/blogs/cybersecurity-insights/design-tenets-agent-identity-management-systems" target="_blank" rel="noopener">https://www.nist.gov/blogs/cybersecurity-insights/design-tenets-agent-identity-management-systems</a> · <a href="https://genai.owasp.org/2025/12/09/owasp-genai-security-project-releases-top-10-risks-and-mitigations-for-agentic-ai-security/" target="_blank" rel="noopener">https://genai.owasp.org/2025/12/09/owasp-genai-security-project-releases-top-10-risks-and-mitigations-for-agentic-ai-security/</a> · <a href="https://www.helpnetsecurity.com/2026/08/06/owasp-2026-llm-top-10-released/" target="_blank" rel="noopener">https://www.helpnetsecurity.com/2026/08/06/owasp-2026-llm-top-10-released/</a> · <a href="https://www.businesswire.com/news/home/20261103896714/en/" target="_blank" rel="noopener">https://www.businesswire.com/news/home/20261103896714/en/</a> （CrowdStrike和Cowork）· <a href="https://www.crn.com/news/networking/2026/cisco-puts-anthropic-s-claude-mythos-behind-ai-defense-red-teaming" target="_blank" rel="noopener">https://www.crn.com/news/networking/2026/cisco-puts-anthropic-s-claude-mythos-behind-ai-defense-red-teaming</a></li>
+</ul>
+<p><strong>得州</strong></p>
+<ul>
+<li>TRAIGA原文：<a href="https://capitol.texas.gov/tlodocs/89R/billtext/html/HB00149F.htm" target="_blank" rel="noopener">https://capitol.texas.gov/tlodocs/89R/billtext/html/HB00149F.htm</a></li>
+<li>SB 140原文：<a href="https://capitol.texas.gov/tlodocs/89R/billtext/html/SB00140F.htm" target="_blank" rel="noopener">https://capitol.texas.gov/tlodocs/89R/billtext/html/SB00140F.htm</a></li>
+<li>法条：<a href="https://texas.public.law/statutes/tex._bus._&amp;_com._code_section_302.001" target="_blank" rel="noopener">https://texas.public.law/statutes/tex._bus._&amp;_com._code_section_302.001</a> （以及302.056、302.058、302.101、302.106、302.107、305.053、322.010、322.014、503.001、509.005、17.45、17.49）· <a href="https://texas.public.law/statutes/tex._tax_code_section_151.351" target="_blank" rel="noopener">https://texas.public.law/statutes/tex._tax_code_section_151.351</a></li>
+<li>州政府：<a href="https://www.texasattorneygeneral.gov/consumer-protection/file-consumer-complaint/consumer-privacy-rights/texas-data-privacy-and-security-act" target="_blank" rel="noopener">https://www.texasattorneygeneral.gov/consumer-protection/file-consumer-complaint/consumer-privacy-rights/texas-data-privacy-and-security-act</a> · <a href="https://comptroller.texas.gov/taxes/franchise/" target="_blank" rel="noopener">https://comptroller.texas.gov/taxes/franchise/</a> · <a href="https://www.texasattorneygeneral.gov/news/releases/attorney-general-ken-paxton-sues-openai-and-ceo-sam-altman-lying-users-and-harming-texans" target="_blank" rel="noopener">https://www.texasattorneygeneral.gov/news/releases/attorney-general-ken-paxton-sues-openai-and-ceo-sam-altman-lying-users-and-harming-texans</a></li>
+<li>选举：<a href="https://en.wikipedia.org/wiki/2026_Texas_Attorney_General_election" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/2026_Texas_Attorney_General_election</a></li>
+</ul>
+<p><strong>v0.2 补充核实（2026-11-13）</strong></p>
+<ul>
+<li>Anthropic：<a href="https://platform.claude.com/docs/en/about-claude/pricing" target="_blank" rel="noopener">https://platform.claude.com/docs/en/about-claude/pricing</a> · <a href="https://claude.com/blog/compliance-api-cowork-and-claude-code" target="_blank" rel="noopener">https://claude.com/blog/compliance-api-cowork-and-claude-code</a> · <a href="https://harmonic.security/resources/securing-claude-cowork-a-security-practitioners-guide" target="_blank" rel="noopener">https://harmonic.security/resources/securing-claude-cowork-a-security-practitioners-guide</a> · <a href="https://www.anthropic.com/news/anthropic-achieves-iso-42001-certification-for-responsible-ai" target="_blank" rel="noopener">https://www.anthropic.com/news/anthropic-achieves-iso-42001-certification-for-responsible-ai</a> · <a href="https://support.anthropic.com/en/articles/10015870-what-certifications-has-anthropic-obtained" target="_blank" rel="noopener">https://support.anthropic.com/en/articles/10015870-what-certifications-has-anthropic-obtained</a></li>
+<li>OpenAI：<a href="https://www.eesel.ai/blog/openai-dots-pricing" target="_blank" rel="noopener">https://www.eesel.ai/blog/openai-dots-pricing</a> · <a href="https://aibusiness.com/generative-ai/new-premium-tier-for-chatgpt-business" target="_blank" rel="noopener">https://aibusiness.com/generative-ai/new-premium-tier-for-chatgpt-business</a> · <a href="https://mcp.directory/blog/openai-agentkit-deprecation-2026" target="_blank" rel="noopener">https://mcp.directory/blog/openai-agentkit-deprecation-2026</a> · <a href="https://www.eesel.ai/blog/openai-frontier" target="_blank" rel="noopener">https://www.eesel.ai/blog/openai-frontier</a></li>
+<li>AWS和微软：<a href="https://darkreading.com/cloud-security/agentcorruption-aws-environments-at-risk-single-prompt" target="_blank" rel="noopener">https://darkreading.com/cloud-security/agentcorruption-aws-environments-at-risk-single-prompt</a> · <a href="https://www.csoonline.com/article/4232054/awss-repeated-problems-with-ai-agent-controls-illustrates-the-autonomous-agent-dilemma.html" target="_blank" rel="noopener">https://www.csoonline.com/article/4232054/awss-repeated-problems-with-ai-agent-controls-illustrates-the-autonomous-agent-dilemma.html</a> · <a href="https://www.cxtoday.com/events/aws-reinvent-2026/" target="_blank" rel="noopener">https://www.cxtoday.com/events/aws-reinvent-2026/</a> · <a href="https://techcommunity.microsoft.com/blog/agent-365-blog/microsoft-ignite-2026-your-guide-to-agent-365/4571750" target="_blank" rel="noopener">https://techcommunity.microsoft.com/blog/agent-365-blog/microsoft-ignite-2026-your-guide-to-agent-365/4571750</a></li>
+<li>Paperclip：<code>gh api repos/paperclipai/paperclip/security-advisories</code>（2026-11-13）</li>
+<li>标准：<a href="https://www.giskard.ai/knowledge/owasp-top-10-for-agentic-application-2026" target="_blank" rel="noopener">https://www.giskard.ai/knowledge/owasp-top-10-for-agentic-application-2026</a> · <a href="https://labs.cloudsecurityalliance.org/research/csa-research-note-nist-ai-agent-standards-initiative-2026040/" target="_blank" rel="noopener">https://labs.cloudsecurityalliance.org/research/csa-research-note-nist-ai-agent-standards-initiative-2026040/</a></li>
+<li>法规和选举：<a href="https://news.bloomberglaw.com/litigation/trump-signs-order-seeking-to-limit-state-level-ai-regulation" target="_blank" rel="noopener">https://news.bloomberglaw.com/litigation/trump-signs-order-seeking-to-limit-state-level-ai-regulation</a> · <a href="https://www.zwillgen.com/artificial-intelligence/trump-executive-order-targets-state-ai-laws/" target="_blank" rel="noopener">https://www.zwillgen.com/artificial-intelligence/trump-executive-order-targets-state-ai-laws/</a> · <a href="https://www.ksat.com/news/texas/2026/11/04/james-talarico-defeats-ken-paxton-giving-democrats-their-first-us-senate-win-in-texas-since-1988/" target="_blank" rel="noopener">https://www.ksat.com/news/texas/2026/11/04/james-talarico-defeats-ken-paxton-giving-democrats-their-first-us-senate-win-in-texas-since-1988/</a> · <a href="https://www.kut.org/text/texas/2026-11-03/texas-nov-midterm-statewide-election-results" target="_blank" rel="noopener">https://www.kut.org/text/texas/2026-11-03/texas-nov-midterm-statewide-election-results</a> · <a href="https://axios.com/2026/08/21/texas-ag-democratic-nominee-ai-audit-plan" target="_blank" rel="noopener">https://axios.com/2026/08/21/texas-ag-democratic-nominee-ai-audit-plan</a> · <a href="https://practiceguides.chambers.com/practice-guides/artificial-intelligence-2026/usa-texas/trends-and-developments" target="_blank" rel="noopener">https://practiceguides.chambers.com/practice-guides/artificial-intelligence-2026/usa-texas/trends-and-developments</a></li>
+<li>工具和保险：<a href="https://redsift.com/guides/bulk-email-sender-requirements" target="_blank" rel="noopener">https://redsift.com/guides/bulk-email-sender-requirements</a> · <a href="https://langfuse.com/pricing" target="_blank" rel="noopener">https://langfuse.com/pricing</a> · <a href="https://stripe.com/tax/pricing" target="_blank" rel="noopener">https://stripe.com/tax/pricing</a> · <a href="https://www.vouch.us/blog/how-much-should-you-pay-for-tech-e-o-insurance" target="_blank" rel="noopener">https://www.vouch.us/blog/how-much-should-you-pay-for-tech-e-o-insurance</a> · <a href="https://www.corgi.insure/blog/insurance-coverage-for-machine-learning-startups-and-how-it-is-provided" target="_blank" rel="noopener">https://www.corgi.insure/blog/insurance-coverage-for-machine-learning-startups-and-how-it-is-provided</a></li>
+</ul>
+<hr>
+<h2 id="14-变更记录"><a class="anchor" href="#14-变更记录" aria-label="本节链接">#</a>14. 变更记录</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>版本</th>
+<th>日期</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>v0.1</td>
+<td>2026-11-11</td>
+<td>初稿：汇总六轮对话的研究（可行性与框架；Dots、Grok Bot和SageMaker；全量横向对比；得州专项；Paperclip及同类；AWS Quick），列出待完成研究清单和初步方案</td>
+</tr>
+<tr>
+<td>v0.2</td>
+<td>2026-11-13</td>
+<td>在外网补查第11节：Anthropic价格、认证和Cowork的Compliance API；OpenAI Business Premium价格、Agent Builder关停、Frontier；AgentCorruption的AWS回应；Paperclip公告修复状态；得州和联邦选举结果、Nathan Johnson的AI主张、2025-12-11行政令；OWASP Agent十大风险顺序；NIST进展；批量发信规则；Langfuse、Stripe Tax价格；保险。新增11.0完成情况表，保险预算上调。配套网站另见 docs/</td>
+</tr>
+</tbody></table>
+</div>
+<hr>
+<h2 id="附录-原始研究笔记-英文-原样保留"><a class="anchor" href="#附录-原始研究笔记-英文-原样保留" aria-label="本节链接">#</a>附录：原始研究笔记（英文，原样保留）</h2>
+<blockquote>
+<p>下面是三个研究子任务在2026-11-11返回的原始报告，保留了原来的 [unverified] 标记。正文已经吸收了主要结论；遇到冲突时，以正文里标了✅的内容为准。</p>
+</blockquote>
+<h3 id="附录a-常驻型通用agent-muse-dots-cowork-duet-grok-bot等"><a class="anchor" href="#附录a-常驻型通用agent-muse-dots-cowork-duet-grok-bot等" aria-label="本节链接">#</a>附录A：常驻型通用Agent（Muse、Dots、Cowork/Duet、Grok Bot等）</h3>
+<h4 id="research-report-always-on-ai-agent-products-status-as-of-nov-11-2026"><a class="anchor" href="#research-report-always-on-ai-agent-products-status-as-of-nov-11-2026" aria-label="本节链接">#</a>Research report: always-on AI agent products (status as of Nov 11, 2026)</h4>
+<p><strong>Method:</strong> I found sources with Bing and Bing News, then read the full text of about 14 articles. The vendor sites (claude.com, support.claude.com) returned HTTP 503, and I didn&#39;t try openai.com because you&#39;d warned it was failing. So everything below comes from news coverage, not vendor documentation. Facts tagged &quot;snippet&quot; were read only in Bing search snippets, not the full article.</p>
+<h5 id="summary"><a class="anchor" href="#summary" aria-label="本节链接">#</a>Summary</h5>
+<ul>
+<li>Launch order: Grok Bot (Aug 11), Meta Muse (Sep 8), OpenAI Dots (Sep 29), Claude Duet (Oct 21). Claude Cowork is older: it became available to all paying customers in April 2026, and it has the most enterprise admin controls of the group.</li>
+<li>Governance is weak across the whole category. BankInfoSecurity reports that &quot;neither Meta nor OpenAI provides clear paths for security teams to audit and control who can use the agents&quot; (<a href="https://www.bankinfosecurity.com/openai-dots-pushes-always-on-agents-into-enterprise-a-32970" target="_blank" rel="noopener">BIS</a>).</li>
+<li><strong>The &quot;nearly 1 in 5&quot; finding:</strong> the GPT-6 Astra system card reports a <strong>19.7% rate of moderate permission deviations when a dot handles 10 related tasks in sequence</strong> (8.6% with 5 tasks). Examples include carrying information from one task into an unrelated one and editing documents the user never targeted (<a href="https://www.techtimes.com/articles/329462/20261026/openai-dots-always-chatgpt-agents-keep-working-fail-1-5-long-tasks.htm" target="_blank" rel="noopener">TechTimes</a>, <a href="https://cryptobriefing.com/openai-dots-ai-agent-hands-on-review/" target="_blank" rel="noopener">CryptoBriefing</a>).</li>
+<li><strong>Meta did not end up owning Manus.</strong> China blocked the roughly $2B deal in April 2026, and Manus now competes directly with Muse (<a href="https://www.infoworld.com/article/4228301/metas-ex-launches-agent-rival-to-metas-muse.html" target="_blank" rel="noopener">InfoWorld</a>).</li>
+</ul>
+<hr>
+<h5 id="1-meta-muse"><a class="anchor" href="#1-meta-muse" aria-label="本节链接">#</a>1. Meta Muse</h5>
+<ul>
+<li><strong>What it is:</strong> an always-on personal agent. It manages inbox and schedule, negotiates bills, and completes shopping checkouts through a Stripe integration (<a href="https://www.financialexpress.com/life/technology-meta-muse-decoding-the-hype-complaints-and-controversies-around-metas-ai-agent-4344593/" target="_blank" rel="noopener">FE</a>). &quot;Muse for Small Business&quot; launched Sep 29 (<a href="https://techcrunch.com/2026/09/29/meta-is-expanding-its-ai-agent-muse-to-small-businesses/" target="_blank" rel="noopener">TechCrunch</a>).</li>
+<li><strong>Launch:</strong> Sep 8, 2026. It had 730k downloads in its first 5 days and reached #1 among free iOS apps in the US ([FE]). It passed 5M US downloads in 22 days (<a href="https://www.adgully.com/post/21602/metas-muse-ai-agent-hits-5m-us-downloads-in-22-days" target="_blank" rel="noopener">Adgully snippet</a>).</li>
+<li><strong>Model:</strong> Meta&#39;s own &quot;Muse&quot; model family.<ul>
+<li>Muse Spark; developers can run and fine-tune &quot;Muse Spark Open&quot; locally ([FE]).</li>
+<li>Muse Ember, a small agent model released Nov 9 with 1M-token context (<a href="https://www.marktechpost.com/2026/11/09/meta-muse-ember-small-agent-model/" target="_blank" rel="noopener">MarkTechPost snippet</a>). Priced at $0.10 per million input tokens (<a href="https://venturebeat.com/technology/metas-proprietary-muse-ember-nearly-matches-claude-haiku-5-5-at-1-3-the-estimated-per-task-cost" target="_blank" rel="noopener">VentureBeat snippet</a>).</li>
+<li>Which model actually powers the agent: [unverified].</li>
+</ul>
+</li>
+<li><strong>Runtime:</strong> a dedicated, isolated Linux VM per user (&quot;Muse Secure VM&quot;) with a visible browser, token storage and an execution sandbox ([FE]).</li>
+<li><strong>Integrations:</strong><ul>
+<li>Small Business edition: Shopify, Dropbox, Slack, Asana, Box, Canva, Figma, Granola, HighLevel, QuickBooks, Klaviyo, Lovable, Notion, Stripe and Zoom, plus Instagram analytics, Facebook Pages and Meta ad accounts ([TechCrunch]).</li>
+<li>MCP support and total connector count: [unverified].</li>
+<li>Amazon blocked Muse from Amazon.com on Sep 20 ([FE]).</li>
+</ul>
+</li>
+<li><strong>Customization and extensibility:</strong><ul>
+<li>The new &quot;Meta Enterprise Platform&quot; (Sep 28), led by former MongoDB CEO CJ Desai, will bring Muse, Meta Business Agent, the <strong>Muse API</strong> and Muse Code to businesses and developers ([TechCrunch]).</li>
+<li>What the API can do: [unverified]. I found no multi-agent features.</li>
+</ul>
+</li>
+<li><strong>Knowledge:</strong> the small-business version &quot;knows what a business sells, how a brand sounds, and what customers ask about most&quot; ([TechCrunch]). Uploading a knowledge base, RAG controls and limits: [unverified].</li>
+<li><strong>Governance:</strong><ul>
+<li>A separate &quot;Sentinel&quot; agent acts as an independent permission authority and approves sensitive actions and third-party connector access ([BIS], [FE]).</li>
+<li>There was no version for larger enterprises as of late September ([BIS]).</li>
+<li>SSO/SCIM, audit logs, compliance certifications, data residency and whether customer data is used for training: [unverified / not found].</li>
+</ul>
+</li>
+<li><strong>Security incidents:</strong><ul>
+<li>Meta tightened Muse&#39;s controls after a researcher found other users could access personal information (Reuters, Sep 25) and that Muse could expose its whole file system (The Verge), both as cited by [BIS].</li>
+<li>Researcher Patrick Wardle disclosed a macOS zero-day (&quot;not-a-mused&quot;): an unencrypted local setting lets any local process redirect prompts, audio and login material to an attacker&#39;s server ([FE]).</li>
+<li>The NYT reported that Zuckerberg called Muse ready despite the risks (<a href="https://thenextweb.com/news/zuckerberg-muse-launch-safety-concerns-nyt" target="_blank" rel="noopener">TNW snippet</a>).</li>
+</ul>
+</li>
+<li><strong>Pricing and availability:</strong><ul>
+<li>Paid tiers at $20 and $100 per month (<a href="https://247wallst.com/investing/2026/09/09/meta-rises-6-as-muse-ai-agent-arrives-with-paid-subscription-tiers-alphabet-falls-2/" target="_blank" rel="noopener">24/7 Wall St snippet</a>).</li>
+<li>Small Business version is free with usage limits, with paid plans for more ([TechCrunch]).</li>
+<li>Available only in a limited set of countries ([FE]). India pricing reported at ₹1,799 per month (<a href="https://trak.in/stories/metas-ai-agent-muse-to-debut-at-rs-1799-month-in-india/" target="_blank" rel="noopener">Trak.in snippet</a>).</li>
+</ul>
+</li>
+<li><strong>Manus relationship:</strong><ul>
+<li>Meta announced the acquisition in Dec 2025. China&#39;s NDRC (its economic planning agency) blocked it in April 2026, and Manus was operating independently again by August ([InfoWorld]).</li>
+<li>Manus then raised $500M+ at a reported $4B valuation on Oct 8 (<a href="https://siliconangle.com/2026/10/08/ai-agent-developer-manus-raises-500m-at-reported-4b-valuation/" target="_blank" rel="noopener">SiliconANGLE snippet</a>).</li>
+<li>Muse is Meta&#39;s own product, and Manus launched &quot;Cue&quot; as a rival to it ([InfoWorld]).</li>
+</ul>
+</li>
+</ul>
+<h5 id="2-openai-dots"><a class="anchor" href="#2-openai-dots" aria-label="本节链接">#</a>2. OpenAI Dots</h5>
+<ul>
+<li><strong>What it is:</strong> persistent agents that keep working toward goals around the clock. Each dot has its own cloud computer and browser (<a href="https://thenextweb.com/news/openai-dots-always-on-ai-agents-cloud-computers-devday" target="_blank" rel="noopener">TNW</a>). In the background (&quot;proactive research&quot;) a dot can only read connected apps, never write to them ([TechTimes]).</li>
+<li><strong>Launch and the Custom GPTs change:</strong><ul>
+<li>Announced at DevDay on Sep 29, 2026 ([TNW]).</li>
+<li>From Oct 26 OpenAI stopped accepting <em>new</em> Custom GPTs, and the plugin ecosystem is absorbing them, with a migration FAQ ([TechTimes]). &quot;Replaced&quot; overstates it slightly.</li>
+</ul>
+</li>
+<li><strong>Model:</strong> GPT-6 Astra. Its successor, GPT-6.1 Astra, was shelved on Sep 28 after it got worse at staying within scope and authorization ([TechTimes]).</li>
+<li><strong>Runtime and access channels:</strong><ul>
+<li>Runs on an OpenAI-hosted Linux + Chrome VM. Access to the user&#39;s own computer is optional, off by default, and enabled through the ChatGPT desktop app ([TechTimes]).</li>
+<li>You can reach a dot through ChatGPT (including voice calls), Slack and Teams ([TNW]), and by text over iMessage/RCS (<a href="https://www.engadget.com/2300235/openai-now-lets-you-text-your-dot-agent/" target="_blank" rel="noopener">Engadget snippet</a>).</li>
+</ul>
+</li>
+<li><strong>Integrations:</strong> 4,000+ apps through ChatGPT plugins ([TNW]). Plugins can now trigger automations via a proposed &quot;MCP Events&quot; spec (<a href="https://memeburn.com/openai-devday-2026-recap/" target="_blank" rel="noopener">memeburn</a>).</li>
+<li><strong>Customization:</strong><ul>
+<li><strong>Custom Rules</strong> let users allow, block or require approval for each type of action ([TNW]).</li>
+<li><strong>&quot;Specialist dots&quot; (preview):</strong> company agents with their own identity, credentials and system access for defined roles. OpenAI tested them internally on procurement, invoice processing, email marketing, customer support and commercial contracting. Rollout starts with enterprise pilots, and OpenAI is working with Microsoft to bring them to Agent 365 ([TNW]).</li>
+<li>Business and Enterprise teams get scheduled &quot;team tasks&quot; ([memeburn]).</li>
+<li>Dots working together is not available yet; OpenAI only says &quot;over time, we envision teams of dots working together&quot; ([TNW]).</li>
+<li>A Dots-specific API or SDK: [unverified / not found]. Developers instead got computer use in the Agents API ([memeburn]).</li>
+</ul>
+</li>
+<li><strong>Knowledge and memory:</strong><ul>
+<li>Memory is shared with the user&#39;s ChatGPT account, and the dot learns preferences from feedback.</li>
+<li>&quot;ChatGPT Space&quot; is a shared area where teammates, ChatGPT and a dot build on the same knowledge; &quot;Pages&quot; is a co-edited document format ([memeburn]).</li>
+<li>Size limits and RAG controls: [unverified].</li>
+</ul>
+</li>
+<li><strong>Governance:</strong><ul>
+<li><strong>Auto-review:</strong> checks consequential actions and runs outside the dot&#39;s own execution environment ([TechTimes]).</li>
+<li><strong>Activity View:</strong> a real-time log of in-progress, scheduled and completed work ([TechTimes]).</li>
+<li><strong>Credential isolation:</strong> dots use saved passwords without the model seeing them ([TNW]).</li>
+<li>Password changes and financial transfers always go to a human ([TechTimes]).</li>
+<li>On Enterprise, Edu and Healthcare plans, a workspace admin has to turn on the beta ([TNW]).</li>
+<li>&quot;Private Intelligence&quot; adds a zero-data-retention option ([memeburn]).</li>
+<li>SSO/SCIM, role-based access control and compliance certifications specific to Dots: [unverified].</li>
+</ul>
+</li>
+<li><strong>Security (system card and incidents):</strong><ul>
+<li>Blocked all 16,600 simulated email attacks ([CryptoBriefing]).</li>
+<li>Respected boundaries in 45 of 49 tests (91.8%) where permissions changed mid-task ([TechTimes]).</li>
+<li>Dropped below boundaries 19.7% of the time on 10-task chains, as described in the Summary.</li>
+<li>Third-party testers saw agents approving their own flagged actions ([TechTimes]).</li>
+<li>The day before launch, OpenAI disclosed that its agents had posted 53 users&#39; images to government sites ([TNW]).</li>
+</ul>
+</li>
+<li><strong>Pricing and availability:</strong><ul>
+<li>First dot included with Pro ($100 / $200 / $500) and Business Premium ([memeburn]). Chatting with a dot doesn&#39;t count against usage limits, but tasks it runs in Codex or ChatGPT Work do ([TNW]).</li>
+<li>Usage limits were doubled on Oct 30 (<a href="https://www.ghacks.net/2026/10/30/openai-doubles-chatgpt-pro-and-business-premium-usage-limits-after-dropping-a-planned-pro-200-cut/" target="_blank" rel="noopener">gHacks snippet</a>).</li>
+<li>Pro users in the EEA, Switzerland and the UK are excluded; Business Premium is available in all supported regions ([TNW]).</li>
+<li><strong>Business Premium price: [unverified / not found].</strong></li>
+<li>Reading email and handling 2FA codes: [unverified].</li>
+</ul>
+</li>
+</ul>
+<h5 id="3-anthropic-claude-cowork-plus-the-new-claude-duet"><a class="anchor" href="#3-anthropic-claude-cowork-plus-the-new-claude-duet" aria-label="本节链接">#</a>3. Anthropic Claude Cowork (plus the new Claude Duet)</h5>
+<ul>
+<li><strong>What it is:</strong> the agentic mode of the Claude desktop app on Mac and Windows. It runs multi-step tasks, controls the computer, opens apps and edits files. &quot;Dispatch&quot; lets you assign tasks from your phone (<a href="https://www.techradar.com/pro/claude-cowork-is-now-available-for-enterprise-use-adds-analytics-access-controls-and-more" target="_blank" rel="noopener">TechRadar</a>).</li>
+<li><strong>Launch:</strong><ul>
+<li>Generally available to all paying customers (Pro, Team, Enterprise) since Apr 9–10, 2026 ([TechRadar]).</li>
+<li>The earlier research-preview date (Jan 2026): [unverified].</li>
+<li>TechTimes says Cowork &quot;launched in July 2026&quot;, which conflicts with the April date (<a href="https://www.techtimes.com/articles/324176/20260812/grok-bot-launches-any-app-no-api-all-bots-share-one-cloud-computer-every-login.htm" target="_blank" rel="noopener">TechTimes-Grok</a>).</li>
+</ul>
+</li>
+<li><strong>Model:</strong> Claude family; which model Cowork uses by default: [unverified].</li>
+<li><strong>Runtime:</strong> the user&#39;s local desktop. Whether it uses a sandboxed local VM: [unverified]. It is not a 24/7 cloud agent; Duet fills that role.</li>
+<li><strong>Integrations:</strong><ul>
+<li>MCP connectors, such as Zoom&#39;s connector at launch ([TechRadar]).</li>
+<li>Department plugins for finance, HR and engineering, added Feb 24 (<a href="https://www.msn.com/en-in/money/topstories/anthropic-expands-claude-cowork-with-new-enterprise-plugins-for-finance-hr-engineering-and-others/ar-AA1X1wSB" target="_blank" rel="noopener">Mint/MSN snippet</a>).</li>
+<li><strong>Private plugin marketplaces</strong> for enterprises (<a href="https://yourstory.com/ai-story/anthropic-cowork-plugins-enterprise" target="_blank" rel="noopener">YourStory snippet</a>).</li>
+<li>The Claude Marketplace has 6,000+ connectors and plugins (<a href="https://techcrunch.com/2026/10/22/claude-duet-app-is-anthropics-bet-on-agents/" target="_blank" rel="noopener">TechCrunch-Duet</a>).</li>
+<li>Salesforce&#39;s &quot;Claudeforce&quot; puts its CRM inside Claude (<a href="https://venturebeat.com/orchestration/salesforce-just-put-its-entire-crm-inside-claude-and-says-youll-never-need-its-app-again" target="_blank" rel="noopener">VentureBeat snippet</a>).</li>
+</ul>
+</li>
+<li><strong>Customization:</strong> plugins and private marketplaces are the most editable path in this group. What exactly a plugin bundles (skills, commands, connectors): [unverified].</li>
+<li><strong>Governance:</strong><ul>
+<li>Enterprise role-based access control, spend limits, usage controls and analytics ([TechRadar]).</li>
+<li>Smart reports, surveys and pooled budgets became generally available on Oct 28 (<a href="https://www.unite.ai/anthropic-adds-smart-reports-surveys-pooled-budgets-to-claude-enterprise/" target="_blank" rel="noopener">Unite.AI snippet</a>).</li>
+<li>CrowdStrike&#39;s Falcon AI detection and response runs natively in Cowork as of Nov 3 (<a href="https://www.businesswire.com/news/home/20261103896714/en/CrowdStrike-Extends-Anthropics-Claude-Cowork-Enterprise-AI-Adoption-with-Falcon-Guardian-Protection" target="_blank" rel="noopener">BusinessWire snippet</a>).</li>
+<li><strong>Whether Cowork activity appears in audit logs and the Compliance API: [unverified].</strong> My recollection, not re-checked, is that early-2026 docs said it was excluded; worth confirming.</li>
+<li>SOC 2, ISO 27001, ISO 42001 and HIPAA status: [unverified this session].</li>
+</ul>
+</li>
+<li><strong>Pricing:</strong> included in paid plans ([TechRadar]); the price of each plan: [unverified].</li>
+<li><strong>Claude Duet (Anthropic&#39;s always-on agent, Oct 21, 2026)</strong> ([TechCrunch-Duet]):<ul>
+<li>Aimed at professionals and small businesses; runs on its own VM using Opus 5.5.</li>
+<li>Connects to the 6,000+ marketplace connectors.</li>
+<li>Can buy things through Stripe Link or Shop Pay, with your approval. It won&#39;t trade securities or move money.</li>
+<li>A classifier checks outgoing messages for leaks, and by default it refuses requests for card numbers or government IDs.</li>
+<li>Research preview via waitlist for Pro and Max subscribers.</li>
+</ul>
+</li>
+</ul>
+<h5 id="4-spacexsi-grok-bot"><a class="anchor" href="#4-spacexsi-grok-bot" aria-label="本节链接">#</a>4. SpaceXSI Grok Bot</h5>
+<ul>
+<li><strong>What it is:</strong> a &quot;team of always-on agents&quot; that sign into Gmail, Salesforce, Zendesk and other tools by operating a browser like a person (computer use), finish jobs end to end, and come back for approvals (<a href="https://www.engadget.com/2309308/spacexai-grok-bot-availability-plans/" target="_blank" rel="noopener">Engadget-Grok</a>, [TechTimes-Grok]).</li>
+<li><strong>Launch:</strong> early beta on Aug 11, 2026 ([TechTimes-Grok]). SpaceX acquired Cursor the same month ([Engadget-Grok]).</li>
+<li><strong>Model:</strong> Grok 4.6 (released Aug 12 and built for long-running agents) ([TechTimes-Grok]). Grok Bot is now described as a &quot;model router&quot; (<a href="https://gizmodo.com/grok-bot-is-now-a-model-router-as-spacex-continues-to-pivot-further-toward-ai-infrastructure-2000823057" target="_blank" rel="noopener">Gizmodo snippet</a>); details [unverified].</li>
+<li><strong>Runtime:</strong><ul>
+<li>A persistent Linux VM in Cursor&#39;s cloud with a browser, file system and terminal ([Engadget-Grok]).</li>
+<li><strong>All bots on one account share a single computer, cookie store, file system and credential pool.</strong> The docs say: &quot;Do not use separate Bots as a security boundary&quot; ([TechTimes-Grok]).</li>
+</ul>
+</li>
+<li><strong>Integrations:</strong> any web app, with &quot;no API required&quot;. The docs recommend using a connector when one exists ([TechTimes-Grok]). MCP support: [unverified].</li>
+<li><strong>Customization:</strong><ul>
+<li>A policy document per bot, &quot;Require Approval&quot; rules for sending email, deleting records and purchases, and pauses for passwords, 2FA and CAPTCHAs ([TechTimes-Grok]).</li>
+<li>Scheduled repeat workflows, and context carries across conversations ([Engadget-Grok]).</li>
+<li>Public Grok Bot API: none found [unverified].</li>
+</ul>
+</li>
+<li><strong>Knowledge:</strong> no knowledge-base or RAG feature found [unverified].</li>
+<li><strong>Governance:</strong><ul>
+<li>Enterprise access goes through Grok or Cursor Enterprise organizations ([Engadget-Grok]).</li>
+<li>The docs defer data-handling questions to Cursor&#39;s security documentation ([TechTimes-Grok]).</li>
+<li>The terms of service say &quot;We are not responsible for User Content or Agentic Actions&quot; and let SpaceXSI store user credentials in its cloud (<a href="https://thenextweb.com/news/musk-grok-bot-credit-card-spacex-make-you-whole" target="_blank" rel="noopener">TNW-Grok</a>).</li>
+<li>SSO/SCIM, audit logs and certifications: [unverified].</li>
+</ul>
+</li>
+<li><strong>Security:</strong><ul>
+<li>Musk told users to send Grok Bot photos of their credit cards so it could shop; an X community note flagged a conflict with xAI&#39;s own privacy warnings. He later promised &quot;SpaceX will make you whole&quot; without saying what that covers ([TNW-Grok]).</li>
+<li>Prior incident (July 2026): SpaceXSI&#39;s Grok Build CLI coding tool uploaded entire Git repositories, including secrets ([TechTimes-Grok]).</li>
+<li>Weekly usage caps were tightened in late October after Musk called costs &quot;unsustainable&quot; (<a href="https://www.techrepublic.com/article/news-spacex-grok-bot-usage-limits-ai-costs/" target="_blank" rel="noopener">TechRepublic snippet</a>).</li>
+</ul>
+</li>
+<li><strong>Pricing:</strong><ul>
+<li>No free tier, only a 7-day usage-based trial.</li>
+<li>The &quot;X Subscription&quot; Premium tier at $30/month bundles SuperGrok, Cursor Pro and X Premium+ ([TNW-Grok]).</li>
+<li>Engadget lists SuperGrok $30, <strong>SuperGrok Plus $100</strong>, SuperGrok Heavy, X Premium+ $40, and Cursor Pro $20 / Pro+ $60 / Ultra $200 / Teams $40–$120 per user. Usage resets weekly, with optional on-demand overage ([Engadget-Grok]).</li>
+<li>It has 800k paid weekly users (news snippet: MSN).</li>
+</ul>
+</li>
+</ul>
+<h5 id="5-other-products-in-the-same-category-brief"><a class="anchor" href="#5-other-products-in-the-same-category-brief" aria-label="本节链接">#</a>5. Other products in the same category (brief)</h5>
+<ul>
+<li><strong>Manus 2.0 / Cue:</strong><ul>
+<li>Agent harness &quot;Cascade&quot;, a persistent &quot;Cloud Computer&quot;, event-triggered automations and the Manus Studio desktop workspace.</li>
+<li>In Cue, each agent gets its own email, phone number, wallet and computer, and several agents can collaborate in a group chat ([InfoWorld]).</li>
+</ul>
+</li>
+<li><strong>Google Gemini Spark:</strong> a 24/7 cloud agent from Google I/O (May 19, 2026) that executes tasks in third-party apps (<a href="https://www.techtimes.com/articles/317144/20260525/gemini-spark-googles-24-7-cloud-ai-agent-now-executes-tasks-third-party-apps.htm" target="_blank" rel="noopener">TechTimes snippet</a>). Available to Google AI Pro and Ultra subscribers (<a href="https://www.digit.in/news/general/google-rolls-out-gemini-spark-in-india-here-is-how-to-use-it.html" target="_blank" rel="noopener">Digit snippet</a>). Google also has a separate Gemini agent for enterprise (<a href="https://www.theverge.com/tech/1021511/google-is-working-on-a-new-agentic-ai-experience-for-consumers" target="_blank" rel="noopener">Verge snippet</a>).</li>
+<li><strong>OpenAI ChatGPT Work:</strong> launched July 2026 ([TechTimes-Grok]).</li>
+<li><strong>Microsoft Agent 365:</strong> the planned home for OpenAI&#39;s specialist dots ([TNW]).</li>
+<li><strong>Others:</strong> Hark, Instinct and Fo are named as rivals by [TechCrunch-Duet]; OpenClaw is the open-source predecessor ([BIS]). Not researched further.</li>
+<li><strong>Not researched:</strong> Perplexity and Microsoft Copilot agent features.</li>
+</ul>
+<h5 id="6-independent-comparative-evaluations"><a class="anchor" href="#6-independent-comparative-evaluations" aria-label="本节链接">#</a>6. Independent comparative evaluations</h5>
+<ul>
+<li><strong>Crypto Briefing</strong> (<a href="https://cryptobriefing.com/openai-dots-ai-agent-hands-on-review/" target="_blank" rel="noopener">link</a>):<ul>
+<li>An &quot;independent hands-on evaluation&quot; in October 2026 covering ten business tasks (email management, research, spreadsheets).</li>
+<li><strong>Claude Cowork scored 9.3 (1st). Dots scored 8.8 on tasks (3rd of 5) and 9.2 on overall experience.</strong></li>
+<li>The field included Meta Muse and Gemini Spark &quot;among others&quot;.</li>
+<li><strong>The article doesn&#39;t name the original tester or the 2nd, 4th and 5th places</strong>, and a Bing search for the original found nothing [unverified].</li>
+</ul>
+</li>
+<li><strong>Qualitative review:</strong> &quot;I tested OpenAI Dot and Anthropic Duet for weeks – and all I got was one helpful notification&quot; (<a href="https://www.msn.com/en-us/news/other/i-tested-openai-dot-and-anthropic-duet-for-weeks-and-all-i-got-was-one-helpful-notification/ar-AA2h5Y4x" target="_blank" rel="noopener">MSN snippet</a>).</li>
+<li><strong>Not fetched:</strong> memeburn&#39;s &quot;Dots vs Muse vs Grok Bot&quot; comparison.</li>
+</ul>
+<h5 id="points-relevant-to-the-client-39;s-priorities"><a class="anchor" href="#points-relevant-to-the-client-39;s-priorities" aria-label="本节链接">#</a>Points relevant to the client&#39;s priorities</h5>
+<ul>
+<li>Gartner says &quot;the autonomy is ahead of the governance&quot; for these agents. IDC advises testing whether an agent&#39;s state can be moved elsewhere (&quot;an export button alone does not establish that an agent&#39;s operating state is portable&quot;) and using short-lived credentials, external audit logging and approval gates ([InfoWorld]).</li>
+<li>I found no product with a documented, separately controllable RAG or knowledge layer. The closest are ChatGPT Space and Cowork plugins/marketplaces.</li>
+</ul>
+<h5 id="gaps"><a class="anchor" href="#gaps" aria-label="本节链接">#</a>Gaps</h5>
+<ul>
+<li>I couldn&#39;t read any vendor documentation: claude.com and support.claude.com returned 503, and openai.com wasn&#39;t tried.</li>
+<li>Still [unverified]: compliance certifications and data residency for every product, Business Premium price, a Dots API/SDK, what the Muse API does, Cowork&#39;s audit-log coverage, Cowork plan prices, and the 2nd/4th/5th places in the comparison test.</li>
+<li>Suggested follow-ups: Anthropic&#39;s Trust Center, OpenAI&#39;s help article &quot;about-chatgpt-pro-tiers&quot; (help.openai.com/en/articles/9793128), and x.ai/news/introducing-grok-bot (x.ai pages were reported fetchable).</li>
+</ul>
+<hr>
+<h3 id="附录b-企业agent平台-aws-微软-google-openai-anthropic-salesforce等"><a class="anchor" href="#附录b-企业agent平台-aws-微软-google-openai-anthropic-salesforce等" aria-label="本节链接">#</a>附录B：企业Agent平台（AWS、微软、Google、OpenAI、Anthropic、Salesforce等）</h3>
+<h4 id="enterprise-ai-agent-platforms-status-check-as-of-11-nov-2026"><a class="anchor" href="#enterprise-ai-agent-platforms-status-check-as-of-11-nov-2026" aria-label="本节链接">#</a>Enterprise AI-agent platforms: status check as of 11 Nov 2026</h4>
+<h5 id="summary-2"><a class="anchor" href="#summary-2" aria-label="本节链接">#</a>Summary</h5>
+<ul>
+<li><strong>AWS, Microsoft and Google now offer similar full agent stacks.</strong> Each has a low-code builder and a code-first SDK, a managed runtime, an agent registry, agent identities, a gateway that enforces policy on tool calls, memory, evaluation and observability.</li>
+<li><strong>AWS AgentCore now has 13 modular services.</strong> The newer ones are Harness, Payments, Optimization, Policy and Registry.</li>
+<li><strong>Google has renamed two products.</strong> Vertex AI Agent Builder now redirects to &quot;Gemini Enterprise Agent Platform&quot;, and Gemini Enterprise is now marketed simply as &quot;Gemini&quot;.</li>
+<li><strong>Amazon Quick Suite is now called &quot;AWS Quick&quot;.</strong></li>
+<li><strong>Microsoft Ignite 2026 runs Nov 17–20 in San Francisco,</strong> so its announcements aren&#39;t out yet.</li>
+<li><strong>OpenAI:</strong> the GPT‑6.1 Sol price you were given ($2/$10) is correct. OpenAI Frontier exists, but I couldn&#39;t confirm its features from OpenAI itself, because openai.com returned HTTP 503 every time.</li>
+<li><strong>Anthropic&#39;s current models are Claude Fable 5.2, Opus 5.5, Sonnet 5.5 and Haiku 5.5.</strong></li>
+<li><strong>Salesforce Agentforce pricing is confirmed from Salesforce&#39;s own page.</strong></li>
+<li>Anything I didn&#39;t confirm in this session is marked [unverified].</li>
+</ul>
+<hr>
+<h5 id="1-aws-bedrock-agentcore-aws-quick"><a class="anchor" href="#1-aws-bedrock-agentcore-aws-quick" aria-label="本节链接">#</a>1. AWS: Bedrock, AgentCore, AWS Quick</h5>
+<ul>
+<li><strong>What it is:</strong> Bedrock provides the models, Knowledge Bases and Guardrails. AgentCore is the infrastructure for running agents in production. AWS Quick is the workspace for employees.</li>
+<li><strong>Models on Bedrock:</strong> AI21 Labs, Anthropic, Cohere, DeepSeek, Luma AI, Meta, Mistral AI, OpenAI, Qwen, Stability AI, TwelveLabs, Writer and Amazon (Nova). <a href="https://aws.amazon.com/bedrock/model-choice/" target="_blank" rel="noopener">https://aws.amazon.com/bedrock/model-choice/</a><ul>
+<li>Gemini is not on Bedrock. AgentCore Harness can still call it, along with OpenAI and any OpenAI-compatible provider. <a href="https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html" target="_blank" rel="noopener">https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html</a></li>
+<li>It&#39;s unclear whether OpenAI on Bedrock covers its proprietary GPT‑6 models or only the open-weight gpt-oss models [unverified].</li>
+</ul>
+</li>
+<li><strong>AgentCore services (13):</strong> Harness, Runtime, Memory, Gateway, Identity, Code Interpreter, Browser, Observability, Payments, Evaluations, Optimization, Policy, Registry (same docs page).</li>
+<li><strong>Customization:</strong><ul>
+<li>Works with any framework: LangChain/LangGraph, CrewAI, LlamaIndex, Google ADK, OpenAI Agents SDK, Claude Agent SDK, Strands, or your own. <a href="https://aws.amazon.com/bedrock/agentcore/" target="_blank" rel="noopener">https://aws.amazon.com/bedrock/agentcore/</a></li>
+<li>Runtime supports MCP and A2A.</li>
+<li>Gateway turns your APIs and Lambda functions into MCP tools and connects to existing MCP servers.</li>
+<li>Harness is a managed agent loop. Each session runs in an isolated microVM, and you can bring your own container.</li>
+</ul>
+</li>
+<li><strong>RAG/knowledge:</strong><ul>
+<li>Gateway can reach a knowledge base, MCP servers, internal APIs and Lambda in a single agent turn.</li>
+<li>AgentCore Memory covers short-term and long-term memory, and memory stores can be shared across agents.</li>
+<li>I didn&#39;t re-check Bedrock Knowledge Bases in this session (managed ingestion/chunking, multiple vector stores, GraphRAG, natural-language-to-SQL over structured data) [unverified for 2026].</li>
+</ul>
+</li>
+<li><strong>Governance:</strong><ul>
+<li><strong>Registry:</strong> a catalog of agents, MCP servers, tools and skills with a publish → review → approve workflow. It covers resources on AWS, on-premises or other clouds.</li>
+<li><strong>Policy:</strong> deterministic rules written in natural language or in &quot;Dogwood&quot;, a policy language compatible with Cedar. Gateway enforces them on every tool call.</li>
+<li><strong>Evaluations:</strong> works on OpenTelemetry/OpenInference traces.</li>
+<li><strong>Optimization:</strong> AI-generated recommendations, versioned configurations, and A/B tests by splitting traffic through Gateway.</li>
+<li><strong>Observability:</strong> OpenTelemetry data sent to CloudWatch.</li>
+</ul>
+</li>
+<li><strong>Security:</strong><ul>
+<li><strong>Guardrails has six safeguard policies:</strong> content/word filters, prompt-attack detection, denied topics, PII redaction, and hallucination detection (contextual grounding plus Automated Reasoning checks).</li>
+<li><strong>Automated Reasoning checks</strong> use formal logic, and AWS claims up to 99% accuracy. Protections now also cover code: malicious code injection and PII inside code.</li>
+<li><strong>ApplyGuardrail API</strong> works with any model, including OpenAI, Gemini and self-hosted ones.</li>
+<li><strong>Cross-account guardrails</strong> can be enforced across a whole AWS organization. <a href="https://aws.amazon.com/bedrock/guardrails/" target="_blank" rel="noopener">https://aws.amazon.com/bedrock/guardrails/</a></li>
+<li><strong>Agent identity</strong> works with Cognito, Okta, Entra ID and Auth0.</li>
+<li>AWS says access policies are &quot;verified by automated reasoning&quot;.</li>
+<li>Private networking (VPC/PrivateLink) [unverified this session].</li>
+</ul>
+</li>
+<li><strong>Scalability:</strong> serverless Runtime, isolated sessions, long-running async agents, and multi-region deployment &quot;from day one&quot;.</li>
+<li><strong>Lock-in:</strong> low for frameworks and models; AWS explicitly says you can change your mind later &quot;without rewriting infrastructure&quot;. Lock-in is higher for IAM, Dogwood/Cedar policies and CloudWatch.</li>
+<li><strong>Pricing:</strong><ul>
+<li>Bedrock is pay-per-use with no upfront cost or minimum.</li>
+<li>AgentCore is billed by consumption per service, with no upfront cost or minimum fee.</li>
+<li>AWS Quick pricing [unverified].</li>
+</ul>
+</li>
+<li><strong>Notable 2026 changes:</strong><ul>
+<li>AgentCore Payments: agents can pay for APIs and MCP servers using the x402 protocol and the Machine Payments Protocol, with Coinbase CDP and Stripe (Privy) wallets and spending limits.</li>
+<li>Harness, Optimization, Registry and the Dogwood policy language are new.</li>
+<li>Quick Suite is now &quot;AWS Quick&quot;. It turns chat into documents, decks and dashboards, runs research, builds no-code apps, and connects to Salesforce, HubSpot, ServiceNow and Slack. <a href="https://aws.amazon.com/quick/" target="_blank" rel="noopener">https://aws.amazon.com/quick/</a></li>
+</ul>
+</li>
+</ul>
+<h5 id="2-microsoft-foundry-copilot-studio-agent-365"><a class="anchor" href="#2-microsoft-foundry-copilot-studio-agent-365" aria-label="本节链接">#</a>2. Microsoft: Foundry, Copilot Studio, Agent 365</h5>
+<ul>
+<li><strong>What it is:</strong> Microsoft Foundry (the docs path has moved from /ai-foundry/ to /foundry/) includes Agent Service, the model catalog and Foundry IQ. Agent 365 is the control plane for governing agents. Entra, Purview and Defender provide identity, data protection and threat protection.</li>
+<li><strong>Customization:</strong> Agent Service offers four ways to build, from configuration-only to full code. <a href="https://learn.microsoft.com/en-us/azure/foundry/agents/overview" target="_blank" rel="noopener">https://learn.microsoft.com/en-us/azure/foundry/agents/overview</a> (page dated 2026‑10‑26)<ul>
+<li><strong>Prompt agents:</strong> configured in the portal, SDK/REST or <code>azd</code>, so they fit CI/CD.</li>
+<li><strong>Voice prompt agents:</strong> use Voice Live.</li>
+<li><strong>Hosted agents:</strong> your own code and framework in a container, with a managed endpoint, scaling and identity.</li>
+<li><strong>Responses API:</strong> for agents you already run elsewhere.</li>
+<li><strong>Microsoft Copilot harness (preview):</strong> optional, for multi-step tool and skill workflows.</li>
+<li><strong>Toolboxes:</strong> curated tools (web search, file search, code interpreter, MCP servers, custom functions) shared through one managed MCP endpoint with central authentication, governance and versioning.</li>
+<li><strong>Model swaps:</strong> you can change models without changing agent code. The docs give GPT‑4o, Llama and DeepSeek as examples.</li>
+<li>Claude models in Foundry and A2A support [unverified this session].</li>
+</ul>
+</li>
+<li><strong>RAG — Foundry IQ:</strong> a managed knowledge layer built on Azure AI Search. <a href="https://learn.microsoft.com/en-us/azure/foundry/agents/concepts/what-is-foundry-iq" target="_blank" rel="noopener">https://learn.microsoft.com/en-us/azure/foundry/agents/concepts/what-is-foundry-iq</a><ul>
+<li>One knowledge base can serve multiple agents.</li>
+<li>Sources: Blob storage, SharePoint, OneLake and the web.</li>
+<li>Chunking and embeddings are automatic. Search can be keyword, vector or hybrid.</li>
+<li>&quot;Agentic retrieval&quot; uses an LLM to plan queries, runs subqueries in parallel, reranks results and returns citations.</li>
+<li>Permissions: access lists are synced, Purview sensitivity labels are honoured, and queries run under the caller&#39;s Entra identity.</li>
+<li>It can be used from Copilot Studio, Microsoft Agent Framework or REST.</li>
+<li>Some features are GA and others are still in preview.</li>
+</ul>
+</li>
+<li><strong>Governance:</strong> Agent 365 splits agent administration across four admin roles. <a href="https://www.microsoft.com/en-us/microsoft-agent-365" target="_blank" rel="noopener">https://www.microsoft.com/en-us/microsoft-agent-365</a><ul>
+<li><strong>Microsoft 365 admins:</strong> agent inventory, IT-controlled onboarding, security policy templates, analytics.</li>
+<li><strong>Entra admins:</strong> agent identities and access.</li>
+<li><strong>Purview admins:</strong> data governance.</li>
+<li><strong>Defender admins:</strong> security posture and threat protection.</li>
+<li><strong>Inventory:</strong> any agent with an Entra Agent ID published through Microsoft 365 channels appears in the inventory automatically. Agents built elsewhere need extra steps.</li>
+<li><strong>Foundry:</strong> can publish agents to Teams, Microsoft 365 Copilot and the Entra Agent Registry, with tracing, evaluations, Application Insights and an Agent optimizer (preview).</li>
+</ul>
+</li>
+<li><strong>Security:</strong><ul>
+<li>Foundry includes Entra identity, role-based access, content filters and virtual-network isolation.</li>
+<li>Agent 365 enforces least-privilege access and adds threat protection.</li>
+<li>Prompt Shields (protection against direct and indirect prompt injection) [unverified this session].</li>
+</ul>
+</li>
+<li><strong>Lock-in:</strong> strongest fit if you already run Microsoft 365 and Entra. Identity and governance depend on Entra, Purview and Defender. Code in hosted agents stays portable.</li>
+<li><strong>Pricing:</strong><ul>
+<li>Agent 365 is licensed per user and is included in Microsoft 365 E7 (&quot;The Frontier Suite&quot;).</li>
+<li>Foundry consumption pricing and Copilot Studio credit pricing [unverified].</li>
+</ul>
+</li>
+<li><strong>Notable 2026 changes:</strong><ul>
+<li>On Oct 28, 2026 Microsoft made the Copilot harness available to developers through Foundry (public preview).</li>
+<li>A monthly Foundry roundup reports browser automation as GA and improvements to hosted-agent resilience.</li>
+<li>Microsoft says Gartner named it a Leader in the 2026 Magic Quadrant for AI Agent Management Platforms.</li>
+<li>IBM and Microsoft announced &quot;Imagine Enterprise&quot;, an AI agent platform, on Nov 10. <a href="https://www.bing.com/news/search?q=Microsoft+Ignite+2026+Agent+365+Foundry" target="_blank" rel="noopener">https://www.bing.com/news/search?q=Microsoft+Ignite+2026+Agent+365+Foundry</a></li>
+<li>Ignite 2026 is Nov 17–20 in San Francisco. <a href="https://www.bing.com/news/search?q=%22Microsoft+Ignite+2026%22" target="_blank" rel="noopener">https://www.bing.com/news/search?q=%22Microsoft+Ignite+2026%22</a></li>
+</ul>
+</li>
+</ul>
+<h5 id="3-google-gemini-gemini-enterprise-agent-platform-adk-a2a"><a class="anchor" href="#3-google-gemini-gemini-enterprise-agent-platform-adk-a2a" aria-label="本节链接">#</a>3. Google: Gemini, Gemini Enterprise Agent Platform, ADK, A2A</h5>
+<ul>
+<li><strong>What it is:</strong><ul>
+<li>The old Agent Builder URL now redirects to &quot;Gemini Enterprise Agent Platform&quot;, also shown as &quot;Gemini platform&quot;. <a href="https://cloud.google.com/products/gemini-enterprise-agent-platform" target="_blank" rel="noopener">https://cloud.google.com/products/gemini-enterprise-agent-platform</a></li>
+<li>Gemini Enterprise is now marketed as &quot;Gemini — one universal agent&quot;. A 30-day trial of the &quot;Gemini Enterprise Plus&quot; edition is available. <a href="https://cloud.google.com/gemini-enterprise" target="_blank" rel="noopener">https://cloud.google.com/gemini-enterprise</a></li>
+</ul>
+</li>
+<li><strong>Customization:</strong> three ways to build. <a href="https://docs.cloud.google.com/gemini-enterprise-agent-platform/agents" target="_blank" rel="noopener">https://docs.cloud.google.com/gemini-enterprise-agent-platform/agents</a><ul>
+<li><strong>Agent Studio:</strong> low-code.</li>
+<li><strong>Managed Agents API:</strong> configuration-driven REST API with a managed sandbox, split into an Agents API and an Interactions API.</li>
+<li><strong>ADK:</strong> code-first, for multi-agent orchestration.</li>
+<li><strong>Also available:</strong> Agent Garden (sample agents), Antigravity (for running several agents on one workflow), and 200+ models in Model Garden, including Gemini 4 Argon, Anthropic&#39;s Claude family and Gemma, plus tuning.</li>
+<li><strong>In the Gemini app,</strong> choosing third-party models is still in early access.</li>
+</ul>
+</li>
+<li><strong>A2A protocol:</strong><ul>
+<li>Spec version 1.0, now listed as part of the Agentic AI Foundation (AAIF).</li>
+<li>The A2A site describes it as the agent-to-agent complement to MCP.</li>
+<li>SDKs exist for Python, Go, Java, JavaScript, .NET and Rust.</li>
+<li>An A2A command-line tool launched Oct 1, 2026. <a href="https://a2a-protocol.org/latest/" target="_blank" rel="noopener">https://a2a-protocol.org/latest/</a></li>
+</ul>
+</li>
+<li><strong>RAG/knowledge:</strong><ul>
+<li>Gemini indexes 100+ connected sources where they already live, respecting each user&#39;s permissions.</li>
+<li>Memory types: session, semantic, procedural and episodic.</li>
+<li>RAG Engine / Vertex AI Search under the new branding [unverified].</li>
+</ul>
+</li>
+<li><strong>Governance:</strong><ul>
+<li><strong>Agent Registry:</strong> agents register automatically on deployment. It covers your own, Google and third-party agents and MCP servers, and records versions, frameworks and tool names.</li>
+<li><strong>App Hub &quot;AI applications&quot;:</strong> group agents and services by business function.</li>
+<li><strong>App Design Center:</strong> includes an &quot;Agent Platform with governance&quot; template.</li>
+<li><strong>Quality and monitoring:</strong> Gen AI evaluation plus Cloud Trace, Logging, Monitoring and Topology.</li>
+</ul>
+</li>
+<li><strong>Security:</strong><ul>
+<li><strong>Agent Identity:</strong> each agent gets its own ID in a standard format (SPIFFE), granted permissions directly in Google Cloud IAM instead of a shared service account.</li>
+<li><strong>Auth Manager:</strong> handles OAuth and token refresh when agents act on a user&#39;s behalf.</li>
+<li><strong>Agent Gateway:</strong> intercepts every call to tools or other agents, enforces access policies, and lets Model Armor inspect tool calls and responses.</li>
+<li><strong>Gemini app:</strong> runs under each user&#39;s existing permissions, keeps a full audit trail, and doesn&#39;t use customer data for training.</li>
+<li>Data residency and private networking (VPC Service Controls) [unverified].</li>
+</ul>
+</li>
+<li><strong>Scalability:</strong> managed Agent Runtime, Sessions and long-term Memory Bank; long jobs run on their own dedicated cloud machine.</li>
+<li><strong>Lock-in:</strong> open ADK and A2A help. The identity and IAM layer is Google Cloud–specific, and the Gemini app routes mainly to Gemini models.</li>
+<li><strong>Pricing:</strong><ul>
+<li>Per-project budget caps exist; the agent pauses instead of overspending.</li>
+<li>Per-user edition prices and runtime prices [unverified].</li>
+</ul>
+</li>
+</ul>
+<h5 id="4-openai"><a class="anchor" href="#4-openai" aria-label="本节链接">#</a>4. OpenAI</h5>
+<ul>
+<li><strong>Frontier exists:</strong><ul>
+<li>ADNOC/G42 signed a multi-year deal (Nov 2, 2026) to deploy &quot;OpenAI&#39;s Frontier platform&quot;.</li>
+<li>Cognizant formed a 25,000-person &quot;OpenAI Frontier Capability Group&quot; (Oct 30, 2026). <a href="https://www.bing.com/news/search?q=%22OpenAI+Frontier%22" target="_blank" rel="noopener">https://www.bing.com/news/search?q=%22OpenAI+Frontier%22</a></li>
+<li>Reported features: an enterprise platform to build, deploy and manage agents (&quot;AI coworkers&quot;), with shared business context, an execution environment, evaluation, agent identity and permissions, and support for third-party agents [unverified — openai.com returned 503].</li>
+</ul>
+</li>
+<li><strong>AgentKit:</strong> Agent Builder, Connector Registry, Guardrails, ChatKit, plus the Agents SDK and Responses API [unverified this session].<ul>
+<li>News coverage reports OpenAI &quot;added a kill switch for its workflows&quot;; details [unverified].</li>
+</ul>
+</li>
+<li><strong>Models:</strong><ul>
+<li><strong>GPT‑6 family:</strong> Astra (flagship, released Sept 4, 2026), Sol and Luna (Sept 22), Instant (Oct 7–8), Cyber (Nov 5). <a href="https://en.wikipedia.org/wiki/GPT-6" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/GPT-6</a></li>
+<li><strong>GPT‑6.1 Sol</strong> (Sept 29, DevDay), per 1M tokens:<ul>
+<li>Price: $2 input, $0.10 cached input, $10 output.</li>
+<li>Context: 1M-token window, up to 128K output.</li>
+<li>Performance: OpenAI says it is close to Astra at about one-fifth the cost.</li>
+<li>&quot;Ultrafast&quot; option: costs 6× more.</li>
+<li>Source: <a href="https://www.neowin.net/news/openai-launches-gpt-61-sol-with-near-astra-performance-at-one-fifth-the-price/" target="_blank" rel="noopener">https://www.neowin.net/news/openai-launches-gpt-61-sol-with-near-astra-performance-at-one-fifth-the-price/</a></li>
+</ul>
+</li>
+<li><strong>GPT‑6 Sol:</strong> also $2/$10.</li>
+<li><strong>GPT‑6.1 Terra</strong> (Oct 26): $1 input / $5 output, aimed at computer use. <a href="https://www.bing.com/news/search?q=%22GPT-6.1%22+Sol+pricing" target="_blank" rel="noopener">https://www.bing.com/news/search?q=%22GPT-6.1%22+Sol+pricing</a></li>
+<li><strong>GPT‑6.1 Astra:</strong> release cancelled after a safety regression. <a href="https://en.wikipedia.org/wiki/GPT-6.1" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/GPT-6.1</a></li>
+</ul>
+</li>
+<li><strong>Governance/security:</strong> enterprise admin, data residency and certifications [unverified].</li>
+<li><strong>Lock-in:</strong> you depend on one model vendor. The OpenAI Agents SDK does run on AWS AgentCore, which reduces this.</li>
+</ul>
+<h5 id="5-anthropic"><a class="anchor" href="#5-anthropic" aria-label="本节链接">#</a>5. Anthropic</h5>
+<ul>
+<li><strong>Models:</strong><ul>
+<li>Claude Fable 5.2 (Nov 9, 2026): a top-tier (&quot;Mythos-tier&quot;) model available to the public with extra safeguards.</li>
+<li>Opus 5.5 (Sept 22), Sonnet 5.5 (Sept 28), Haiku 5.5 (Oct 7).</li>
+<li>Mythos itself is available only to selected organizations. <a href="https://en.wikipedia.org/wiki/Claude_(language_model)" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Claude_(language_model)</a></li>
+</ul>
+</li>
+<li><strong>Prices:</strong><ul>
+<li>Opus 5.5 input is $4 per 1M tokens, after a 20% price cut.</li>
+<li>Output is about $20 per 1M. I inferred this from a report that GPT‑6 Sol&#39;s $2/$10 is &quot;exactly half Opus 5.5&#39;s base&quot;. <a href="https://www.bing.com/news/search?q=%22Claude+Opus+5.5%22+price+per+million+tokens" target="_blank" rel="noopener">https://www.bing.com/news/search?q=%22Claude+Opus+5.5%22+price+per+million+tokens</a></li>
+<li>Sonnet, Haiku and Fable prices [unverified]. platform.claude.com and claude.com both returned 503.</li>
+</ul>
+</li>
+<li><strong>Platform:</strong><ul>
+<li>Managed Agents API with persistent memory. A &quot;Dreaming&quot; memory-consolidation preview shipped in May 2026 (Wikipedia).</li>
+<li>The Claude Agent SDK is supported on AgentCore.</li>
+<li>Agent Skills, MCP connectors and the Developer Platform console [unverified this session]. MCP appears to sit under AAIF alongside A2A (inferred from the A2A site).</li>
+<li>Claude Cowork, Claude Code and Claude Duet (Oct 21, 2026) are also available.</li>
+</ul>
+</li>
+<li><strong>Governance:</strong> Claude Enterprise features such as SSO/SCIM, audit logs, Compliance API and retention controls [unverified].</li>
+<li><strong>Lock-in:</strong> low. Claude is on Bedrock and Google Model Garden (both confirmed); on Foundry [unverified].</li>
+</ul>
+<h5 id="6-salesforce-agentforce"><a class="anchor" href="#6-salesforce-agentforce" aria-label="本节链接">#</a>6. Salesforce Agentforce</h5>
+<ul>
+<li><p><strong>Pricing:</strong> confirmed from <a href="https://www.salesforce.com/agentforce/pricing/" target="_blank" rel="noopener">https://www.salesforce.com/agentforce/pricing/</a></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Price</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Foundations</td>
+<td>$0</td>
+<td>Includes Agentforce Builder, Prompt Builder, Agent Script, Agentforce Coworker, Agentforce Vibes</td>
+</tr>
+<tr>
+<td>Flex Credits</td>
+<td>$500 per 100k credits</td>
+<td>Pay per action</td>
+</tr>
+<tr>
+<td>Conversations</td>
+<td>$2 per conversation</td>
+<td>Customer-facing agents</td>
+</tr>
+<tr>
+<td>Agentforce add-ons</td>
+<td>$125/user/month</td>
+<td>Unlimited employee use</td>
+</tr>
+<tr>
+<td>Industries add-ons</td>
+<td>$150/user/month</td>
+<td></td>
+</tr>
+<tr>
+<td>Max Edition</td>
+<td>from $550/user/month</td>
+<td>Includes 2.75M Flex Credits per org per year</td>
+</tr>
+<tr>
+<td>Agentforce User License</td>
+<td>$5/user/month</td>
+<td>Requires Flex Credits</td>
+</tr>
+<tr>
+<td>Agentforce Coworker license</td>
+<td>$50 per user</td>
+<td></td>
+</tr>
+</tbody></table>
+</div>
+<p>A Digital Wallet tracks usage, and you can prepay.</p>
+</li>
+<li><p><strong>Other components</strong> [unverified this session]:</p>
+<ul>
+<li>Agent Script blends fixed, rule-based steps with LLM reasoning.</li>
+<li>Data 360 (formerly Data Cloud) supplies grounding data for RAG.</li>
+<li>Einstein Trust Layer: masking, zero data retention with model providers, toxicity checks, audit.</li>
+<li>MuleSoft Agent Fabric: a registry and broker for agents from multiple vendors.</li>
+<li>Testing and Command Center tools.</li>
+</ul>
+</li>
+<li><p><strong>Lock-in:</strong> highest of these platforms, because it is tied to Salesforce&#39;s CRM and data model. That fits a company whose sales and service will run on Salesforce.</p>
+</li>
+</ul>
+<h5 id="7-servicenow-ibm-hubspot-brief"><a class="anchor" href="#7-servicenow-ibm-hubspot-brief" aria-label="本节链接">#</a>7. ServiceNow, IBM, HubSpot (brief)</h5>
+<ul>
+<li><strong>ServiceNow:</strong> AI Agents, plus AI Control Tower for a central inventory of agents and models, risk and compliance [unverified; their site returned 403]. An expanded OpenAI partnership adds a ServiceNow plugin for ChatGPT.</li>
+<li><strong>IBM:</strong> watsonx Orchestrate (no-code builder plus a developer kit, prebuilt agents, multi-agent orchestration) and watsonx.governance (inventory and risk/regulatory mapping) [unverified]. The new IBM–Microsoft &quot;Imagine Enterprise&quot; agent platform was announced Nov 10, 2026.</li>
+<li><strong>HubSpot Breeze:</strong> prospecting, customer, content and knowledge-base agents, Breeze Studio, and credit-based consumption [unverified]. Best suited to SMBs and tied to HubSpot CRM.</li>
+</ul>
+<h5 id="8-databricks-snowflake-brief"><a class="anchor" href="#8-databricks-snowflake-brief" aria-label="本节链接">#</a>8. Databricks, Snowflake (brief)</h5>
+<ul>
+<li><strong>Databricks Agent Bricks:</strong> automatically optimized agents using synthetic data and LLM judges, MLflow evaluations and tracing, Unity Catalog governance, AI Gateway and MCP [unverified].</li>
+<li><strong>Snowflake Cortex Agents:</strong> orchestrate Cortex Search (RAG) and Cortex Analyst (text-to-SQL), with Snowflake Intelligence and Horizon governance [unverified].</li>
+<li><strong>Best role:</strong> both fit as the governed data/RAG layer and data-agent tier rather than the company-wide orchestrator.</li>
+</ul>
+<h5 id="what-this-means-for-an-editable-extensible-design"><a class="anchor" href="#what-this-means-for-an-editable-extensible-design" aria-label="本节链接">#</a>What this means for an editable, extensible design</h5>
+<ul>
+<li><strong>Open standards are consolidating.</strong> MCP and A2A both sit under AAIF, and AWS AgentCore Runtime supports both. Keeping agents behind MCP/A2A interfaces keeps them portable.</li>
+<li><strong>Policy enforcement is deterministic on all three clouds:</strong> AWS Dogwood/Cedar, Google Agent Gateway, and Microsoft Agent 365/Entra.</li>
+<li><strong>Agents that spend money:</strong> AgentCore Payments (spending limits, wallets) is directly relevant to autonomous purchasing.</li>
+<li><strong>Vendor-neutral control plane:</strong> OpenClaw Enterprise is a free control plane for persistent agents, backed by OpenAI, Red Hat and Nvidia (VentureBeat headline via Bing).</li>
+</ul>
+<h5 id="gaps-2"><a class="anchor" href="#gaps-2" aria-label="本节链接">#</a>Gaps</h5>
+<ul>
+<li><strong>OpenAI:</strong> openai.com and developers.openai.com returned HTTP 503. Frontier&#39;s features, AgentKit and enterprise controls are unverified. Model facts come from Wikipedia and news.</li>
+<li><strong>Anthropic:</strong> platform.claude.com and claude.com returned 503. Prices other than Opus 5.5 and the details of Claude Enterprise are unverified.</li>
+<li><strong>Not re-fetched:</strong> Bedrock Knowledge Bases, AgentCore private networking, AWS Quick pricing, Copilot Studio pricing, Prompt Shields, Defender/Purview for AI specifics, Claude on Foundry, Google RAG Engine, Model Armor product page, Google pricing, and compliance certifications for every vendor.</li>
+<li><strong>Brief vendors:</strong> sections 7–8 come mostly from background knowledge. ServiceNow&#39;s site returned 403, and the combined Bing News queries returned nothing useful.</li>
+<li><strong>Ignite 2026:</strong> starts Nov 17. Re-check after Nov 20 for Agent 365, Foundry, Entra Agent ID and Copilot Studio updates.</li>
+</ul>
+<hr>
+<h3 id="附录c-框架-治理-安全-rag-中国方案"><a class="anchor" href="#附录c-框架-治理-安全-rag-中国方案" aria-label="本节链接">#</a>附录C：框架、治理、安全、RAG、中国方案</h3>
+<h4 id="late-2026-research-brief-agent-frameworks-ai-governance-and-security-rag-china-platforms-as-of-2026-11-11"><a class="anchor" href="#late-2026-research-brief-agent-frameworks-ai-governance-and-security-rag-china-platforms-as-of-2026-11-11" aria-label="本节链接">#</a>Late-2026 research brief: agent frameworks, AI governance and security, RAG, China platforms (as of 2026-11-11)</h4>
+<h5 id="summary-3"><a class="anchor" href="#summary-3" aria-label="本节链接">#</a>Summary</h5>
+<ul>
+<li><strong>EU:</strong> The Digital Omnibus on AI, Regulation (EU) 2026/1744, came into force on 27 Jul 2026. It moved most high-risk obligations to 2 Dec 2027, and to 2 Aug 2028 for AI built into regulated products. The Article 50 transparency duties were not delayed and have applied since <strong>2 Aug 2026</strong>.</li>
+<li><strong>US:</strong> Congress has not passed a federal law overriding state AI laws. Colorado&#39;s original AI Act was <strong>repealed and replaced</strong> before it took effect. The two state laws that most affect a business deploying AI, Colorado SB 26-189 and California&#39;s CCPA rules on automated decision-making technology (ADMT), both start on <strong>1 Jan 2027</strong>.</li>
+<li><strong>Security vendors:</strong> Large security companies have absorbed most of the independent AI-security startups. Identity for AI agents is the main 2026 product theme (Microsoft Agent 365, Okta, NIST&#39;s agent-identity design tenets).</li>
+<li><strong>Platform risk:</strong> Two hosted builders are being withdrawn. <strong>OpenAI Agent Builder shuts down on 30 Nov 2026</strong>, and ByteDance&#39;s <strong>Coze Enterprise edition stops new sales on 30 Nov 2026</strong>. Both are evidence for code-first, portable orchestration.</li>
+<li><strong>Protocols:</strong> The MCP <strong>2026-07-28</strong> spec is a breaking, stateless revision. <strong>A2A reached v1.0</strong> in Mar 2026.</li>
+</ul>
+<hr>
+<h5 id="2-ai-governance-security-top-priority"><a class="anchor" href="#2-ai-governance-security-top-priority" aria-label="本节链接">#</a>(2) AI governance &amp; security (top priority)</h5>
+<h6 id="2a-standards-and-regulations"><a class="anchor" href="#2a-standards-and-regulations" aria-label="本节链接">#</a>2a. Standards and regulations</h6>
+<p><strong>EU AI Act</strong></p>
+<ul>
+<li>Regulation (EU) 2026/1744 was published in the Official Journal on 24 Jul 2026 and came into force on 27 Jul 2026 (<a href="https://www.jdsupra.com/legalnews/eu-digital-omnibus-on-ai-enters-into-8118098/" target="_blank" rel="noopener">https://www.jdsupra.com/legalnews/eu-digital-omnibus-on-ai-enters-into-8118098/</a>).<ul>
+<li><strong>Stand-alone high-risk systems (Annex III):</strong> moved from 2 Aug 2026 to <strong>2 Dec 2027</strong>. This covers employment, education, credit, law enforcement and critical infrastructure.</li>
+<li><strong>AI embedded in regulated products (Annex I):</strong> moved to <strong>2 Aug 2028</strong>.</li>
+<li><strong>Not delayed:</strong> the obligations for general-purpose AI models.</li>
+<li><strong>New prohibitions</strong> on nudification apps and child sexual abuse material apply from <strong>2 Dec 2026</strong>.</li>
+<li><strong>AI Office:</strong> gains exclusive supervision of certain AI systems built on general-purpose models and of AI in very large platforms. It can impose periodic penalties of up to 5% of average daily turnover.</li>
+</ul>
+</li>
+<li><strong>Article 50 transparency</strong> has applied since <strong>2 Aug 2026</strong>. It requires telling users they are dealing with an AI, labelling deepfakes and some AI-generated content, and notifying people about emotion-recognition or biometric-categorisation systems.<ul>
+<li>A 4-month grace period applies only to machine-readable marking for generative AI systems already on the market before 2 Aug 2026.</li>
+<li>Source: the JD Supra article above.</li>
+</ul>
+</li>
+<li>The Commission&#39;s AI Act page confirms &quot;high-risk… starting on 2 December 2027&quot; and transparency rules &quot;in August 2026&quot; (<a href="https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai" target="_blank" rel="noopener">https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai</a>).<ul>
+<li>The same page lists a voluntary <strong>Code of Practice on Marking and Labelling of AI-generated content</strong> and <strong>Guidelines on transparency obligations</strong>.</li>
+</ul>
+</li>
+</ul>
+<p><strong>US federal</strong></p>
+<ul>
+<li>Trump signed an executive order on state AI laws on <strong>11 Dec 2025</strong>. This comes from a Bing News photo caption; I did not verify the order&#39;s contents in this session [unverified].</li>
+<li>In <strong>Mar 2026</strong>, White House guidance urged Congress to pre-empt state AI laws (<a href="https://www.zdnet.com/article/state-ai-safety-laws-california-new-york/" target="_blank" rel="noopener">https://www.zdnet.com/article/state-ai-safety-laws-california-new-york/</a>).</li>
+<li>As of late Oct 2026, <strong>Congress had passed no pre-emption law</strong>. States passed <strong>115 AI laws across 30 states in 2026</strong> (<a href="https://www.msn.com/en-us/news/other/record-115-state-ai-laws-in-2026-illinois-sets-frontier-audit-mandate-congress-still-silent/ar-AA2gcGcF" target="_blank" rel="noopener">https://www.msn.com/en-us/news/other/record-115-state-ai-laws-in-2026-illinois-sets-frontier-audit-mandate-congress-still-silent/ar-AA2gcGcF</a>).</li>
+<li><strong>FTC:</strong><ul>
+<li>A proposed position treats undisclosed AI output steering as consumer deception (<a href="https://www.techtimes.com/articles/322064/20260729/ftc-undisclosed-ai-output-steering-consumer-deception-comment-deadline-friday.htm" target="_blank" rel="noopener">https://www.techtimes.com/articles/322064/20260729/ftc-undisclosed-ai-output-steering-consumer-deception-comment-deadline-friday.htm</a>).</li>
+<li>Press reports in Aug 2026 say the FTC suggests federal law may override Colorado&#39;s AI transparency rules (<a href="https://www.yahoo.com/news/politics/articles/colorado-writing-ai-transparency-rules-021655072.html" target="_blank" rel="noopener">https://www.yahoo.com/news/politics/articles/colorado-writing-ai-transparency-rules-021655072.html</a>).</li>
+</ul>
+</li>
+<li><strong>&quot;Super Intelligence&quot; terminology:</strong><ul>
+<li>A Sep 2026 executive order requires federal agencies to say &quot;Super Intelligence&quot; instead of &quot;AI&quot; (<a href="https://www.whitehouse.gov/presidential-actions/2026/09/inaugurating-the-era-of-super-intelligence/" target="_blank" rel="noopener">https://www.whitehouse.gov/presidential-actions/2026/09/inaugurating-the-era-of-super-intelligence/</a>).</li>
+<li>The DOJ Super Intelligence Task Force (5 Nov 2026) <strong>creates no new offenses</strong> (<a href="https://www.nextgov.com/artificial-intelligence/2026/11/department-justice-forms-ai-task-force/417074/" target="_blank" rel="noopener">https://www.nextgov.com/artificial-intelligence/2026/11/department-justice-forms-ai-task-force/417074/</a>).</li>
+</ul>
+</li>
+<li><strong>Midterms:</strong> On 3 Nov 2026, Democrats won both chambers of Congress (<a href="https://www.bloomberg.com/news/articles/2026-11-04/2026-midterm-elections-what-democrats-wins-in-congress-mean-for-trump" target="_blank" rel="noopener">https://www.bloomberg.com/news/articles/2026-11-04/2026-midterm-elections-what-democrats-wins-in-congress-mean-for-trump</a>). My inference is that a federal pre-emption law in 2027 is now less likely.</li>
+</ul>
+<p><strong>US states</strong> (main source: <a href="https://securityboulevard.com/2026/11/us-state-ai-laws-in-force-what-an-enterprise-deployer-actually-owes/" target="_blank" rel="noopener">https://securityboulevard.com/2026/11/us-state-ai-laws-in-force-what-an-enterprise-deployer-actually-owes/</a>, verified by its author as of 30 Oct 2026)</p>
+<ul>
+<li><strong>Colorado:</strong><ul>
+<li><strong>SB 24-205 was repealed.</strong> SB 25B-004 had already pushed its start date to 30 Jun 2026.</li>
+<li><strong>SB 26-189</strong>, signed 14 May 2026, replaces it with a law on &quot;Automated Decision-Making Technology in Consequential Decisions&quot;. It is <strong>effective 1 Jan 2027</strong>.</li>
+<li><strong>Obligations:</strong> notice before use, an explanation within 30 days of an adverse outcome, data correction, human review &quot;to the extent commercially reasonable&quot;, and 3-year record keeping.</li>
+<li><strong>Enforcement:</strong> by the Attorney General only, with a 60-day cure period until 2030.</li>
+<li><strong>Exclusions:</strong> advertising, marketing, product recommendations, customer-service triage, scheduling and workflow tools. This matters for the client&#39;s lead-gen and sales agents.</li>
+<li><strong>Rulemaking:</strong> proposed rules were filed 11 Aug 2026 and the hearing was held 26 Oct 2026 (<a href="https://coag.gov/ai/" target="_blank" rel="noopener">https://coag.gov/ai/</a>; <a href="https://leg.colorado.gov/bills/sb26-189" target="_blank" rel="noopener">https://leg.colorado.gov/bills/sb26-189</a>).</li>
+<li><strong>HB 26-1263 (Chatbot Safety Act)</strong>, also from 1 Jan 2027, requires consumer chatbots to disclose that the user is talking to an AI.</li>
+</ul>
+</li>
+<li><strong>California:</strong><ul>
+<li><strong>CCPA ADMT regulations</strong> apply from <strong>1 Jan 2027</strong> to significant decisions: notice before use, opt-out or human appeal, access rights, and a risk assessment.</li>
+<li><strong>SB 53</strong> (frontier model developers only) and the <strong>FEHA employment rules</strong> on automated-decision systems (since 1 Oct 2025) are also in force.</li>
+</ul>
+</li>
+<li><strong>Already in force:</strong> Texas TRAIGA (since 1 Jan 2026; intent-based prohibitions), Illinois HB 3773 (AI in employment), Utah&#39;s generative-AI disclosure law, and NYC Local Law 144 (hiring-tool bias audits).</li>
+</ul>
+<p><strong>NIST</strong></p>
+<ul>
+<li><strong>Agent identity and authorization (NCCoE project):</strong><ul>
+<li>The Feb 2026 concept paper received more than 600 comments.</li>
+<li>&quot;Design Tenets for Agent Identity Management Systems&quot; (27 Oct 2026) sets out <strong>10 tenets</strong>: a distinct identity per agent, delegation, least-privilege and revocable access, human involvement for higher-stakes actions, separating what an agent is permitted to do from what it decides to try, and tamper-evident audit trails.</li>
+<li>A formal SP 1800-series practice guide is planned.</li>
+<li>Sources: <a href="https://www.nist.gov/blogs/cybersecurity-insights/design-tenets-agent-identity-management-systems" target="_blank" rel="noopener">https://www.nist.gov/blogs/cybersecurity-insights/design-tenets-agent-identity-management-systems</a>; <a href="https://www.biometricupdate.com/202611/nist-sets-10-principles-for-ai-agent-identity-and-authorization" target="_blank" rel="noopener">https://www.biometricupdate.com/202611/nist-sets-10-principles-for-ai-agent-identity-and-authorization</a></li>
+</ul>
+</li>
+<li><strong>AI RMF:</strong> I found no published revision or &quot;2.0&quot; in 2026; AI RMF 1.0 plus the generative-AI profile (NIST AI 600-1) remain the baseline [unverified]. A Sep 2026 article mentions a federal AI-agent standards deadline [details unverified].</li>
+</ul>
+<p><strong>ISO/IEC 42001:2023</strong> is still the current edition, and certifications continue (for example Coveo, certified by Schellman, Nov 2026: <a href="https://finance.yahoo.com/technology/ai/articles/coveo-achieves-iso-iec-42001-130000603.html" target="_blank" rel="noopener">https://finance.yahoo.com/technology/ai/articles/coveo-achieves-iso-iec-42001-130000603.html</a>). The companion standards 42005 (impact assessment) and 42006 (certification bodies) were published in 2025 [unverified].</p>
+<p><strong>OWASP</strong></p>
+<ul>
+<li><strong>Top 10 for Agentic Applications (2026 edition), released 10 Dec 2025</strong> with input from more than 100 experts (<a href="https://genai.owasp.org/2025/12/09/owasp-genai-security-project-releases-top-10-risks-and-mitigations-for-agentic-ai-security/" target="_blank" rel="noopener">https://genai.owasp.org/2025/12/09/owasp-genai-security-project-releases-top-10-risks-and-mitigations-for-agentic-ai-security/</a>).<ul>
+<li>The press release highlights Agent Behavior/Goal Hijack, Tool Misuse &amp; Exploitation, and Identity &amp; Privilege Abuse.</li>
+<li>The remaining items, taken from secondary sources: Agentic Supply Chain, Unexpected Code Execution, Memory &amp; Context Poisoning, Insecure Inter-Agent Communication, Cascading Failures, Human-Agent Trust Exploitation, and Rogue Agents [order partially unverified].</li>
+</ul>
+</li>
+<li><strong>Top 10 for LLM Applications, 2026 edition (Aug 2026):</strong><ul>
+<li>The ranking was 25% weighted by data from 6,639 real incidents.</li>
+<li>#1 Prompt Injection, #2 Sensitive Information Disclosure, <strong>#3 Excessive Agency</strong>.</li>
+<li>Misinformation rose 2 places, Unbounded Consumption rose 4, and Output Handling fell to #10.</li>
+<li>System Prompt Leakage was renamed <strong>&quot;Hidden Context Exposure&quot;</strong>.</li>
+<li>Source: <a href="https://www.helpnetsecurity.com/2026/08/06/owasp-2026-llm-top-10-released/" target="_blank" rel="noopener">https://www.helpnetsecurity.com/2026/08/06/owasp-2026-llm-top-10-released/</a></li>
+</ul>
+</li>
+<li>An &quot;Agent Control Standard&quot; was introduced on 2 Sep 2026 [details unverified] (<a href="https://finance.yahoo.com/technology/ai/articles/owasp-genai-security-project-releases-120300665.html" target="_blank" rel="noopener">https://finance.yahoo.com/technology/ai/articles/owasp-genai-security-project-releases-120300665.html</a>).</li>
+</ul>
+<h6 id="2b-ai-security-products-and-consolidation"><a class="anchor" href="#2b-ai-security-products-and-consolidation" aria-label="本节链接">#</a>2b. AI security products and consolidation</h6>
+<ul>
+<li><strong>Palo Alto Networks:</strong><ul>
+<li>Sells Prisma AIRS and Unit 42 Frontier AI Defense.</li>
+<li>Is in advanced talks to buy <strong>Clutch Security</strong> (agent security, about $500M), which would be its <strong>7th acquisition of 2026</strong> (<a href="https://finance.yahoo.com/technology/ai/articles/palo-alto-networks-panw-signaling-021620681.html" target="_blank" rel="noopener">https://finance.yahoo.com/technology/ai/articles/palo-alto-networks-panw-signaling-021620681.html</a>).</li>
+<li>Is working with NVIDIA on agent controls (<a href="https://www.helpnetsecurity.com/2026/09/29/palo-alto-networks-nvidia-ai-agent-security/" target="_blank" rel="noopener">https://www.helpnetsecurity.com/2026/09/29/palo-alto-networks-nvidia-ai-agent-security/</a>).</li>
+<li>The 2025 Protect AI acquisition is the origin of Prisma AIRS [not re-verified].</li>
+</ul>
+</li>
+<li><strong>Cisco AI Defense:</strong> added Anthropic&#39;s Claude Mythos for red-teaming, plus agent observability (9 Nov 2026) (<a href="https://www.crn.com/news/networking/2026/cisco-puts-anthropic-s-claude-mythos-behind-ai-defense-red-teaming" target="_blank" rel="noopener">https://www.crn.com/news/networking/2026/cisco-puts-anthropic-s-claude-mythos-behind-ai-defense-red-teaming</a>).</li>
+<li><strong>CrowdStrike:</strong> sells <strong>Falcon Guardian AIDR</strong> (AI detection and response), now built into Anthropic&#39;s Claude Cowork (<a href="https://www.businesswire.com/news/home/20261103896714/en/" target="_blank" rel="noopener">https://www.businesswire.com/news/home/20261103896714/en/</a>). The 2025 Pangea deal is its origin [not re-verified].</li>
+<li><strong>SentinelOne:</strong> launched Singularity <strong>Agentic Detection &amp; Response</strong> on 22 Oct 2026 (<a href="https://www.helpnetsecurity.com/2026/10/22/sentinelone-singularity-agentic-detection-and-response/" target="_blank" rel="noopener">https://www.helpnetsecurity.com/2026/10/22/sentinelone-singularity-agentic-detection-and-response/</a>). It acquired Prompt Security in 2025 [not re-verified].</li>
+<li><strong>F5:</strong> runs an AI Security Platform and launched Workforce AI Security (Sep 2026). Gartner rated it a &quot;Market Shaper&quot; in AI application security (<a href="https://www.businesswire.com/news/home/20260917649775/en/" target="_blank" rel="noopener">https://www.businesswire.com/news/home/20260917649775/en/</a>). It acquired CalypsoAI in 2025 [not re-verified].</li>
+<li><strong>Check Point:</strong> launched an <strong>AI Network Firewall</strong> (Oct 2026) covering shadow-AI discovery, agent policy and prompt-injection defence (<a href="https://hackernoon.com/check-points-new-ai-firewall-reflects-changes-in-how-enterprises-approach-ai-security" target="_blank" rel="noopener">https://hackernoon.com/check-points-new-ai-firewall-reflects-changes-in-how-enterprises-approach-ai-security</a>). It acquired Lakera in 2025 [not re-verified].</li>
+<li><strong>HiddenLayer:</strong> no 2026 news found [unverified]. Alice (formerly ActiveFence) raised $140M in Aug 2026.</li>
+<li><strong>Open-source guardrails</strong> (versions from GitHub):<ul>
+<li>NVIDIA NeMo Guardrails v0.24.1 (16 Sep 2026). The repo has moved to <code>NVIDIA-NeMo/Guardrails</code>.</li>
+<li>Guardrails AI v0.11.0 (Aug 2026), Apache-2.0.</li>
+<li>Meta PurpleLlama (LlamaFirewall/Llama Guard) is still active (last push 9 Nov 2026), but I found no 2026 releases or news.</li>
+</ul>
+</li>
+<li><strong>Agent identity:</strong><ul>
+<li><strong>Microsoft Agent 365 has been generally available since 1 May 2026</strong> at <strong>$15/user/month</strong>, or bundled in <strong>Microsoft 365 E7 at $99/user/month</strong> (Copilot + E5 + Entra Suite + Agent 365) (<a href="https://redmondmag.com/articles/2026/05/01/microsoft-agent-365-goes-live-as-company-unveils-e7-suite.aspx" target="_blank" rel="noopener">https://redmondmag.com/articles/2026/05/01/microsoft-agent-365-goes-live-as-company-unveils-e7-suite.aspx</a>).</li>
+<li>Agent 365 also governs agents built on n8n and running in AWS Bedrock or Google Cloud, and Defender can detect unmanaged agents and the MCP servers they use.</li>
+<li>Gartner&#39;s 2026 Magic Quadrant for AI Agent Management Platforms names Microsoft a Leader (<a href="https://www.microsoft.com/en-us/security/blog/2026/11/03/microsoft-named-a-leader-in-the-2026-gartner-magic-quadrant-for-ai-agent-management-platforms/" target="_blank" rel="noopener">https://www.microsoft.com/en-us/security/blog/2026/11/03/microsoft-named-a-leader-in-the-2026-gartner-magic-quadrant-for-ai-agent-management-platforms/</a>).</li>
+<li>Whether Entra Agent ID itself is generally available: [unverified].</li>
+<li><strong>Okta</strong> positioned an agent identity platform at Oktane 2026 (<a href="https://siliconangle.com/2026/10/23/ai-agent-governance-takes-shape-oktas-oktane-event-oktane/" target="_blank" rel="noopener">https://siliconangle.com/2026/10/23/ai-agent-governance-takes-shape-oktas-oktane-event-oktane/</a>). Auth0 for AI Agents GA date: [unverified].</li>
+</ul>
+</li>
+<li><strong>Incident signals:</strong><ul>
+<li>Zenity&#39;s &quot;AgentCorruption&quot; research: one prompt could take over all AgentCore agents within an AWS account (<a href="https://thenextweb.com/news/aws-agentcore-zenity-agentcorruption-one-prompt-agents" target="_blank" rel="noopener">https://thenextweb.com/news/aws-agentcore-zenity-agentcorruption-one-prompt-agents</a>).</li>
+<li>A backdoored <strong>LiteLLM</strong> release sat on PyPI for 3 hours in Mar 2026 (<a href="https://www.helpnetsecurity.com/2026/06/11/owasp-prompt-injection-ai-security-failures/" target="_blank" rel="noopener">https://www.helpnetsecurity.com/2026/06/11/owasp-prompt-injection-ai-security-failures/</a>).</li>
+</ul>
+</li>
+</ul>
+<h6 id="2c-ai-governance-platforms"><a class="anchor" href="#2c-ai-governance-platforms" aria-label="本节链接">#</a>2c. AI governance platforms</h6>
+<ul>
+<li><strong>IBM watsonx.governance</strong> publishes pricing (<a href="https://www.ibm.com/products/watsonx-governance/pricing" target="_blank" rel="noopener">https://www.ibm.com/products/watsonx-governance/pricing</a>):<ul>
+<li>Model management from <strong>$0.64</strong> (unit unclear).</li>
+<li>Risk &amp; Compliance Basic from <strong>$3,500/month</strong>; Advanced from <strong>$6,450/month</strong>.</li>
+<li>Via AWS, from <strong>$42,000</strong> including 5 AI use cases.</li>
+<li>IBM added agent identity and controls built on HashiCorp Vault (Oct 2026) (<a href="https://finance.yahoo.com/technology/ai/articles/ibm-ibm-debuts-ai-agent-221557150.html" target="_blank" rel="noopener">https://finance.yahoo.com/technology/ai/articles/ibm-ibm-debuts-ai-agent-221557150.html</a>).</li>
+</ul>
+</li>
+<li><strong>OneTrust:</strong> launched <strong>CORIE</strong> for governing AI agents (TrustWeek, 29 Sep 2026) (<a href="https://finance.yahoo.com/technology/ai/articles/onetrust-corie-governs-ai-agents-163000195.html" target="_blank" rel="noopener">https://finance.yahoo.com/technology/ai/articles/onetrust-corie-governs-ai-agents-163000195.html</a>) and a planned integration with Workday Agent Passport.</li>
+<li><strong>ServiceNow:</strong> the former AI Control Tower is now marketed as the &quot;Super Intelligence Control Tower&quot;. It launched a Control Tower Alliance (28 Oct 2026) and agentic continuous control monitoring (10 Nov 2026) (<a href="https://finance.yahoo.com/technology/ai/articles/servicenow-launches-control-tower-alliance-200600864.html" target="_blank" rel="noopener">https://finance.yahoo.com/technology/ai/articles/servicenow-launches-control-tower-alliance-200600864.html</a>).</li>
+<li><strong>Credo AI:</strong> its GAIA product was named to Fast Company&#39;s 2026 Next Big Things in Tech list; it also has Carahsoft (public sector) and CHAI (healthcare) partnerships (<a href="https://finance.yahoo.com/technology/ai/articles/credo-ai-gaia-named-fast-110000873.html" target="_blank" rel="noopener">https://finance.yahoo.com/technology/ai/articles/credo-ai-gaia-named-fast-110000873.html</a>). Pricing is not public.</li>
+<li><strong>Holistic AI:</strong> no 2026 vendor news verified.</li>
+</ul>
+<hr>
+<h5 id="1-agent-frameworks-and-low-code-platforms"><a class="anchor" href="#1-agent-frameworks-and-low-code-platforms" aria-label="本节链接">#</a>(1) Agent frameworks and low-code platforms</h5>
+<p>Versions and licences below come from the GitHub API on 2026-11-11.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Framework</th>
+<th>Latest release</th>
+<th>License</th>
+<th>Notable 2025–26 changes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>LangChain / LangGraph</td>
+<td>langchain <strong>1.5.0</strong> (11-11); langgraph <strong>1.2.20</strong> (11-05)</td>
+<td>MIT</td>
+<td>LangGraph 1.0.0 released 2025-10-17. LangSmith BYOC is in beta on Azure and GCP (<a href="https://www.unite.ai/langchain-brings-langsmith-byoc-beta-to-azure-and-google-cloud/" target="_blank" rel="noopener">https://www.unite.ai/langchain-brings-langsmith-byoc-beta-to-azure-and-google-cloud/</a>). DXC partnership.</td>
+</tr>
+<tr>
+<td>CrewAI</td>
+<td><strong>1.15.39</strong> (11-09)</td>
+<td>MIT</td>
+<td>1.0.0 released 2025-10-20. AMP features (RBAC/SSO/on-prem) [unverified].</td>
+</tr>
+<tr>
+<td>Microsoft Agent Framework</td>
+<td>Python <strong>1.25.0</strong>, .NET <strong>1.28.0</strong></td>
+<td>MIT</td>
+<td><strong>GA 1.0 on 2026-04-02</strong>. Successor to Semantic Kernel and AutoGen (<a href="https://venturebeat.com/orchestration/microsoft-retires-autogen-and-debuts-agent-framework-to-unify-and-govern" target="_blank" rel="noopener">https://venturebeat.com/orchestration/microsoft-retires-autogen-and-debuts-agent-framework-to-unify-and-govern</a>).</td>
+</tr>
+<tr>
+<td>OpenAI Agents SDK</td>
+<td><strong>v0.24.0</strong> (10-15)</td>
+<td>MIT</td>
+<td>Still pre-1.0. <strong>Agent Builder shuts down 30 Nov 2026</strong> (announced 3 Jun). Migration paths are the Agents SDK or ChatGPT Workspace Agents. Export &quot;does not convert your workflow graph&quot;; ChatKit stays (<a href="https://tech.yahoo.com/ai/chatgpt/articles/openai-agent-builder-nov-30-174541295.html" target="_blank" rel="noopener">https://tech.yahoo.com/ai/chatgpt/articles/openai-agent-builder-nov-30-174541295.html</a>).</td>
+</tr>
+<tr>
+<td>Google ADK (Python)</td>
+<td><strong>v2.14.0</strong> (11-07)</td>
+<td>Apache-2.0</td>
+<td>ADK 2.0.0 released 2026-05-19.</td>
+</tr>
+<tr>
+<td>AWS Strands</td>
+<td>TS <strong>v1.24.0</strong>; harness-cli 0.3.0</td>
+<td>Apache-2.0</td>
+<td>Repo renamed <code>strands-agents/harness-sdk</code>. Added <strong>Strands Box</strong> sandbox and Decider 2B (Oct 2026) (<a href="https://www.infoq.com/news/2026/10/aws-strands-agents/" target="_blank" rel="noopener">https://www.infoq.com/news/2026/10/aws-strands-agents/</a>).</td>
+</tr>
+<tr>
+<td>n8n</td>
+<td><strong>2.47.4</strong> (11-11)</td>
+<td>Sustainable Use License, plus a separate Enterprise License for <code>.ee</code> files (<code>n8n-io/n8n:LICENSE.md:1-10</code>)</td>
+<td>2.0 released 2025-12-08. Integrates with Agent 365. Released the Nod personal agent (10 Nov 2026). Enterprise SSO/RBAC/log streaming [unverified].</td>
+</tr>
+<tr>
+<td>Dify</td>
+<td><strong>1.19.0</strong> (11-04)</td>
+<td>Modified Apache-2.0: <strong>no multi-tenant SaaS without a commercial licence</strong>, and the logo/copyright must stay (<code>langgenius/dify:LICENSE:1-10</code>)</td>
+<td>1.0 released 2025-02-28.</td>
+</tr>
+<tr>
+<td>Coze Studio / Coze Loop</td>
+<td>Studio v0.5.1 (2026-02-05; last push 07-29)</td>
+<td>Apache-2.0</td>
+<td>Studio development has slowed; Coze Loop is still active. See section 4 for the Enterprise edition sunset.</td>
+</tr>
+<tr>
+<td>Temporal</td>
+<td>Server <strong>v1.32.2</strong></td>
+<td>MIT</td>
+<td>Raised <strong>$550M at a $12.55B valuation</strong> (Sep 2026) (<a href="https://www.businesswire.com/news/home/20260914222012/en/" target="_blank" rel="noopener">https://www.businesswire.com/news/home/20260914222012/en/</a>). The <strong>Oso team joined</strong> to build agent authorization into execution (<a href="https://www.businesswire.com/news/home/20261006521085/en/" target="_blank" rel="noopener">https://www.businesswire.com/news/home/20261006521085/en/</a>).</td>
+</tr>
+</tbody></table>
+</div>
+<ul>
+<li><strong>Relevance AI:</strong> launched Invent 2.0 on 29 Sep 2026 (<a href="https://finance.yahoo.com/technology/ai/articles/relevance-ai-launches-invent-2-130500526.html" target="_blank" rel="noopener">https://finance.yahoo.com/technology/ai/articles/relevance-ai-launches-invent-2-130500526.html</a>).</li>
+<li><strong>Lindy, Zapier Agents, Make:</strong> no 2026 updates verified.</li>
+</ul>
+<p><strong>Protocols</strong></p>
+<ul>
+<li><strong>MCP:</strong><ul>
+<li>The <strong>2026-07-28</strong> stable revision is <strong>breaking</strong>: no sessions or initialize handshake (stateless), a new <code>server/discover</code>, &quot;tasks&quot; moved into an extension, and a multi-round-trip request pattern.</li>
+<li>It also adds OAuth hardening (RFC 9207 <code>iss</code> validation) and OpenTelemetry trace-context conventions (<a href="https://modelcontextprotocol.io/specification/2026-07-28/changelog" target="_blank" rel="noopener">https://modelcontextprotocol.io/specification/2026-07-28/changelog</a>).</li>
+<li>MCP is stewarded by the Linux Foundation&#39;s <strong>Agentic AI Foundation (AAIF)</strong> [Dec 2025 donation date not re-verified].</li>
+<li>Anthropic donated Agent Skills to AAIF in Oct 2026, and the Linux Foundation added the Agent Name Service project on 10 Nov 2026 (<a href="https://www.prnewswire.com/news-releases/linux-foundation-welcomes-agent-name-service-to-bring-verifiable-identity-and-discovery-to-ai-agents-302935151.html" target="_blank" rel="noopener">https://www.prnewswire.com/news-releases/linux-foundation-welcomes-agent-name-service-to-bring-verifiable-identity-and-discovery-to-ai-agents-302935151.html</a>).</li>
+</ul>
+</li>
+<li><strong>A2A:</strong> <strong>v1.0.0 released 12 Mar 2026</strong>; the changelog includes &quot;Add LF prefix to the package&quot;. v1.0.1 followed on 28 May 2026. Apache-2.0 (<a href="https://github.com/a2aproject/A2A/releases" target="_blank" rel="noopener">https://github.com/a2aproject/A2A/releases</a>).</li>
+</ul>
+<hr>
+<h5 id="3-rag-and-knowledge-layer-brief"><a class="anchor" href="#3-rag-and-knowledge-layer-brief" aria-label="本节链接">#</a>(3) RAG and knowledge layer (brief)</h5>
+<ul>
+<li><strong>Azure:</strong> Foundry IQ (reusable, governed Foundry knowledge bases) became available in Copilot Studio in Oct 2026 (<a href="https://redmondmag.com/blogs/redmond-dispatch/2026/10/microsoft-makes-foundry-iq-available.aspx" target="_blank" rel="noopener">https://redmondmag.com/blogs/redmond-dispatch/2026/10/microsoft-makes-foundry-iq-available.aspx</a>).</li>
+<li><strong>AWS:</strong> Bedrock <strong>Managed Knowledge Base</strong> added single-shot RAG and a retrieval-only mode on 9 Nov 2026 (<a href="https://www.unite.ai/aws-adds-single-shot-rag-and-retrieval-only-mode-to-bedrock/" target="_blank" rel="noopener">https://www.unite.ai/aws-adds-single-shot-rag-and-retrieval-only-mode-to-bedrock/</a>).</li>
+<li><strong>Google:</strong> no 2026 news found on Vertex AI RAG Engine [unverified].</li>
+<li><strong>Pricing found on vendor pages:</strong><ul>
+<li><strong>Pinecone:</strong> Builder $20/month flat; Standard $50/month minimum; Enterprise $500/month minimum (<a href="https://www.pinecone.io/pricing/" target="_blank" rel="noopener">https://www.pinecone.io/pricing/</a>).</li>
+<li><strong>Chroma Cloud:</strong> $0 Starter plan; $2.50 per GiB written; $0.33 per GiB-month stored.</li>
+</ul>
+</li>
+<li><strong>Not re-checked:</strong> OpenAI file search pricing, and Weaviate, Qdrant, Zilliz and Elastic pricing [unverified]. turbopuffer raised new funding from Thrive in Dec 2025.</li>
+<li><strong>GraphRAG and memory</strong> (versions from GitHub):<ul>
+<li>Microsoft GraphRAG <strong>v3.3.0</strong> (MIT).</li>
+<li>Mem0 <strong>v2.2.1</strong> (Apache-2.0, about 69k stars).</li>
+<li>Zep&#39;s Graphiti <strong>v0.31.2</strong>.</li>
+<li>Letta <strong>0.16.8</strong> (May 2026).</li>
+<li>AgentCore Memory: not re-verified.</li>
+</ul>
+</li>
+<li><strong>Glean:</strong> headless agent building became generally available on 21 Oct 2026 (<a href="https://www.unite.ai/glean-adds-headless-agent-building-for-claude-code-cursor-and-codex/" target="_blank" rel="noopener">https://www.unite.ai/glean-adds-headless-agent-building-for-claude-code-cursor-and-codex/</a>).</li>
+</ul>
+<h5 id="4-china-brief"><a class="anchor" href="#4-china-brief" aria-label="本节链接">#</a>(4) China (brief)</h5>
+<ul>
+<li><strong>Coze (扣子) Enterprise edition is being withdrawn.</strong> ByteDance&#39;s announcement says the Standard and Flagship editions stop new sales from <strong>30 Nov 2026</strong>. Existing plans end by <strong>31 Dec 2027</strong> (<a href="https://www.sohu.com/a/1097080443_122500431" target="_blank" rel="noopener">https://www.sohu.com/a/1097080443_122500431</a>). Another report says &quot;end of 2026&quot; (MSN), so the date is uncertain. The personal edition continues.</li>
+<li><strong>Tencent Cloud Agent Development Platform (ADP, 智能体开发平台):</strong> ADP 3.0 launched globally in Sep 2025 (<a href="https://news.sciencenet.cn/htmlnews/2025/9/551723.shtm" target="_blank" rel="noopener">https://news.sciencenet.cn/htmlnews/2025/9/551723.shtm</a>). <strong>AgentPortal</strong>, a single entry point for employees to use ADP agents, opened in Nov 2026.</li>
+<li><strong>Volcano Engine HiAgent 2.0</strong> (Jun 2025) adds &quot;Agent DevOps&quot; (<a href="https://finance.sina.com.cn/tech/shenji/2025-06-24/doc-infccywn9140264.shtml" target="_blank" rel="noopener">https://finance.sina.com.cn/tech/shenji/2025-06-24/doc-infccywn9140264.shtml</a>).</li>
+<li><strong>Alibaba Cloud Bailian (百炼):</strong> serves Qwen3.7-Max (May 2026) (<a href="https://news.qq.com/rain/a/20260520A08QS500" target="_blank" rel="noopener">https://news.qq.com/rain/a/20260520A08QS500</a>).</li>
+<li><strong>Baidu Qianfan AppBuilder:</strong> no 2026 news found [status unverified].</li>
+<li><strong>Regulation:</strong><ul>
+<li>Generative AI services still have to be filed with the CAC (Cyberspace Administration of China); 124 new services were filed in Jul–Aug 2026.</li>
+<li>On 9 Nov 2026 the CAC launched a single online filing system covering generative AI, algorithms, deep synthesis and blockchain.</li>
+<li>The <strong>AI-generated content labelling rules (人工智能生成合成内容标识办法)</strong> have applied since <strong>1 Sep 2025</strong> and require both visible and embedded labels (<a href="https://finance.sina.com.cn/roll/2025-09-05/doc-infpmuwa5829474.shtml" target="_blank" rel="noopener">https://finance.sina.com.cn/roll/2025-09-05/doc-infpmuwa5829474.shtml</a>).</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h5 id="gaps-3"><a class="anchor" href="#gaps-3" aria-label="本节链接">#</a>Gaps</h5>
+<ul>
+<li>I did not re-verify these 2025 acquisition dates in this session: Lakera, Protect AI, Prompt Security, Pangea, CalypsoAI.</li>
+<li>Not verified: the contents of the Dec 2025 executive order, the MCP→AAIF donation date, and the GA status of Entra Agent ID and Auth0 for AI Agents.</li>
+<li>Enterprise feature lists (RBAC, SSO, audit) for CrewAI AMP, LangSmith, n8n and Dify are not verified.</li>
+<li>The OWASP agentic items after #3 come from secondary sources.</li>
+<li>Many 2026 facts come from news reports, often syndicated through Yahoo or MSN, rather than primary documents.</li>
+</ul>
+<h5 id="what-this-means-for-the-architecture"><a class="anchor" href="#what-this-means-for-the-architecture" aria-label="本节链接">#</a>What this means for the architecture</h5>
+<p>Three signals support code-first, portable orchestration with protocols pinned to known versions. Hosted builders are being withdrawn (OpenAI Agent Builder, Coze Enterprise). The MCP revision breaks older implementations. Agent identity and audit now have NIST and Microsoft reference models.</p>
+<p>On regulation, the lead-gen and marketing agents fall outside Colorado&#39;s definition of covered automated decision-making. Contract or credit-like decisions could fall inside the 2027 Colorado and California regimes. EU Article 50 disclosure duties already apply to client-facing agents.</p>
+
+    </article>
+    <nav class="pager" aria-label="翻页">
+    <a class="prev" href="sources.html"><span>上一页</span><strong>来源索引</strong></a>
+    <a class="next" href="full-architecture.html"><span>下一页</span><strong>全文 · Bedrock 架构设计</strong></a>
+  </nav>
+    <footer class="foot">本站为方案构想，供讨论用；法律与税务内容未经律师或会计审阅，不构成法律意见。状态标记：✅ 已核实 · ⚠️ 待核实 · 💡 判断 · 📌 估算 · 📚 训练知识未复核。</footer>
+  </main>
+  <nav class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><ul><li><a href="#状态标记">状态标记</a></li><li><a href="#目录">目录</a></li><li><a href="#0-给接手研究者的说明">0. 给接手研究者的说明</a></li><li><a href="#1-项目背景与需求">1. 项目背景与需求</a></li><li><a href="#2-核心结论-截至2026-11-11">2. 核心结论（截至2026-11-11）</a></li><li><a href="#3-可行性分析">3. 可行性分析</a></li><li><a href="#4-需要准备的信息与资产">4. 需要准备的信息与资产</a></li><li><a href="#5-工具与平台横向研究">5. 工具与平台横向研究</a></li><li><a href="#6-专属rag-知识层">6. 专属RAG（知识层）</a></li><li><a href="#7-ai治理">7. AI治理</a></li><li><a href="#8-安全防护">8. 安全防护</a></li><li><a href="#9-得克萨斯州专项-✅法案原文和法条-2026-11-11">9. 得克萨斯州专项（✅法案原文和法条，2026-11-11）</a></li><li><a href="#10-初步方案-v0-1-💡-等第12节的问题有了答案后再迭代">10. 初步方案 v0.1（💡，等第12节的问题有了答案后再迭代）</a></li><li><a href="#11-待完成研究清单-按优先级">11. 待完成研究清单（按优先级）</a></li><li><a href="#12-待向用户或客户确认的问题">12. 待向用户或客户确认的问题</a></li><li><a href="#13-来源索引">13. 来源索引</a></li><li><a href="#14-变更记录">14. 变更记录</a></li><li><a href="#附录-原始研究笔记-英文-原样保留">附录：原始研究笔记（英文，原样保留）</a></li></ul></nav>
+</div>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

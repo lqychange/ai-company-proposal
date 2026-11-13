@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>推荐架构：AWS Bedrock 路线 · 一人 AI 公司 · 方案构想</title>
+<meta name="description" content="用 AI 组成整家公司、尽量少的人来管理：研究、架构设计与前期准备清单。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23255f73'/%3E%3Ccircle cx='16' cy='11' r='4.5' fill='%23ffd28a'/%3E%3Ccircle cx='8' cy='22' r='3' fill='%23fff'/%3E%3Ccircle cx='16' cy='24' r='3' fill='%23fff'/%3E%3Ccircle cx='24' cy='22' r='3' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+</head>
+<body data-page="architecture">
+<a class="skip" href="#content">跳到正文</a>
+<header class="topbar">
+  <button class="menu-btn" type="button" aria-label="打开目录" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>一人 AI 公司 · 方案构想</a>
+  <span class="progress" aria-label="阅读进度">第 7 / 22 页</span>
+  <button class="theme-btn" type="button" aria-label="切换深色/浅色">◐</button>
+</header>
+<div class="shell">
+  <aside class="sidebar" id="sidebar"><div class="nav-group"><div class="nav-group-title">开始</div><ul><li><a href="index.html">首页：一页看懂</a></li></ul></div><div class="nav-group"><div class="nav-group-title">基础研究</div><ul><li><a href="feasibility.html">可行性：能做到什么程度</a></li><li><a href="platforms.html">工具与平台选型</a></li><li><a href="compliance.html">合规：得州与美国</a></li><li><a href="updates.html">研究更新（11-13 补充核实）</a></li></ul></div><div class="nav-group"><div class="nav-group-title">方案设计</div><ul><li><a href="org.html">组织架构：1 个人 + AI 人物</a></li><li><a href="architecture.html" aria-current="page">推荐架构：AWS Bedrock 路线</a></li><li><a href="knowledge.html">专属 RAG 知识层</a></li><li><a href="review.html">审核：风险分级与授权矩阵</a></li><li><a href="governance.html">AI 治理</a></li><li><a href="security.html">安全防护</a></li><li><a href="cost-roadmap.html">成本与实施路线图</a></li></ul></div><div class="nav-group"><div class="nav-group-title">前期准备（请贵司配合）</div><ul><li><a href="prep.html">前期准备总览</a></li><li><a href="prep-questionnaire.html">① 业务信息问卷</a></li><li><a href="prep-assets.html">② 资料与账号清单</a></li><li><a href="prep-decisions.html">③ 需要拍板的决策</a></li><li><a href="prep-plan.html">④ 前期工作计划与验收</a></li></ul></div><div class="nav-group"><div class="nav-group-title">附录</div><ul><li><a href="glossary.html">术语表</a></li><li><a href="sources.html">来源索引</a></li><li><a href="full-research.html">全文 · 研究汇总 v0.2</a></li><li><a href="full-architecture.html">全文 · Bedrock 架构设计</a></li><li><a href="full-artifacts.html">全文 · 参考样例</a></li></ul></div>
+    <div class="side-foot">更新于 2026-11-13</div>
+  </aside>
+  <main id="content" class="content">
+    <article>
+      
+      <h1 class="page-title">推荐架构：AWS Bedrock 路线</h1>
+      <blockquote>
+<p><strong>一句话</strong>：骨架确定，AI 只做判断。每个 AI 人物在 AgentCore 上有独立的身份、会话沙箱和预算，<strong>只能通过一扇门（AgentCore Gateway + Policy）</strong> 调用工具和查询知识；高风险动作由系统按批准时的载荷原样执行，人物自己碰不到。</p>
+</blockquote>
+<h2 id="三条最重要的设计约束"><a class="anchor" href="#三条最重要的设计约束" aria-label="本节链接">#</a>三条最重要的设计约束</h2>
+<ol>
+<li><strong>账号就是爆炸半径。</strong> 2026 年 10 月披露的 AgentCorruption 攻击链显示：一条提示让带 HTTP 或 shell 工具的 Agent 读到执行角色的凭据，就能调用同账号的其他 Agent、读所有对话、投毒记忆、取走密钥。AWS 的立场是&quot;最小权限由客户负责&quot;。所以：<ul>
+<li>接触外部内容的人物、掌握业务工具的人物、负责复核的人物，分放在<strong>三个不同账号</strong>。</li>
+<li>控制面（网关、策略、密钥）放进一个<strong>不跑任何 AI 人物</strong>的账号。</li>
+<li>人物不配通用的 shell 或 HTTP 工具，每个人物一个最小权限的执行角色。</li>
+</ul>
+</li>
+<li><strong>&quot;允许做什么&quot;和&quot;决定做什么&quot;分开</strong>（NIST 2026 年 Agent 身份原则）。模型只负责&quot;提议&quot;；能不能做，由 Cedar 规则和流程状态机决定。</li>
+<li><strong>唯一的人是最大的单点。</strong> 审批分批处理并有防疲劳指标；放宽规则有 24 小时冷静期；Owner 缺席时自动进入安全模式；有一组<strong>连 Owner 批准也越不过</strong>的硬红线（R4）。</li>
+</ol>
+<h2 id="逻辑分层"><a class="anchor" href="#逻辑分层" aria-label="本节链接">#</a>逻辑分层</h2>
+<div class="diagram"><pre class="mermaid">flowchart TB
+    subgraph CH[&quot;① 渠道&quot;]
+        direction LR
+        EM[&quot;📧 邮件&lt;br/&gt;SES 收发&quot;]:::chan
+        WEB[&quot;💬 官网聊天&lt;br/&gt;CloudFront + WAF&quot;]:::chan
+        WH[&quot;🔔 SaaS 回调&lt;br/&gt;Stripe · 电子签 · CRM&quot;]:::chan
+        OC[&quot;📱 Owner 控制台&lt;br/&gt;审批 · 驾驶舱 · 熔断&quot;]:::human
+    end
+    subgraph IN[&quot;② 入口与隔离区&quot;]
+        direction LR
+        RAW[(&quot;原始内容 S3&lt;br/&gt;恶意软件扫描&quot;)]:::edge
+        INTAKE[&quot;隔离读信员AI&lt;br/&gt;只抽取结构化字段&quot;]:::edge
+    end
+    subgraph BB[&quot;③ 流程骨架（不跑 LLM）&quot;]
+        direction LR
+        SFN[&quot;Step Functions&lt;br/&gt;获客 → 成交 → 交付 → 续约&quot;]:::bb
+        WI[(&quot;工作单 · 审批记录&lt;br/&gt;DynamoDB&quot;)]:::bb
+        RISK[&quot;风险引擎&lt;br/&gt;R0–R4 分级&quot;]:::bb
+        EXE[&quot;执行器&lt;br/&gt;校验载荷哈希&quot;]:::bb
+    end
+    subgraph RT[&quot;④ AI 人物运行区（每个会话一个 microVM）&quot;]
+        direction LR
+        EDGE[&quot;边缘区人物&lt;br/&gt;获客 · 市场 · 前台&quot;]:::edge
+        CORE[&quot;核心区人物&lt;br/&gt;幕僚长 · 销售 · 合同 · 交付 · 财务 · 客户成功&quot;]:::core
+        ASR[&quot;保障区人物&lt;br/&gt;复核 · 合规 · 哨兵 · 内审&quot;]:::assure
+    end
+    subgraph MD[&quot;⑤ 模型 · 护栏 · 记忆&quot;]
+        direction LR
+        FM[&quot;Bedrock 多模型&lt;br/&gt;Claude · Nova · 其他&quot;]:::model
+        GR[&quot;Guardrails&lt;br/&gt;组织基线 + 岗位护栏&quot;]:::model
+        MEM[(&quot;AgentCore Memory&lt;br/&gt;按客户 × 人物&quot;)]:::kn
+    end
+    subgraph CP[&quot;⑥ 唯一的门&quot;]
+        direction LR
+        GW[&quot;AgentCore Gateway&lt;br/&gt;JWT 入站 · 请求/响应拦截器&quot;]:::cp
+        POL[&quot;AgentCore Policy&lt;br/&gt;Cedar · 默认拒绝&quot;]:::cp
+        REG[&quot;Agent Registry&lt;br/&gt;人物 · 工具登记&quot;]:::cp
+    end
+    subgraph TL[&quot;⑦ 工具与知识&quot;]
+        direction LR
+        TOOLS[&quot;工具 Lambda&lt;br/&gt;报价 · 发信 · 退款 · 工作单&quot;]:::tool
+        SAAS[&quot;SaaS&lt;br/&gt;CRM · Stripe · 电子签&quot;]:::tool
+        KB[(&quot;Bedrock 托管知识库&lt;br/&gt;混合检索 + 重排&quot;)]:::kn
+    end
+    subgraph OB[&quot;⑧ 观测与审计&quot;]
+        direction LR
+        OTEL[&quot;OTEL → CloudWatch&quot;]:::obs
+        LEDGER[(&quot;审计账本&lt;br/&gt;S3 Object Lock&quot;)]:::obs
+    end
+    EM --&gt; RAW --&gt; INTAKE --&gt; SFN
+    WEB --&gt; EDGE
+    WH --&gt; SFN
+    SFN --- WI
+    SFN --&gt; RISK
+    SFN --&gt;|&quot;派工&quot;| RT
+    RT --&gt; FM
+    FM --- GR
+    RT ==&gt;|&quot;所有工具和知识调用&quot;| GW
+    GW --&gt; POL
+    GW --&gt; TOOLS &amp; KB
+    TOOLS --&gt; SAAS
+    EXE ==&gt;|&quot;R2 及以上由执行器调用&quot;| GW
+    OC --- SFN
+    CORE --- MEM
+    GW -.-&gt; LEDGER
+    SFN -.-&gt; LEDGER
+    RT -.-&gt; OTEL
+    classDef chan fill:#ede7f6,stroke:#5e35b1,color:#311b92,stroke-width:2px;
+    classDef human fill:#fff3e0,stroke:#e65100,color:#bf360c,stroke-width:3px;
+    classDef edge fill:#fce4ec,stroke:#ad1457,color:#880e4f,stroke-width:2px;
+    classDef core fill:#e3f2fd,stroke:#1565c0,color:#0d47a1,stroke-width:2px;
+    classDef assure fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20,stroke-width:2px;
+    classDef bb fill:#fffde7,stroke:#f9a825,color:#f57f17,stroke-width:2px;
+    classDef model fill:#e0f7fa,stroke:#00838f,color:#006064,stroke-width:2px;
+    classDef cp fill:#ffebee,stroke:#c62828,color:#b71c1c,stroke-width:3px;
+    classDef tool fill:#f3e5f5,stroke:#6a1b9a,color:#4a148c,stroke-width:2px;
+    classDef kn fill:#e8eaf6,stroke:#283593,color:#1a237e,stroke-width:2px;
+    classDef obs fill:#eceff1,stroke:#455a64,color:#263238,stroke-width:2px;</pre></div>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>层</th>
+<th>组件</th>
+<th>职责</th>
+<th>将来能换成</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>① 渠道</td>
+<td>SES 收发信；CloudFront + WAF；API Gateway 接回调；Owner 控制台</td>
+<td>进出公司的所有通道</td>
+<td>其他邮件服务、聊天组件</td>
+</tr>
+<tr>
+<td>② 入口与隔离</td>
+<td>原始内容 S3；恶意软件扫描；隔离读信员AI</td>
+<td>把不可信内容变成结构化数据</td>
+<td>—</td>
+</tr>
+<tr>
+<td>③ 流程骨架</td>
+<td>Step Functions、DynamoDB、EventBridge、风险引擎、审批服务、执行器</td>
+<td>决定流程顺序、审批和执行；<strong>不跑 LLM</strong></td>
+<td>Temporal</td>
+</tr>
+<tr>
+<td>④ 人物运行</td>
+<td>AgentCore Runtime，分布在三个账号</td>
+<td>判断、起草、提议</td>
+<td>其他容器平台，框架不变</td>
+</tr>
+<tr>
+<td>⑤ 模型、护栏、记忆</td>
+<td>Bedrock 模型；Guardrails；AgentCore Memory</td>
+<td>推理、内容安全、互动记忆</td>
+<td>其他模型</td>
+</tr>
+<tr>
+<td>⑥ 控制面</td>
+<td>Gateway、Policy、Identity、Registry</td>
+<td>唯一的门：认证、授权、登记</td>
+<td>自建 MCP 网关 + Cedar/OPA</td>
+</tr>
+<tr>
+<td>⑦ 工具与知识</td>
+<td>工具 Lambda；SaaS；托管知识库</td>
+<td>真正改变外部世界的动作；公司知识</td>
+<td>换 SaaS 只需要换网关目标</td>
+</tr>
+<tr>
+<td>⑧ 观测与审计</td>
+<td>OTEL → CloudWatch；审计账本</td>
+<td>回放、追责、告警</td>
+<td>Langfuse 等兼容 OTEL 的工具</td>
+</tr>
+</tbody></table>
+</div>
+<h2 id="流程为骨-ai-为肉"><a class="anchor" href="#流程为骨-ai-为肉" aria-label="本节链接">#</a>流程为骨，AI 为肉</h2>
+<p>主干流程写成状态机，AI 跳不过任何一步；AI 只在判断点干活（写邮件、判断意向、出方案、检查交付物）。</p>
+<div class="diagram"><pre class="mermaid">flowchart LR
+    L[&quot;线索&quot;]:::auto
+    Q[&quot;合格线索&quot;]:::auto
+    M[&quot;约会议&quot;]:::auto
+    P[&quot;方案&quot;]:::ai
+    QT[&quot;报价&quot;]:::ai
+    RV{&quot;复核官AI&quot;}:::ai
+    HO{&quot;Owner 审批&quot;}:::human
+    CT[&quot;合同&quot;]:::ai
+    HO2{&quot;Owner 审批&quot;}:::human
+    SG[&quot;电子签&quot;]:::auto
+    INV[&quot;开票 · 收款&quot;]:::auto
+    DL[&quot;交付&quot;]:::ai
+    QC[&quot;质检&quot;]:::ai
+    HO3{&quot;Owner&quot;}:::human
+    AC[&quot;客户验收&quot;]:::auto
+    FU[&quot;回访 · 续约&quot;]:::ai
+    L --&gt; Q --&gt; M --&gt; P --&gt; QT
+    QT --&gt;|&quot;折扣不超过10%&quot;| CT
+    QT --&gt;|&quot;折扣10%–20%&quot;| RV --&gt; CT
+    QT --&gt;|&quot;折扣超过20%&quot;| HO --&gt; CT
+    CT --&gt;|&quot;标准模板 · 低于 $5k&quot;| SG
+    CT --&gt;|&quot;非标条款或超额&quot;| HO2 --&gt; SG
+    SG --&gt; INV --&gt; DL --&gt; QC --&gt; AC --&gt; FU
+    QC --&gt;|&quot;两次不通过&quot;| HO3
+    classDef auto fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20,stroke-width:2px;
+    classDef ai fill:#e3f2fd,stroke:#1565c0,color:#0d47a1,stroke-width:2px;
+    classDef human fill:#fff3e0,stroke:#e65100,color:#bf360c,stroke-width:3px;</pre></div>
+<p><strong>图例</strong>：绿色是确定性步骤；蓝色是 AI 判断；橙色是人工审批。金额和折扣阈值是示例，由贵司在 <a href="prep-decisions.html">③ 需要拍板的决策</a> 里确定。</p>
+<h2 id="账号结构"><a class="anchor" href="#账号结构" aria-label="本节链接">#</a>账号结构</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>账号</th>
+<th>放什么</th>
+<th>刻意不放什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>mgmt（管理）</td>
+<td>Organizations、统一登录、账单、组织级护栏</td>
+<td>任何业务工作负载</td>
+</tr>
+<tr>
+<td>log-archive（日志）</td>
+<td>组织 CloudTrail、审计账本、模型调用日志</td>
+<td>任何能删日志的角色</td>
+</tr>
+<tr>
+<td>security-tooling（安全）</td>
+<td>GuardDuty、Security Hub、Config</td>
+<td>业务数据</td>
+</tr>
+<tr>
+<td>platform（控制面）</td>
+<td>网关、策略、密钥、工具、流程骨架、审批、执行器、知识库</td>
+<td><strong>任何 AI 人物</strong></td>
+</tr>
+<tr>
+<td>agents-edge（边缘人物）</td>
+<td>接触原始外部内容的人物</td>
+<td>机密数据、高风险工具</td>
+</tr>
+<tr>
+<td>agents-core（核心人物）</td>
+<td>业务人物</td>
+<td>原始外部内容、密钥</td>
+</tr>
+<tr>
+<td>agents-assurance（保障人物）</td>
+<td>复核官、合规官、哨兵、内审</td>
+<td>任何能写业务数据的工具</td>
+</tr>
+<tr>
+<td>staging（预发）</td>
+<td>影子运行、评估、红队、合成数据</td>
+<td>真实客户数据</td>
+</tr>
+</tbody></table>
+</div>
+<ul>
+<li><strong>账号本身不收费</strong>；增加的是每个账号的基线服务费，见 <a href="cost-roadmap.html">成本</a>。</li>
+<li><strong>不建议合并</strong>：platform 和三个人物账号，它们是防同账号横向接管的主要防线。</li>
+<li><strong>可以晚点拆</strong>：知识库第一阶段放 platform；客户资料多了再单独拆账号。</li>
+</ul>
+<h2 id="关键决策一览"><a class="anchor" href="#关键决策一览" aria-label="本节链接">#</a>关键决策一览</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>决策</th>
+<th>选择</th>
+<th>门类型</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>D1</td>
+<td>底座</td>
+<td>Bedrock（模型、知识库、护栏）+ AgentCore（运行、网关、策略、身份、记忆、观测、评估、登记）</td>
+<td>双向（换底座代价中等）</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>账号结构</td>
+<td>8 个账号</td>
+<td><strong>单向</strong>（事后拆账号代价高）</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>业务骨架</td>
+<td>Step Functions 标准工作流（状态机 + 回调审批）</td>
+<td>双向</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>人物框架</td>
+<td>Strands Agents 跑在 AgentCore Runtime 上</td>
+<td>双向</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>人物协作</td>
+<td>工作单 + 事件，人物之间不自由对话</td>
+<td>双向</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>工具接入</td>
+<td>所有工具都经网关；人物没有直接外网，也拿不到密钥</td>
+<td><strong>单向</strong>（原则级）</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>授权</td>
+<td>Cedar 策略，默认拒绝、forbid 优先；阈值只在一个文件里定义</td>
+<td>双向</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>高风险执行</td>
+<td>&quot;AI 提议、系统执行&quot;：执行器校验载荷哈希后执行</td>
+<td>双向</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>RAG</td>
+<td>托管知识库放在检索服务之后；客户过滤由服务端注入</td>
+<td>双向</td>
+</tr>
+<tr>
+<td>D10</td>
+<td>记忆</td>
+<td>按&quot;客户 × 人物&quot;划分；CRM 是客户事实的唯一来源</td>
+<td>双向</td>
+</tr>
+<tr>
+<td>D11</td>
+<td>模型</td>
+<td>多模型分档；复核者和制作者用不同的模型家族；锁定版本</td>
+<td>双向</td>
+</tr>
+<tr>
+<td>D12</td>
+<td>护栏</td>
+<td>组织级 + 执行角色条件 + 岗位护栏三层强制</td>
+<td>双向</td>
+</tr>
+<tr>
+<td>D13</td>
+<td>审计</td>
+<td>自建审计账本，写入不可删除的存储（S3 Object Lock 合规模式）</td>
+<td><strong>单向</strong>（保留期锁定后不能缩短）</td>
+</tr>
+<tr>
+<td>D14</td>
+<td>治理框架</td>
+<td>NIST AI RMF + 三道防线 + 治理即代码</td>
+<td>双向</td>
+</tr>
+</tbody></table>
+</div>
+<p>&quot;单向门&quot;指一旦做了很难回头的决定，需要在前期就和贵司确认；&quot;双向门&quot;以后可以低成本调整。</p>
+<h2 id="模型分档"><a class="anchor" href="#模型分档" aria-label="本节链接">#</a>模型分档</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>档位</th>
+<th>用在哪里</th>
+<th>候选模型（每百万 token 输入/输出）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>旗舰档</td>
+<td>最难的判断，例如复杂方案</td>
+<td>Claude Fable 5.2：$8 / $40（在 Bedrock 上强制 30 天数据保留，只用于不含客户机密的任务）</td>
+</tr>
+<tr>
+<td>推理档</td>
+<td>幕僚长、合同、复核官</td>
+<td>Claude Opus 5.5：$4 / $20</td>
+</tr>
+<tr>
+<td>主力档</td>
+<td>起草、客服、项目管理</td>
+<td>Claude Sonnet 5.5：$2 / $10</td>
+</tr>
+<tr>
+<td>经济档</td>
+<td>分类、抽取、路由</td>
+<td>Claude Haiku 5.5：$0.10 / $0.50；Amazon Nova Micro / Lite</td>
+</tr>
+<tr>
+<td>复核档</td>
+<td>复核官，<strong>必须和制作者用不同的模型家族</strong></td>
+<td>Amazon Nova、OpenAI GPT-6.1 Sol（$2 / $10）或 gpt-oss</td>
+</tr>
+</tbody></table>
+</div>
+<p>所有模型锁定版本，用美国境内的推理配置文件（约贵 10%，换来数据不出美国）。</p>
+<p>完整设计（含跨账号调用路径、网络、Runtime 外壳代码、记忆隔离等）见 <a href="full-architecture.html">全文 · Bedrock 架构设计</a>。</p>
+
+    </article>
+    <nav class="pager" aria-label="翻页">
+    <a class="prev" href="org.html"><span>上一页</span><strong>组织架构：1 个人 + AI 人物</strong></a>
+    <a class="next" href="knowledge.html"><span>下一页</span><strong>专属 RAG 知识层</strong></a>
+  </nav>
+    <footer class="foot">本站为方案构想，供讨论用；法律与税务内容未经律师或会计审阅，不构成法律意见。状态标记：✅ 已核实 · ⚠️ 待核实 · 💡 判断 · 📌 估算 · 📚 训练知识未复核。</footer>
+  </main>
+  <nav class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><ul><li><a href="#三条最重要的设计约束">三条最重要的设计约束</a></li><li><a href="#逻辑分层">逻辑分层</a></li><li><a href="#流程为骨-ai-为肉">流程为骨，AI 为肉</a></li><li><a href="#账号结构">账号结构</a></li><li><a href="#关键决策一览">关键决策一览</a></li><li><a href="#模型分档">模型分档</a></li></ul></nav>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

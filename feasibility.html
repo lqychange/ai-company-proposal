@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>可行性：能做到什么程度 · 一人 AI 公司 · 方案构想</title>
+<meta name="description" content="用 AI 组成整家公司、尽量少的人来管理：研究、架构设计与前期准备清单。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23255f73'/%3E%3Ccircle cx='16' cy='11' r='4.5' fill='%23ffd28a'/%3E%3Ccircle cx='8' cy='22' r='3' fill='%23fff'/%3E%3Ccircle cx='16' cy='24' r='3' fill='%23fff'/%3E%3Ccircle cx='24' cy='22' r='3' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+</head>
+<body data-page="feasibility">
+<a class="skip" href="#content">跳到正文</a>
+<header class="topbar">
+  <button class="menu-btn" type="button" aria-label="打开目录" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>一人 AI 公司 · 方案构想</a>
+  <span class="progress" aria-label="阅读进度">第 2 / 22 页</span>
+  <button class="theme-btn" type="button" aria-label="切换深色/浅色">◐</button>
+</header>
+<div class="shell">
+  <aside class="sidebar" id="sidebar"><div class="nav-group"><div class="nav-group-title">开始</div><ul><li><a href="index.html">首页：一页看懂</a></li></ul></div><div class="nav-group"><div class="nav-group-title">基础研究</div><ul><li><a href="feasibility.html" aria-current="page">可行性：能做到什么程度</a></li><li><a href="platforms.html">工具与平台选型</a></li><li><a href="compliance.html">合规：得州与美国</a></li><li><a href="updates.html">研究更新（11-13 补充核实）</a></li></ul></div><div class="nav-group"><div class="nav-group-title">方案设计</div><ul><li><a href="org.html">组织架构：1 个人 + AI 人物</a></li><li><a href="architecture.html">推荐架构：AWS Bedrock 路线</a></li><li><a href="knowledge.html">专属 RAG 知识层</a></li><li><a href="review.html">审核：风险分级与授权矩阵</a></li><li><a href="governance.html">AI 治理</a></li><li><a href="security.html">安全防护</a></li><li><a href="cost-roadmap.html">成本与实施路线图</a></li></ul></div><div class="nav-group"><div class="nav-group-title">前期准备（请贵司配合）</div><ul><li><a href="prep.html">前期准备总览</a></li><li><a href="prep-questionnaire.html">① 业务信息问卷</a></li><li><a href="prep-assets.html">② 资料与账号清单</a></li><li><a href="prep-decisions.html">③ 需要拍板的决策</a></li><li><a href="prep-plan.html">④ 前期工作计划与验收</a></li></ul></div><div class="nav-group"><div class="nav-group-title">附录</div><ul><li><a href="glossary.html">术语表</a></li><li><a href="sources.html">来源索引</a></li><li><a href="full-research.html">全文 · 研究汇总 v0.2</a></li><li><a href="full-architecture.html">全文 · Bedrock 架构设计</a></li><li><a href="full-artifacts.html">全文 · 参考样例</a></li></ul></div>
+    <div class="side-foot">更新于 2026-11-13</div>
+  </aside>
+  <main id="content" class="content">
+    <article>
+      
+      <h1 class="page-title">可行性：能做到什么程度</h1>
+      <blockquote>
+<p><strong>一句话</strong>：标准化、线上交付的业务，跑成熟后 80–95% 的工作可以由 AI 完成；剩下的 5–20% 是例外、高风险决定和法律上必须由人做的事。💡</p>
+</blockquote>
+<h2 id="各环节能自动化到什么程度"><a class="anchor" href="#各环节能自动化到什么程度" aria-label="本节链接">#</a>各环节能自动化到什么程度</h2>
+<p>按 2026 年的技术水平判断（💡）：</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>环节</th>
+<th>可行度</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>获客（内容、广告、外联）</td>
+<td>高</td>
+<td>风险是发信域名被拉黑、平台封号。在得州，电话和短信推销要先登记；AI 语音外呼受联邦 TCPA 约束</td>
+</tr>
+<tr>
+<td>线索筛选、初步对接</td>
+<td>高</td>
+<td>用邮件或官网聊天判断意向，约好会议</td>
+</tr>
+<tr>
+<td>需求澄清、报价</td>
+<td>中到高</td>
+<td>标准化产品容易做，定制需求 AI 容易出错</td>
+</tr>
+<tr>
+<td>谈判</td>
+<td>中</td>
+<td>只能在事先定好的价格和条款范围内谈</td>
+</tr>
+<tr>
+<td>签合同</td>
+<td>中</td>
+<td>得州电子交易法（UETA）§322.014 允许由电子代理订立合同，但后果由公司承担</td>
+</tr>
+<tr>
+<td>收款、开票</td>
+<td>高</td>
+<td>Stripe 等工具可以全自动</td>
+</tr>
+<tr>
+<td>交付/产出</td>
+<td>看业务</td>
+<td>数字化、标准化的容易；线下或高度定制的难</td>
+</tr>
+<tr>
+<td>跟进、续约、增购</td>
+<td>高</td>
+<td></td>
+</tr>
+<tr>
+<td>财务、税务、法务</td>
+<td>中到低</td>
+<td>记账可以自动；报税、纠纷、和监管部门沟通需要人</td>
+</tr>
+</tbody></table>
+</div>
+<h2 id="为什么不是-100"><a class="anchor" href="#为什么不是-100" aria-label="本节链接">#</a>为什么不是 100%</h2>
+<p>技术和法律上都有绕不过去的限制：</p>
+<ol>
+<li><strong>法律主体</strong>：AI 不是法人。公司注册、银行开户、实名认证（KYC）、报税都要真人。</li>
+<li><strong>合规</strong>：多地法规要求对外说明&quot;你在和 AI 打交道&quot;；AI 语音外呼要事先书面同意。详见 <a href="compliance.html">合规</a>。</li>
+<li><strong>误差累积</strong>：每一步准确率 99%，连续 50 步全对的概率只有约 60%（0.99⁵⁰ ≈ 0.605）。所以长流程必须分段、每段设闸。</li>
+<li><strong>提示词注入</strong>：客户发来的邮件、附件或网页里可能藏着给 AI 的指令。</li>
+<li><strong>平台规则</strong>：LinkedIn 禁止自动化操作；Gmail、雅虎和微软对批量发信有强制的认证和投诉率要求。</li>
+<li><strong>长任务越权（✅）</strong>：OpenAI 的 GPT-6 Astra 系统卡显示，一个 dot 连续处理 10 个相关任务时，有 19.7% 出现中度越权；5 个任务时是 8.6%。</li>
+</ol>
+<blockquote>
+<p>所以目标应该定为&quot;<strong>人只定目标、定红线、处理例外</strong>&quot;，类比 L4 级自动驾驶，而不是 L5。对客户和合同里也不写&quot;100% 无人&quot;，改写成&quot;N 个核心流程自动化率不低于 X%，例外在 Y 小时内处理&quot;。</p>
+</blockquote>
+<h2 id="什么业务适合"><a class="anchor" href="#什么业务适合" aria-label="本节链接">#</a>什么业务适合</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>例子</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>适合</strong></td>
+<td>标准化、线上交付、中低客单价：SEO 和内容代运营、数据报告、网站制作、翻译、标准化软件服务、在线培训、订阅制咨询包</td>
+</tr>
+<tr>
+<td><strong>难</strong></td>
+<td>高价定制咨询、线下或实物交付、强监管行业（医疗、法律、金融）、靠关系维系的大客户销售</td>
+</tr>
+</tbody></table>
+</div>
+<p>如果贵司的业务落在&quot;难&quot;的一侧，方案仍然成立，但自动化率目标要调低，Owner 的审批时间要调高，或者先只自动化后台（财务、合同归档、客服）。这正是 <a href="prep-questionnaire.html">前期准备 · 业务信息问卷</a> 要回答的问题。</p>
+<h2 id="一个人能管多大的公司"><a class="anchor" href="#一个人能管多大的公司" aria-label="本节链接">#</a>一个人能管多大的公司</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>约束</th>
+<th>估计（💡）</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Owner 每天审批时间</td>
+<td>≤ 1 小时</td>
+<td>审批分两个固定时段批量处理；只有阻塞客户的 R3 才实时推送</td>
+</tr>
+<tr>
+<td>每天需要人批的事项</td>
+<td>约 10–30 件</td>
+<td>每件平均 2–4 分钟。超过这个量，要么放宽阈值，要么加一名兼职运营</td>
+</tr>
+<tr>
+<td>活跃客户</td>
+<td>20–100 个</td>
+<td>取决于交付复杂度；成本估算按 20 个活跃客户算</td>
+</tr>
+<tr>
+<td>人工兜底</td>
+<td>0.5–1 人</td>
+<td>前 6 个月建议有一名兼职&quot;AI 运营&quot;协助 Owner，之后视自动化率决定</td>
+</tr>
+</tbody></table>
+</div>
+<h2 id="逐步放权-不是一次放开"><a class="anchor" href="#逐步放权-不是一次放开" aria-label="本节链接">#</a>逐步放权，不是一次放开</h2>
+<p>每个 AI 岗位、每类动作都从&quot;影子运行&quot;开始，用数据决定什么时候放权：</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>等级</th>
+<th>名称</th>
+<th>含义</th>
+<th>晋升门槛（示例）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A0</td>
+<td>影子运行</td>
+<td>AI 做，但不发出去；和人的做法对比</td>
+<td>样本 ≥ 50，评估通过率 ≥ 90%</td>
+</tr>
+<tr>
+<td>A1</td>
+<td>逐条批准</td>
+<td>每个对外动作都要批准</td>
+<td>同类 ≥ 200 次，修改率 &lt; 5%，30 天无严重事件</td>
+</tr>
+<tr>
+<td>A2</td>
+<td>自动 + 抽查</td>
+<td>授权范围内自动执行，按比例抽查</td>
+<td>运行 ≥ 90 天，抽查缺陷率 &lt; 1%</td>
+</tr>
+<tr>
+<td>A3</td>
+<td>只处理例外</td>
+<td>只有触发规则的情况才交给人</td>
+<td>质量回退或出事时自动降级</td>
+</tr>
+</tbody></table>
+</div>
+<p>详见 <a href="governance.html">AI 治理</a>。</p>
+
+    </article>
+    <nav class="pager" aria-label="翻页">
+    <a class="prev" href="index.html"><span>上一页</span><strong>首页：一页看懂</strong></a>
+    <a class="next" href="platforms.html"><span>下一页</span><strong>工具与平台选型</strong></a>
+  </nav>
+    <footer class="foot">本站为方案构想，供讨论用；法律与税务内容未经律师或会计审阅，不构成法律意见。状态标记：✅ 已核实 · ⚠️ 待核实 · 💡 判断 · 📌 估算 · 📚 训练知识未复核。</footer>
+  </main>
+  <nav class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><ul><li><a href="#各环节能自动化到什么程度">各环节能自动化到什么程度</a></li><li><a href="#为什么不是-100">为什么不是 100%</a></li><li><a href="#什么业务适合">什么业务适合</a></li><li><a href="#一个人能管多大的公司">一个人能管多大的公司</a></li><li><a href="#逐步放权-不是一次放开">逐步放权，不是一次放开</a></li></ul></nav>
+</div>
+
+<script src="assets/app.js"></script>
+</body>
+</html>
